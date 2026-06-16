@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/logo.webp" width="180" />
 </p>
 
-<h1 align="center">Start / Middle / End</h1>
+<h1 align="center">Start / Middle / [End]</h1>
 
 <p align="center">
   <a href="https://github.com/bastndev/skills/blob/main/public/docs/README_ES.md">Español 🇪🇸</a> |
@@ -26,7 +26,7 @@
 
 <p align="center">
   <a href="https://skills.sh/bastndev/skills">
-    <img src="https://img.shields.io/badge/skills.sh-bastndev%2Fskills-orange?style=flat-square" alt="skills.sh">
+    <img src="https://skills.sh/b/bastndev/skills" alt="skills.sh">
   </a>
 </p>
 
@@ -74,12 +74,17 @@ See the complete specification and report format in [skills/end/SKILL.md](./skil
 - **Middle** family: Focused improvement specialists you invoke while building.
 - Expanded **End** capabilities and additional language/runtime coverage.
 
-## License
-
-MIT
-
 ---
 
-<p align="center">
+<br>
+
+<div align="center">
+  <p align="center">
   <sub>Built for developers who want their AI agents to act with the discipline of a senior engineer.</sub>
 </p>
+
+_If you find any bugs or have feedback, feel free to [open an issue](https://github.com/bastndev/skills/issues/new)._
+
+<sub>Made in 🇵🇪 by <a href="https://gohit.xyz">Gohit X</a> · Licensed under <a href="https://github.com/bastndev/skills/blob/main/LICENSE">`MIT`</a></sub>
+
+</div>

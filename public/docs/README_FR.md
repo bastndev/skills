@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/logo.webp" width="140" />
+  <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/logo.webp" width="180" />
 </p>
 
 <h1 align="center">Début / Milieu / Fin</h1>
@@ -26,13 +26,7 @@
 
 <p align="center">
   <a href="https://skills.sh/bastndev/skills">
-    <img src="https://img.shields.io/badge/skills.sh-bastndev%2Fskills-orange?style=flat-square" alt="skills.sh">
-  </a>
-  <a href="https://github.com/bastndev/skills/stargazers">
-    <img src="https://img.shields.io/github/stars/bastndev/skills?style=flat-square&color=blue" alt="GitHub Stars">
-  </a>
-  <a href="https://github.com/bastndev/skills/blob/main/LICENSE">
-    <img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License">
+    <img src="https://skills.sh/b/bastndev/skills" alt="skills.sh">
   </a>
 </p>
 
@@ -79,12 +73,17 @@ Voir la spécification complète dans [skills/end/SKILL.md](../../skills/end/SKI
 - Famille **Middle**: Spécialistes en améliorations ciblées.
 - Famille **End**: Capacités étendues et couverture de nouveaux langages.
 
-## Licence
-
-MIT
-
 ---
 
-<p align="center">
+<br>
+
+<div align="center">
+  <p align="center">
   <sub>Conçu pour les développeurs qui souhaitent que leurs agents IA agissent avec la discipline d'un ingénieur senior.</sub>
 </p>
+
+_If you find any bugs or have feedback, feel free to [open an issue](https://github.com/bastndev/skills/issues/new)._
+
+<sub>Made in 🇵🇪 by <a href="https://gohit.xyz">Gohit X</a> · Licensed under <a href="https://github.com/bastndev/skills/blob/main/LICENSE">`MIT`</a></sub>
+
+</div>
