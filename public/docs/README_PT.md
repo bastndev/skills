@@ -36,13 +36,15 @@
 | --- | --- | --- | --- | --- |
 | **Start** | Inicialização do projeto | Criar estruturas de pastas prontas para produção, inicializar frameworks, aplicar as melhores práticas desde o primeiro commit. | `start-nextjs`... | Planejado |
 | **Middle** | Melhoria contínua | Aprimorar UI/UX, reforçar a segurança, aumentar o desempenho, limpar a lógica. | TBD | Planejado |
-| **End** | Auditoria e refatoração | Análise completa de arquitetura. Plano em fases priorizado e executado **apenas com aprovação**. | `refactor-project` | ✅ |
+| **End** | Auditoria e refatoração | Análise completa de arquitetura. Plano em fases priorizado e executado **apenas com aprovação**. | `refactor-project` | ✅ Disponível |
 
 ## Skills Disponíveis
 
 | Skill | Descrição |
 | --- | --- |
-| **[end](../../skills/end)** | **`refactor-project`** — Entende seu projeto de ponta a ponta. Entrega um diagnóstico claro com referências concretas. Recomenda a direção arquitetônica correta e constrói um plano de execução ordenado. Você mantém controle total. |
+| **[end](../../skills/end/README.md)** | **`refactor-project`** — Entende seu projeto de ponta a ponta. Entrega um diagnóstico claro com referências concretas. Recomenda a direção arquitetônica correta e constrói um plano de execução ordenado. Você mantém controle total.<br><br>→ [Documentação completa e exemplos](../../skills/end/README.md) |
+
+> **Nota:** Cada skill vem com o seu próprio README detalhado. A página raiz fornece uma visão geral; consulte `../../skills/<skill>/README.md` para uso aprofundado, exemplos de relatórios e garantias.
 
 ## Instalação
 
@@ -57,21 +59,26 @@ Skills futuros serão instaláveis da mesma forma:
 npx skills add bastndev/skills --skill start-nextjs
 ```
 
-## Como funciona o Skill End
+## Como a Skill End Funciona
 
-1. **Apenas análise** — Mapeia pontos de entrada, entende a estrutura. **Zero modificações.**
-2. **Relatório estruturado** — Descobertas divididas em Bugs, Riscos, Oportunidades e Dívida Técnica.
-3. **Plano personalizado** — As fases são ordenadas pelo valor real para o seu projeto.
-4. **Execução passo a passo** — Após sua autorização, executa _uma_ fase e espera.
-5. **Segurança em primeiro lugar** — Nunca cria testes se não existirem. Não adiciona dependências sem permissão.
+1. **Análise primeiro** — Mapeia os pontos de entrada e entende o projeto. **Nenhum arquivo é modificado.**
+2. **Relatório estruturado** — Descobertas claras em quatro categorias (Bugs Confirmados com gravidade, Riscos, Oportunidades de Refatoração, Dívida Técnica) + uma recomendação de arquitetura e um plano ordenado. Todos os itens incluem referências concretas de arquivos e linhas.
+3. **Você autoriza cada fase** — Executa **exatamente uma fase** por vez. Após cada fase, você obtém um resumo preciso das alterações, validações executadas e a lista das fases restantes.
+4. **Controle total e segurança** — Nunca cria testes se o projeto não tiver nenhum. Nunca adiciona dependências ou altera o gerenciador de pacotes sem permissão. Respeita o seu trabalho não commitado e sempre preserva o comportamento atual a menos que corrija um bug justificado.
 
-Veja a especificação completa em [skills/end/SKILL.md](../../skills/end/SKILL.md).
+Para o fluxo de trabalho completo, formatos exatos de relatórios, regras de decisão de arquitetura e todas as garantias de segurança, leia a documentação dedicada da skill:
 
-## Roadmap
+→ **[End – Refactor Project](../../skills/end/README.md)**
 
-- Família **Start**: Geradores de projetos para as stacks mais populares.
-- Família **Middle**: Especialistas em melhorias focadas.
-- Expansão de recursos **End** e cobertura de mais linguagens.
+A especificação interna completa vive em [skills/end/SKILL.md](../../skills/end/SKILL.md).
+
+## Roteiro
+
+- **Skills Start** — Scaffolding de projetos de comando único para stacks populares (Next.js, Vite, FastAPI, etc.)
+- **Skills Middle** — Melhoradores focados sob demanda (desempenho, segurança, UX, remoção de código morto, etc.)
+- **Expansões End** — Mais runtimes, modos de refatoração especializados adicionais e utilitários.
+
+Cada skill terá sua própria documentação dedicada (como o atual [End – Refactor Project](../../skills/end/README.md)).
 
 ---
 
