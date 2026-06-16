@@ -26,7 +26,7 @@
 
 <p align="center">
   <a href="https://skills.sh/bastndev/skills">
-    <img src="https://img.shields.io/badge/skills.sh-bastndev%2Fskills-orange?style=flat-square" alt="skills.sh">
+    <img src="https://skills.sh/b/bastndev/skills" alt="skills.sh">
   </a>
   <a href="https://github.com/bastndev/skills/stargazers">
     <img src="https://img.shields.io/github/stars/bastndev/skills?style=flat-square&color=blue" alt="GitHub Stars">
