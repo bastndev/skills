@@ -7,7 +7,7 @@ metadata:
   version: "2.0.0"
 ---
 
-# Refactor Project [End]
+# Refactor Project / [End]
 
 A structured, architecture-aware refactoring skill that analyzes a project,
 identifies the highest-value improvements, builds a phased execution plan, and
