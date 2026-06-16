@@ -74,12 +74,17 @@ See the complete specification and report format in [skills/end/SKILL.md](./skil
 - **Middle** family: Focused improvement specialists you invoke while building.
 - Expanded **End** capabilities and additional language/runtime coverage.
 
-## License
-
-MIT
-
 ---
 
-<p align="center">
+<br>
+
+<div align="center">
+  <p align="center">
   <sub>Built for developers who want their AI agents to act with the discipline of a senior engineer.</sub>
 </p>
+
+_If you find any bugs or have feedback, feel free to [open an issue](https://github.com/bastndev/skills/issues/new)._
+
+<sub>Made in 🇵🇪 by <a href="https://gohit.xyz">Gohit X</a> · Licensed under <a href="https://github.com/bastndev/skills/blob/main/LICENSE">`MIT`</a></sub>
+
+</div>
