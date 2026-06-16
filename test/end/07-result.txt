@@ -1,0 +1,139 @@
+📊 [end] Health Overview — 81 / 100
+
+🔴 Bugs [0]    🟡 Debt/Risks [8]    🟢 Suggestions [3]
+
+🏗️ Architecture     7/10
+🧩 Maintainability  6/10
+⚡ Performance       9/10
+🔒 Security          9/10
+📚 Documentation     6/10
+
+🔍 Project Understanding
+I already understand your project: VS Code extension (F1 / CLI Hub) with a two-phase webview (launcher in src/clihub/index.ts + full terminal UI swap via CliHubViewProvider in main.ts), xterm.js multi-session PTY isolation (session-manager spawns pty-host.js child via IPC), rich prompt tools (@mentions, images, ES→EN translate via host, spellcheck via cspell-trie, voice), and agent metadata spread across lists. Scope: all of src/.
+
+⚠️ Findings
+
+🔴 Confirmed Bugs
+None found in the authorized scope.
+
+🟡 Debt/Risks
+• src/clihub/index.ts:getAgentSlug + src/clihub/webview/ui/panel-terminal/terminal.ts:getAgentSlug
+  Problem: Near-identical ~30-line functions (string includes matching for 10 agents); one returns '', the other 'default'.
+  Impact: Adding a CLI (per AGENTS.md) requires editing both + risk of drift in theming/model-detect.
+  Recommendation: Extract to a single shared module (or agent registry) imported by both bundles — non-critical → phase 1.
+
+• src/clihub/main.ts:48 (launcherAgents) + src/clihub/webview/core/terminal-cli/agents.ts:7 (cliAgents) + src/clihub/webview/core/terminal-cli/data/cli-installers.ts:16
+  Problem: Three label-keyed parallel lists (aliases+icons vs. command+args vs. install metadata); allowedAgents/getCliAgent derived from one only.
+  Impact: High future maintenance cost and inconsistency when following the documented "adding a new CLI agent" steps.
+  Recommendation: Single source-of-truth agent registry (with all metadata) used to derive the others — debt.
+
+• src/clihub/main.ts:CliHubViewProvider (the ~600-line class)
+  Problem: Owns sessionManager, every message handler (cli., prompt., voice., workspace., spellcheck, translation abort, launch guards, html phase swaps), install checks, and context passing.
+  Impact: Hard to reason about lifecycle, test individual concerns, or evolve tools independently.
+  Recommendation: Route messages to focused collaborators; keep the provider as thin webview + session coordinator — debt.
+
+• src/clihub/main.ts:461 (as any for context + attachments) + similar casts in prepare paths; src/clihub/webview/core/tools-cli-core/prompt/attachments/prepare.ts:30
+  Problem: Loose typing at the host/webview boundary for prompt prepare and image attachments.
+  Impact: Hides mismatches; makes refactors (e.g. ImageAttachment shape) error-prone.
+  Recommendation: Introduce narrow shared types (or branded context) and remove the casts — debt.
+
+• src/clihub/webview/ui/panel-terminal/terminal.ts:445 (window.setInterval clipboard poll at 800ms) + src/clihub/index.ts:449 (cycling preview interval) + ResizeObserver at end of file
+  Problem: Timers/observers created unconditionally in module scope; only implicit cleanup via webview document replacement/GC. No explicit teardown in dispose paths or on html swap.
+  Impact: Minor resource accumulation on repeated open/close or long-lived panels; hard to reason about.
+  Recommendation: Tie to explicit lifecycle (e.g. store handles and clear on relevant events) — debt.
+
+• src/clihub/webview/core/terminal-cli/session-manager.ts:83 (getPtyHostPath using __dirname) + spawn + pty-host require('node-pty') inside start
+  Problem: Bundled path calculation and dynamic require assume exact dist layout after esbuild (4 separate targets + asset copy).
+  Impact: Brittle if build or packaging changes; only surfaces at runtime for PTY.
+  Recommendation: Make the host path derivation explicit (or pass via env) and document the invariant — debt.
+
+• src/clihub/webview/core/tools-cli-core/autocorrect/host-spellcheck.ts:47 (new Function + dynamic import hack for cspell-trie-lib)
+  Problem: Workaround required because the host bundle is CJS but the trie lib is ESM-only.
+  Impact: Opaque, depends on bundler behavior; cache/trie lifetime is module-global.
+  Recommendation: Centralize the loader or move spellcheck behind a cleaner host service boundary — debt.
+
+• src/clihub/webview/ui/panel-terminal/tools-cli-ui/modal-prompt/prompt.ts (and siblings) + terminal.ts (~1150 LOC total client state)
+  Problem: Prompt drafts, pending promises (translations/prepares/spell/files/clipboard), bootSkeletons, sessionsWithFirstOutput, clipboardBaseline, and per-session maps all live in module scope with complex interactions.
+  Impact: Long files, easy for state bugs to hide (e.g. draft lifetime, skeleton dismissal contract).
+  Recommendation: Consider small state machines or clearer ownership for the prompt/terminal client — debt.
+
+🟢 Suggestions
+• src/clihub/webview/core/tools-cli-core/prompt/attachments/host-preparer.ts:5 (IMAGE_DIR_NAME + writes to globalStorage)
+  Suggestion: No automatic cleanup of accumulated clihub-images/; consider size/age policy or explicit purge on extension deactivate for long-lived users.
+
+• src/clihub/main.ts:294 (_handleWorkspaceListFiles)
+  Suggestion: Rebuilds parent directories client-side from a 1000-file findFiles result and sends a mixed file+dir list. For very large workspaces this is O(n) work on every @ mention open; a dedicated fast-path or server-side tree cache could help.
+
+• Agent addition per AGENTS.md (and getAgentSlug callers in model-detect, theming, Copilot delay special-case)
+  Suggestion: Once centralized, consider deriving slugs from a canonical id or slug field in the registry instead of label substring matching.
+
+🏗️ Architecture Decision
+
+📐 Improvement Refactor Only
+
+Reason: The core architecture (two-phase webview, PTY isolation in a separate Node child with IPC, clear message protocol boundaries, separation of launcher vs. terminal UI bundles, and best-effort tools on the host) is intentional, sound for the VS Code webview + native-pty constraints, and already delivers good isolation and UX. The highest-leverage problems are duplication of agent data and the getAgentSlug helper, plus concentration of concerns in one provider class — classic maintainability debt, not fundamental structural failure. No need to change build targets, message flow, PTY model, or the two-phase swap.
+
+Adjustments:
+• Consolidate the three agent lists (cliAgents, launcherAgents, cliInstallers) + slug logic into one registry in or near agents.ts; derive everything else (including the launcher models and allowed set) from it.
+• Extract shared (non-DOM) pieces that must cross the launcher/terminal bundle boundary (at minimum getAgentSlug + agent metadata types) so the documented "add a CLI" process touches one place.
+• Light decoupling inside CliHubViewProvider (e.g. extract message handlers or a small router) without altering the webview ownership or session lifetime model.
+• Keep all files in place; improve internal boundaries and eliminate duplication. Preserve exact current runtime behavior and public contracts.
+
+🗺️ Proposed Plan
+
+Phase 1 — Deduplicate agent definitions and slug resolution
+
+Goal: Eliminate the two getAgentSlug copies and the three label-parallel lists so that adding/maintaining CLIs (per AGENTS.md) is a single-source change and drift is impossible.
+
+Affected files: [3–5]
+• src/clihub/webview/core/terminal-cli/agents.ts
+• src/clihub/main.ts
+• src/clihub/index.ts
+• src/clihub/webview/ui/panel-terminal/terminal.ts
+• (optional) introduce a tiny shared types file or re-export if needed for the two bundles
+
+Why now: Highest value first — this single change makes every subsequent improvement (and every future agent addition) cheaper and safer. It directly attacks the largest duplication surface visible in the static model.
+
+Validation: bun run compile (type-check + lint + full bundle) + manual spot-check that launcher still shows the same 10 agents with correct icons/installed state, that terminal tabs + theming + model-detect + Copilot paste delay still behave identically, and that creating/closing sessions works.
+
+Phase 2 — Remove "as any" casts and tighten host/webview prompt-prepare + attachment types
+
+Goal: Replace the casts at the prepare boundary with proper shared types so the contract is enforced by the compiler.
+
+Affected files: [2–3]
+• src/clihub/main.ts
+• src/clihub/webview/core/tools-cli-core/prompt/attachments/* (types + prepare)
+
+Why now: Directly follows from Phase 1 (once agent metadata is clean we can do the same for the prompt attachment surface); small, high-signal cleanup with no behavior change.
+
+Validation: bun run compile + bun run check-types.
+
+Phase 3 — Light responsibility split in CliHubViewProvider (message routing + tool handlers)
+
+Goal: Keep the class as the webview + session coordinator but move the large inline handlers (translate/voice/spell/workspace/prompt-prepare) into small focused collaborators that the provider wires.
+
+Affected files: [1–2]
+• src/clihub/main.ts (primary)
+• Possibly tiny new files under webview/core/ for the extracted pieces
+
+Why now: Only after the duplication tax is paid; the provider is the next biggest maintainability hotspot.
+
+Validation: bun run compile + smoke of all three tool modals + translation + voice + @-file mentions.
+
+(Additional low-value phases such as timer/observer hygiene or image dir policy can be added later if desired; they are not required for the architecture decision.)
+
+🚫 Out of Scope
+• Anything outside src/ (root configs, public/, the built .vsix, ARCHITECTURE.md, AGENTS.md/CLAUDE.md were consulted only for entry points, build model, and verification commands).
+• Creating tests or test directories (none existed; per skill rules we validate via compile/typecheck/lint + manual entry-point review only).
+• Dependency changes, package manager switches, or lockfile edits.
+• Full restructure of the four esbuild targets, the PTY child process model, the two-phase html-replacement strategy, or the xterm + tools layout.
+• Any changes to runtime behavior or observable UX.
+
+🚀 Ready When You Are
+No files were modified.
+
+Recommended decision: 📐 Improvement Refactor Only.
+Reason: Solid intentional architecture with clear duplication and concentration debt that is cheap to fix without altering the shape of the system.
+Recommended first phase: Phase 1 — Deduplicate agent definitions and slug resolution.
+
+🚀 Ready when you are — say go, start, or proceed to begin Phase 1.
