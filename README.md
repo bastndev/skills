@@ -32,11 +32,11 @@
 
 ## The Three Phases
 
-| Phase      | Purpose                              | Key Capabilities                                                                                                                                                                                   | Example Skills                                   | Status       |
-| ---------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ------------ |
-| **Start**  | Project initialization & scaffolding | Create production-ready folder structures, initialize frameworks, apply best-practice defaults and configs from commit #1.                                                                         | `start-nextjs`, `start-vite`, `start-fastapi`... | Planned      |
-| **Middle** | Continuous improvement & polish      | Enhance UI/UX, harden security, boost performance, clean logic, eliminate dead code, improve maintainability — during active development.                                                          | Targeted enhancers (TBD)                         | Planned      |
-| **End**    | Audit, diagnosis & safe refactoring  | Full architecture & quality analysis. Categorized findings with file-level evidence. Prioritized phased plan executed **only with explicit approval**. Behavior-preserving. Multi-runtime support. | `refactor-project` (the `end` skill)             | ✅ Available |
+| Phase      | Purpose                              | Key Capabilities                                                                                                                                                                                   | Example Skills                                   | Status  |
+| ---------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ------- |
+| **Start**  | Project initialization & scaffolding | Create production-ready folder structures, initialize frameworks, apply best-practice defaults and configs from commit #1.                                                                         | `start-nextjs`, `start-vite`, `start-fastapi`... | Planned |
+| **Middle** | Continuous improvement & polish      | Enhance UI/UX, harden security, boost performance, clean logic, eliminate dead code, improve maintainability — during active development.                                                          | Targeted enhancers (TBD)                         | Planned |
+| **End**    | Audit, diagnosis & safe refactoring  | Full architecture & quality analysis. Categorized findings with file-level evidence. Prioritized phased plan executed **only with explicit approval**. Behavior-preserving. Multi-runtime support. | `refactor-project` (the `end` skill)             | ✅      |
 
 ## Available Skills
 
