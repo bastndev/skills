@@ -224,7 +224,7 @@ items there that you already reported as findings.
 ### 📊 Health Overview
 
 ```text
-📊 Health Overview — [score] / 100
+📊 [end] Health Overview — [score] / 100
 
 🔴 Bugs [n]    🟡 Debt/Risks [n]    🟢 Suggestions [n]
 
@@ -244,7 +244,7 @@ Documentation.
 Keep this section short and useful to the maintainer. Start with:
 
 ```text
-💡 I already understand your project: [brief refactor-relevant context].
+I already understand your project: [brief refactor-relevant context].
 ```
 
 Max 3 lines. Mention only the authorized scope, key entry points, and constraints
