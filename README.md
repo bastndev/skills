@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/logo.webp" width="180" />
 </p>
 
-<h1 align="center">Start / Middle / [End]</h1>
+<h1 align="center">Start / Middle / End</h1>
 
 <p align="center">
   <a href="https://github.com/bastndev/skills/blob/main/public/docs/README_ES.md">Español 🇪🇸</a> |
@@ -34,45 +34,51 @@
 
 | Phase      | Purpose                              | Key Capabilities                                                                                                                                                                                   | Example Skills                                   | Status  |
 | ---------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ------- |
-| **Start**  | Project initialization & scaffolding | Create production-ready folder structures, initialize frameworks, apply best-practice defaults and configs from commit #1.                                                                         | `start-nextjs`, `start-vite`, `start-fastapi`... | Planned |
-| **Middle** | Continuous improvement & polish      | Enhance UI/UX, harden security, boost performance, clean logic, eliminate dead code, improve maintainability — during active development.                                                          | Targeted enhancers (TBD)                         | Planned |
-| **End**    | Audit, diagnosis & safe refactoring  | Full architecture & quality analysis. Categorized findings with file-level evidence. Prioritized phased plan executed **only with explicit approval**. Behavior-preserving. Multi-runtime support. | `refactor-project` (the `end` skill)             | ✅      |
+| **Start**  | Project initialization & scaffolding | Create production-ready folder structures, initialize frameworks, apply best-practice defaults and configs from commit #1.                                                                         | `start-nextjs`, `start-vite`, `start-fastapi`... | Planned     |
+| **Middle** | Continuous improvement & polish      | Enhance UI/UX, harden security, boost performance, clean logic, eliminate dead code, improve maintainability — during active development.                                                          | Targeted enhancers (TBD)                         | Planned     |
+| **End**    | Audit, diagnosis & safe refactoring  | Full architecture & quality analysis. Categorized findings with file-level evidence. Prioritized phased plan executed **only with explicit approval**. Behavior-preserving. Multi-runtime support. | `refactor-project` (the `end` skill)             | ✅ Available |
 
 ## Available Skills
 
 | Skill                   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **[end](./skills/end)** | **`refactor-project`** — Understands your project end-to-end. Delivers a clear diagnosis (confirmed bugs, risks, opportunities, technical debt) with concrete references. Recommends the right architecture direction for _this_ codebase and builds an ordered execution plan. Every change happens in an isolated, reviewable phase. You stay in full control: the skill only proceeds when you say `go`, `start`, or `proceed`. No files are touched during analysis. |
+| **[end](./skills/end/README.md)** | **`refactor-project`** — Understands your project end-to-end. Delivers a clear diagnosis (confirmed bugs, risks, opportunities, technical debt) with concrete references. Recommends the right architecture direction for _this_ codebase and builds an ordered execution plan. Every change happens in an isolated, reviewable phase. You stay in full control: the skill only proceeds when you say `go`, `start`, or `proceed`. No files are touched during analysis.<br><br>→ [Full documentation & examples](./skills/end/README.md) |
+
+> **Note:** Each skill ships with its own detailed README. The root page gives the high-level overview; dive into `./skills/<skill>/README.md` for deep usage, report examples, and guarantees.
 
 ## Installation
 
 ```bash
-# Add the current skill (End / refactor-project)
+# Install the End skill (refactor-project)
 npx skills add bastndev/skills --skill end
 ```
 
-Future skills will be installable the same way:
+Additional skills (once released) are installed the same way:
 
 ```bash
 npx skills add bastndev/skills --skill start-nextjs
-npx skills add bastndev/skills --skill middle-perf   # example name
 ```
 
 ## How the End Skill Works
 
-1. **Analysis only** — It maps entry points, understands structure, reviews relevant code. **Zero modifications.**
-2. **Structured report** — Findings are separated into Confirmed Bugs, Risks, Refactoring Opportunities, and Technical Debt — each backed by specific files, functions, and line references.
-3. **Tailored plan** — Phases are ordered by real value for your project. Critical issues surface first.
-4. **Step-by-step execution** — After you authorize, it performs _one_ phase, reports exactly what changed + validations, then stops and waits for your next `go`.
-5. **Safety first** — Never creates tests if none existed. Never adds dependencies without permission. Never overwrites your uncommitted work.
+1. **Analysis first** — Maps entry points and understands the project. **Zero files are modified.**
+2. **Structured report** — Clear findings in four categories (Confirmed Bugs with severity, Risks, Refactoring Opportunities, Technical Debt) + an architecture recommendation and ordered plan. All items include concrete file + line references.
+3. **You authorize every phase** — It executes **exactly one phase** at a time. After each phase you get a precise summary of changes, validations performed, and the list of remaining phases.
+4. **Full control & safety** — Never creates tests if the project had none. Never adds dependencies or changes the package manager without permission. Respects your uncommitted work and always preserves current behavior unless fixing a justified bug.
 
-See the complete specification and report format in [skills/end/SKILL.md](./skills/end/SKILL.md).
+For the complete workflow, exact report formats (including the required closing blocks), architecture decision rules, and all safety guarantees, read the dedicated skill documentation:
+
+→ **[End – Refactor Project](./skills/end/README.md)**
+
+The full internal specification lives in [skills/end/SKILL.md](./skills/end/SKILL.md).
 
 ## Roadmap
 
-- **Start** family: One-command project generators for the most popular stacks.
-- **Middle** family: Focused improvement specialists you invoke while building.
-- Expanded **End** capabilities and additional language/runtime coverage.
+- **Start** skills — One-command project scaffolding for popular stacks (Next.js, Vite, FastAPI, etc.)
+- **Middle** skills — Focused, on-demand improvers (performance, security, UX, dead-code removal, etc.)
+- **End** expansions — More runtimes, additional specialized refactoring modes, and utilities
+
+Each skill will have its own dedicated documentation (like the current [End – Refactor Project](./skills/end/README.md)).
 
 ---
 
