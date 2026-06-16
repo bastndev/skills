@@ -1,0 +1,197 @@
+
+  📊 [end] Health Overview — 74 / 100
+  
+  🔴 Bugs [0]    🟡 Debt/Risks [4]    🟢 Suggestions [2]
+  
+  🏗️ Architecture     8/10
+  🧩 Maintainability  6/10
+  ⚡ Performance       7/10
+  🔒 Security          8/10
+  📚 Documentation     5/10
+  
+  🔍 Project Understanding
+  
+  I already understand your project: F1 is a VS Code extension with a
+  two-phase
+  webview CLI hub. The authorized scope is src/extension.ts, which is a
+  thin
+  4-line activation function that wires CliHubViewProvider — all logic
+  lives in
+  src/clihub/main.ts (the real complexity center).
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  ⚠️ Findings / Suggestions:
+  
+  🔴 Bugs
+  
+    00. --- --- ---.
+  
+  🟡 Debt / Risks
+  
+    01. src/clihub/main.ts is a 560-line mixed-concern file: it owns the
+  webview
+        provider, HTML assembly, message dispatch, voice, translation,
+  spellcheck,
+        workspace I/O, and prompt preparation all in one class.
+    02. src/clihub/index.ts concatenates both launcher types
+  (LauncherModel,
+        LauncherState, VsCodeApi) and all UI logic (rendering, state,
+  fuzzy search,
+        cycling) into a single file — no module separation between data
+  and UI.
+    03. _handleWorkspaceListFiles in main.ts builds a directory set from
+  file
+        paths in pure JS instead of using
+  vscode.workspace.fs.readDirectory;
+        also catches all errors silently and returns an empty array with
+  no
+        indication to the user that the listing failed.
+    04. The getAgentSlug function is duplicated across
+  src/clihub/index.ts and
+        src/clihub/webview/ui/panel-terminal/terminal.ts with identical
+  if-chain
+        logic; a single shared source would prevent drift.
+  
+  🟢 Suggestions (Optional)
+  
+    01. launcherAgents in main.ts and cliAgents in agents.ts are
+  maintained
+        separately but describe the same agents; a single agents.ts
+  source of
+        truth could derive both lists.
+    02. HTML template injection in _getHtmlForWebview uses string
+  .replace() with
+        non-regex patterns, which silently does nothing if a placeholder
+  is
+        renamed; a typed template helper would make mismatches visible
+  at
+        compile time.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🏗️ Architecture
+  
+  Decision 2️⃣:
+  Small architecture adjustments needed.
+  
+  Why: main.ts has grown into a god class with too many responsibilities
+  — splitting
+  message handlers into a dedicated host-message-router and extracting
+  the HTML
+  builder into webview-builder would reduce its size by ~60% without
+  touching
+  the overall two-phase webview design.
+  
+  Before:
+  
+  src/clihub/
+  ├── main.ts                    # 560 lines, 10+ responsibilities
+  └── index.ts                   # 680 lines, data + UI mixed
+  
+  After:
+  
+  src/clihub/
+  ├── main.ts                    # provider lifecycle only (~120 lines)
+  ├── host-message-router.ts     # extracted from main.ts (message
+  dispatch)
+  ├── webview-builder.ts         # extracted from main.ts (HTML
+  assembly)
+  └── index.ts                   # unchanged (browser bundle boundary)
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🗺️ Proposed Plan
+  
+  Phase 1 — Extract message router from CliHubViewProvider
+  
+  Goal: Pull all onDidReceiveMessage handler logic out of main.ts into a
+        dedicated host-message-router.ts, reducing main.ts to lifecycle
+  only.
+  
+  Affected files: 2
+  - `src/clihub/main.ts`
+  - `src/clihub/host-message-router.ts`   (new)
+  
+  Why now: This is the highest-leverage change — it unblocks everything
+  else by
+           making main.ts readable before touching HTML assembly or
+  agent data.
+  
+  Validation: check-types + lint
+  
+  
+  Phase 2 — Extract HTML/webview builder
+  
+  Goal: Move _getHtmlForWebview, _getAgentHtmlForWebview, and all
+  helpers
+        (_getCliHubAssetUri, _getWebviewUri, _getNonce,
+  serializeJsonForHtmlScript)
+        into webview-builder.ts, leaving CliHubViewProvider with only
+  lifecycle
+        and routing concerns.
+  
+  Affected files: 2
+  - `src/clihub/main.ts`
+  - `src/clihub/webview-builder.ts`   (new)
+  
+  Why now: After Phase 1 main.ts is already thinner; this finishes the
+  split
+           and makes the HTML-assembly logic independently testable.
+  
+  Validation: check-types + lint
+  
+  
+  Phase 3 — Deduplicate getAgentSlug
+  
+  Goal: Move getAgentSlug to a shared module and import it in both
+  index.ts
+        and terminal.ts, eliminating the duplicated if-chain.
+  
+  Affected files: 3
+  - `src/clihub/webview/shared/agent-slug.ts`   (new)
+  - `src/clihub/index.ts`
+  - `src/clihub/webview/ui/panel-terminal/terminal.ts`
+  
+  Why now: Quick, self-contained, zero risk — the duplicate will
+  otherwise drift
+           as new agents are added.
+  
+  Validation: check-types + lint
+  
+  
+  Phase 4 — Fix silent file-listing failure in _handleWorkspaceListFiles
+  
+  Goal: Replace the silent empty-array fallback with a webview error
+  message so
+        the @-mention picker shows a visible failure instead of an empty
+  list.
+  
+  Affected files: 1
+  - `src/clihub/main.ts`
+  
+  Why now: User-facing silent failure is worse than a visible error;
+  this is
+           a contained one-method fix with no architectural impact.
+  
+  Validation: check-types + manual verification of the @-mention picker
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🚫 Out of Scope
+  
+  - `src/clihub/webview/ui/panel-terminal/tools-cli-ui/` — not
+  requested, not analyzed.
+  - `src/clihub/webview/core/tools-cli-core/` — internal tool logic,
+  outside authorized scope.
+  - Test suite creation — no existing test structure found.
+  - Dependency upgrades — not authorized.
+  - index.ts UI refactor — browser bundle boundary; splitting it risks
+  breaking the build target.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  Any questions?
+  If not, I'll start the refactor.
+  
+  🚀 Ready when you are.

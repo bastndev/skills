@@ -270,7 +270,7 @@ above it. Do not use bullets, code-reference headings, or `Problem` / `Impact` /
 
 🔴 Bugs
 
-  00. --- --- ---.
+  00. --- --- --- --- --- --- --- --- --- --- ---.
 
 🟡 Debt / Risks
 
