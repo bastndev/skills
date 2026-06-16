@@ -1,0 +1,161 @@
+🏆 (F1) Health Overview - Extension — 74 / 100
+  
+  🔴 Bugs [1]    🟠 Risks [3]    🟡 Debt [4]    🟢 Opportunities [4]
+  
+  🏗️ Architecture     8/10
+  🧩 Maintainability  7/10
+  ⚡ Performance       7/10
+  🔒 Security          7/10
+  🧪 Testing           0/10
+  📚 Documentation     6/10
+  
+  ───────────────────────────────────────────────────────────────────────
+  
+  🔍 Project Understanding
+  
+  F1 is a VS Code extension that embeds a multi-session CLI launcher
+  panel. The entry point (src/extension.ts) registers a single
+  WebviewViewProvider (CliHubViewProvider). Two HTML phases live inside
+  that single panel view: a fuzzy-search launcher (index.ts + index.html)
+  that lets users pick a CLI, and a full terminal UI (terminal.ts +
+  xterm.js) once an agent is chosen. PTY processes are isolated in a
+  subprocess (pty-host.ts) spawned per session. All communication crosses
+  two message buses: webview ↔ host (postMessage) and host ↔ pty-host
+  (Node IPC). Host-side tools (translation, TTS, spell-check, image prep)
+  live in tools-cli-core/. The project compiles four esbuild targets and
+  has no test suite.
+  
+  ───────────────────────────────────────────────────────────────────────
+  
+  ⚠️ Findings / sugestions:
+  
+  🔴 Confirmed Bugs
+  
+    01. Example error information (brew not so long just really important points).
+
+  🟠 Risks
+  
+    01. "text here..."
+    02. """
+    03. """
+
+  🟡 Not burning
+
+    01. "text here..."
+    02. """
+    03. """
+    04. """
+
+  🟢 Sugestions (optional)
+
+    01. "text here..."
+    02. """
+    03. """
+    04. """
+   
+
+  ───────────────────────────────────────────────────────────────────────
+  
+  🏗️ Architecture Decision
+  
+  📐 Improvement Refactor Only
+  
+  ───────────────────────────────────────────────────────────────────────
+  
+  🗺️ Proposed Plan
+  
+  Phase 1 — Fix commandExists shell-injection risk
+  
+  Goal: Replace the sh -lc string interpolation in commandExists with a
+  direct
+        spawn + args call, eliminating the injection surface.
+  
+  Affected files: 1
+  - `src/clihub/webview/core/terminal-cli/installation.ts`
+  
+  Why now: Security risk; smallest, safest change with no behavior change
+  for
+           well-formed inputs.
+  
+  Validation: typecheck · lint · manual verification (run the extension,
+  attempt to
+              launch an agent; install check still works)
+  
+  Phase 2 — Merge agent data into a single source of truth
+  
+  Goal: Replace the parallel launcherAgents + cliAgents arrays (and both
+  getAgentSlug
+        functions) with a single agents definition. Derive cliAgents and
+  launcherAgents
+        shapes from it.
+  
+  Affected files: 4
+  - `src/clihub/webview/core/terminal-cli/agents.ts`
+  - `src/clihub/main.ts`
+  - `src/clihub/index.ts`
+  - `src/clihub/webview/ui/panel-terminal/terminal.ts`
+  
+  Why now: Highest maintenance leverage — eliminates the 4-file touch per
+  new agent
+           and removes the slug drift between the two files.
+  
+  Validation: typecheck · lint · build · manual launch of multiple agents
+  
+  Phase 3 — Fix duplicate directory entries in workspace file listing
+  
+  Goal: Remove the redundant directory-inference loop from
+  _handleWorkspaceListFiles
+        so file entries are clean and non-duplicated.
+  
+  Affected files: 1
+  - `src/clihub/main.ts`
+  
+  Why now: Confirmed non-critical bug; fixing it early prevents UX issues
+  surfacing in
+           the @-mention picker before the next phases touch main.ts.
+  
+  Validation: typecheck · lint · manual: open prompt modal, type @,
+  verify no
+              duplicate directories appear
+  
+  Phase 4 — Extract webview message dispatch from resolveWebviewView
+  
+  Goal: Move the flat if-chain inside onDidReceiveMessage into a
+  dedicated
+        handleWebviewMessage method, keeping resolveWebviewView focused
+  on setup only.
+  
+  Affected files: 1
+  - `src/clihub/main.ts`
+  
+  Why now: Reduces cognitive load for all future message additions; makes
+  the bug
+           fixed in Phase 3 and the security items easier to audit.
+  
+  Validation: typecheck · lint · build · manual round-trip of each
+  message type
+              (open agent, translate, spellcheck, workspace files)
+  
+  Phase 5 — Escape HTML template substitutions in _getHtmlForWebview
+  
+  Goal: Route all ${token} replacements through the existing escapeHtml
+  helper
+        (currently only in webview.ts) to eliminate the HTML-injection
+  risk in the
+        launcher phase.
+  
+  Affected files: 2
+  - `src/clihub/main.ts`
+  - `src/clihub/webview/webview.ts` (extract/export escapeHtml)
+  
+  Why now: Security hardening; straightforward after Phase 4 has cleaned
+  up main.ts.
+  
+  Validation: typecheck · lint · build · manual: verify launcher renders
+  correctly
+              with a workspace folder whose name contains special
+  characters
+  
+  ───────────────────────────────────────────────────────────────────────
+  
+  🚀 Ready to Start when you are....

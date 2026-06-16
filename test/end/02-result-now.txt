@@ -1,0 +1,329 @@
+
+  Now I have a full picture of the codebase. Let me produce the
+  analysis report.
+  
+  ─────────────────────────────────────────────────────────────────────
+  
+  📊 Executive Summary
+  
+  Health Score: 74
+  
+  🔴 Bugs: 0
+  🟠 Risks: 3
+  🟡 Technical Debt: 2
+  🟢 Opportunities: 4
+  
+  Architecture:
+  Needs Improvements
+  
+  ─────────────────────────────────────────────────────────────────────
+  
+  📈 Project Health
+  
+  Overall: 74
+  
+  🏗️ Architecture: 7/10
+  🧩 Maintainability: 6/10
+  ⚡ Performance: 8/10
+  🔒 Security: 8/10
+  🧪 Testing: 0/10
+  📚 Documentation: 5/10
+  
+  ─────────────────────────────────────────────────────────────────────
+  
+  🔍 Project Understanding
+  
+  - VS Code extension providing a CLI Hub panel to launch and manage AI
+  coding CLI tools
+  - Entry point: src/extension.ts → activates CliHubViewProvider
+  - Phase-1 webview (src/clihub/index.ts + index.html): fuzzy-search
+  launcher UI
+  - Phase-2 webview (webview/webview.ts + terminal.ts): xterm.js
+  terminal panel with tools
+  - Extension host owns sessions (session-manager.ts), spawns
+  pty-host.ts per CLI via IPC
+  - Tools: prompt, translator, keymaps; translation via MyMemory/Google
+  (no API key)
+  - Agent registry split across agents.ts (runtime) and main.ts
+   (launcher display)
+  - Agent slug mapping duplicated identically between index.ts and
+  terminal.ts
+  
+  ─────────────────────────────────────────────────────────────────────
+  
+  ⚠️ Findings
+  
+  🔴 Confirmed Bugs
+  
+  None found in the authorized scope.
+  
+  ─────────────────────────────────────────────────────────────────────
+  
+  🟠 Risks
+  
+  -
+  src/clihub/webview/core/terminal-cli/session-manager.ts:getPtyHostPat
+  h
+  
+    Problem: Uses __dirname to build path to pty-host.js — __dirname in
+  the extension host points to dist/, making the resolved path
+  dist/clihub/webview/core/terminal-cli/pty-host.js, but the
+  double-clihub segment could break if the output layout changes.
+    Impact: Silent failure at runtime; CLI sessions never start with an
+  opaque "Could not start PTY host" error.
+    Recommendation: Drive the path from extensionUri passed down from
+  CliHubViewProvider, as is already done for all other asset paths.
+  
+  - src/clihub/main.ts:_handleWorkspaceListFiles
+  
+    Problem: vscode.workspace.findFiles is capped at 1000 results but
+  silently truncates larger workspaces; the caller has no way to know
+  the list is incomplete.
+    Impact: @-file mention picker in the prompt modal shows an
+  incomplete file tree in large repos without any indication.
+    Recommendation: Either expose a truncated: boolean flag in the
+  response or increase / paginate the limit.
+  
+  - src/clihub/main.ts:_handlePromptPrepare
+  
+    Problem: Falls back to { globalStorageUri: undefined } as any when
+  _extensionContext is absent, which is only possible in tests; the
+  preparePromptForCLI function uses globalStorageUri to write image
+  files and will throw if it is undefined and attachments are present.
+    Impact: Image attachments silently fail or throw an unhandled error
+  when context is missing.
+    Recommendation: Guard against !this._extensionContext before
+  proceeding, or enforce _extensionContext as a required constructor
+  argument.
+  
+  ─────────────────────────────────────────────────────────────────────
+  
+  🟢 Refactoring Opportunities
+  
+  - src/clihub/index.ts:getAgentSlug +
+  src/clihub/webview/ui/panel-terminal/terminal.ts:getAgentSlug
+  
+    Problem: Identical getAgentSlug function is copy-pasted in both
+  files — index.ts returns '' for unknown agents, terminal.ts returns
+  'default'; the logic itself is otherwise line-for-line the same.
+    Impact: Any new agent requires updating two files; the diverging
+  fallback return values are a latent inconsistency.
+    Recommendation: Extract to src/clihub/webview/shared/agent-slug.ts
+   and import from both call sites.
+  
+  - src/clihub/main.ts (class CliHubViewProvider)
+  
+    Problem: The class is 460+ lines handling webview lifecycle, 7
+  distinct message types, HTML construction for two phases, workspace
+  utilities, voice, translation, and spellcheck — all in one file.
+    Impact: High cognitive load; any new feature or bug fix requires
+  navigating the entire class.
+    Recommendation: Extract each handler group (prompt.*, voice.*,
+  workspace.*, HTML builders) into dedicated private modules, leaving
+  CliHubViewProvider as a thin coordinator.
+  
+  - src/clihub/main.ts:launcherAgents +
+  src/clihub/webview/core/terminal-cli/agents.ts:cliAgents
+  
+    Problem: Each agent requires two parallel registration entries
+  (display metadata in main.ts, command metadata in agents.ts),
+  connected only by matching label strings.
+    Impact: Adding an agent requires touching two files and trusting
+  string matching; a label typo produces no compile-time error.
+    Recommendation: Merge into a single agent registry in agents.ts
+  with all fields, and derive both the launcher list and the runtime
+  CLI list from it.
+  
+  - src/clihub/main.ts:_getAgentLaunchExtensionMode
+  
+    Problem: Switch over vscode.ExtensionMode using three explicit if
+   branches where an inline map would be cleaner and exhaustive.
+    Impact: Minor readability cost; low priority.
+    Recommendation: Replace with a simple Map<vscode.ExtensionMode,
+  AgentLaunchExtensionMode> lookup.
+  
+  ─────────────────────────────────────────────────────────────────────
+  
+  🟡 Technical Debt
+  
+  - src/clihub/main.ts + src/clihub/index.ts
+  
+    Problem: launcherAgents (display + icons) and cliAgents (commands)
+  are maintained as separate arrays that must be kept in sync manually;
+  there is no type-level guarantee they share the same set of agents.
+    Impact: Future agent additions are error-prone and the relationship
+  between the two arrays is implicit.
+    Recommendation: Consolidate into a unified agent definition in
+  agents.ts (see Opportunity #3).
+  
+  - src/clihub/webview/core/terminal-cli/installation.ts:commandExists
+  
+    Problem: Uses shell injection via string interpolation (command -v
+  -- '${command.replace(...)}') when spawning sh -lc; the single-quote
+  escaping is correct but the pattern is fragile and platform-specific.
+    Impact: Any future change to escaping risks shell injection;
+  approach diverges by platform already.
+    Recommendation: Prefer which/where with array args and no shell,
+  consistent with the win32 branch already using where.exe with array
+  args.
+  
+  ─────────────────────────────────────────────────────────────────────
+  
+  🏗️ Architecture Decision
+  
+  ╭──────────────────────────────╮
+  │ 📐 Improvement Refactor Only │
+  ╰──────────────────────────────╯
+  
+  Reason:
+  The two-phase webview split and the PTY host subprocess pattern are
+  sound
+  and intentional. The core issue is the agent registry being
+  fragmented
+  across two files, a duplicated slug function, and a single class that
+  has
+  absorbed too many responsibilities over time.
+  
+  Architecture adjustments:
+  - Consolidate agent definitions into a single registry (agents.ts) to
+  eliminate parallel maintenance
+  - Extract getAgentSlug to a shared module consumed by both index.ts
+  and terminal.ts
+  - Decompose CliHubViewProvider message handlers into focused private
+  modules
+  
+  ─────────────────────────────────────────────────────────────────────
+  
+  🗺️ Proposed Plan
+  
+  Phase 1 — Agent registry consolidation
+  
+  Goal:
+  Merge launcherAgents (main.ts) into cliAgents (agents.ts), giving
+  every
+  agent one definition that covers both its display metadata and its
+  CLI
+  command. Derive the launcher list from the unified registry. This
+  eliminates
+  the dual-maintenance risk and makes adding agents a single-file
+  change.
+  
+  Affected files: 3
+  
+  - `src/clihub/webview/core/terminal-cli/agents.ts`
+  - `src/clihub/main.ts`
+  - `src/clihub/index.ts`
+  
+  Why now:
+  The split registry is the root cause of the label-string coupling
+  that
+  affects every other area. Fixing it first makes Phases 2 and 3
+  cleaner.
+  
+  Validation:
+  bun run compile (typecheck + lint + bundle)
+  
+  Phase 2 — Extract shared getAgentSlug
+  
+  Goal:
+  Create src/clihub/webview/shared/agent-slug.ts with a single
+  canonical
+  getAgentSlug implementation, unify the fallback return value, and
+  replace
+  both duplicated copies in index.ts and terminal.ts with imports.
+  
+  Affected files: 3
+  
+  - `src/clihub/webview/shared/agent-slug.ts`  (new)
+  - `src/clihub/index.ts`
+  - `src/clihub/webview/ui/panel-terminal/terminal.ts`
+  
+  Why now:
+  Depends on Phase 1 (agent labels are now canonical); trivial once the
+  registry is stable.
+  
+  Validation:
+  bun run compile
+  
+  Phase 3 — CliHubViewProvider handler decomposition
+  
+  Goal:
+  Extract the prompt/voice/workspace/HTML-builder logic from
+  CliHubViewProvider into focused private modules, leaving the class as
+  a
+  thin message-routing coordinator.
+  
+  Affected files: 4–5
+  
+  - `src/clihub/main.ts`
+  - `src/clihub/webview/core/tools-cli-core/prompt/` (existing area)
+  - `src/clihub/webview/core/tools-cli-core/modal-voice/` (existing
+  area)
+  - one or two new thin host-handler modules alongside existing
+  host-*.ts files
+  
+  Why now:
+  Reduces cognitive load and makes future feature additions local
+  rather
+  than requiring edits to a 460-line class.
+  
+  Validation:
+  bun run compile
+  
+  Phase 4 — Risk mitigations (pty-host path + context guard)
+  
+  Goal:
+  1. Fix getPtyHostPath to derive the path from extensionUri instead of
+  __dirname.
+  2. Guard _handlePromptPrepare against missing _extensionContext
+  before
+     processing image attachments.
+  
+  Affected files: 2
+  
+  - `src/clihub/webview/core/terminal-cli/session-manager.ts`
+  - `src/clihub/main.ts`
+  
+  Why now:
+  Behavioral risks are addressed last because they are non-critical
+  today
+  and the earlier phases make the main.ts changes easier to land
+  cleanly.
+  
+  Validation:
+  bun run compile + manual F5 session start verification
+  
+  ─────────────────────────────────────────────────────────────────────
+  
+  🚫 Out of Scope
+  
+  - Test suite creation — no existing test structure found.
+  - Dependency upgrades — not authorized.
+  - `src/clihub/webview/ui/` UI files — not part of the authorized
+  scope (extension.ts path).
+  - `commandExists` shell-injection debt — noted as Technical Debt; not
+  part of current scope.
+  
+  ─────────────────────────────────────────────────────────────────────
+  
+  🚀 Ready When You Are
+  
+  No files were modified.
+  
+  Recommended architecture decision: Improvement Refactor Only.
+  
+  Reason: The two-phase webview and PTY subprocess design are solid;
+  the main issues are a fragmented agent registry, a duplicated slug
+  function, and an oversized coordinator class.
+  
+  Recommended first phase: Agent registry consolidation.
+  
+  🚀 Ready when you are
+  
+  Say:
+  
+  - go
+  - start
+  - proceed
+  
+  to begin Phase 1.

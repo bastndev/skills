@@ -1,0 +1,193 @@
+ Project Understanding
+  
+  - Main purpose: F1 is a VS Code extension providing a CLI Hub webview
+  panel that launches and manages multiple AI coding CLI tools in
+  embedded xterm.js terminals.
+  - Entry points: src/extension.ts → src/clihub/main.ts (extension
+  host); src/clihub/index.ts (launcher webview);
+  src/clihub/webview/ui/panel-terminal/terminal.ts (terminal webview);
+  src/clihub/webview/core/terminal-cli/pty-host.ts (PTY child process).
+  - Main modules: CliHubViewProvider (orchestrator), CliSessionManager
+  (PTY sessions), HostPromptTranslator (translation), HostVoiceTTS
+  (Piper TTS), HostSpellcheck (CSpell), agent config, installer config.
+  - High-level data flow: User opens panel → launcher webview picks
+  agent → extension host spawns pty-host subprocess → xterm.js terminal
+  renders output → tools panel dispatches translation/voice/spellcheck
+  requests to extension host via IPC messages.
+  
+  ─────────────────────────────────────────────────────────────────────
+  
+  ⚠️ Findings
+  
+  Confirmed Bugs
+  
+  - src/clihub/main.ts:_handleWorkspaceListFiles — directory entries
+  are derived by parsing file paths with path.dirname/path.basename in
+  a loop that pushes all ancestor dirs, but all dirs are given
+  isDirectory: true via a hardcoded false then overridden — the const
+  isDirectory = false line is a dead assignment, and directory entries
+  are pushed separately. This is logically inconsistent: the initial
+  file list always has isDirectory: false even for paths that are
+  directories. Impact: any consumer that checks isDirectory on file
+  entries receives wrong data for directory entries assembled from
+  string parsing. Recommendation: unify the file-listing approach using
+  a single pass. — [severity: non-critical → phase 2]
+  - src/clihub/main.ts:_getHtmlForWebview — HTML template substitution
+  uses html.replace('${cliModels}', ...) (non-global replace) for
+  single-occurrence tokens, but html.replace(/\$\{nonce\}/g, nonce)
+  (global) for nonce. If any single-occurrence token appears twice in
+  the template it would silently go unreplaced. This is inconsistent
+  and fragile. Impact: silent injection failure if template is ever
+  edited. Recommendation: use replaceAll or regex with g flag
+  consistently. — [severity: non-critical → phase 2]
+  
+  Risks
+  
+  - src/clihub/main.ts:CliHubViewProvider — The class holds 9 different
+  message handler concerns (_handleWorkspaceListFiles,
+  _handleWorkspaceListSkills, _handlePromptTranslate,
+  _handlePromptPrepare, _handlePromptSpellcheck, _handleVoiceSpeak,
+  _getHtmlForWebview, _getAgentHtmlForWebview, _confirmAgentLaunch),
+  making it a 550-line god class. Risk: any new message type or tool
+  handler increases coupling and makes bugs harder to isolate.
+  - src/clihub/index.ts:getAgentSlug and
+  src/clihub/webview/ui/panel-terminal/terminal.ts:getAgentSlug — The
+  same slug-mapping function is duplicated in both the launcher and
+  terminal webview bundles. Risk: adding or renaming an agent requires
+  updating both copies; one will inevitably drift.
+  - src/clihub/main.ts:launcherAgents and
+  src/clihub/webview/core/terminal-cli/agents.ts:cliAgents — Agent
+  metadata is split across two arrays in two different files.
+  launcherAgents (in main.ts) stores icon/alias data; cliAgents (in
+  agents.ts) stores command data. They must stay in sync manually.
+  Risk: adding an agent requires edits in at least 4 places; omitting
+  one silently breaks display or launch.
+  -
+  src/clihub/webview/core/tools-cli-core/modal-voice/host-voice-tts.ts
+  — Downloads Piper binary and voice models from GitHub/HuggingFace
+  into globalStorageUri. The download logic (~400 lines) lives entirely
+  in the extension host with no size limit or checksum verification on
+  downloaded archives. Risk: corrupted downloads or supply-chain
+  substitution go undetected.
+  -
+  src/clihub/webview/core/terminal-cli/session-manager.ts:startPtyHost
+   — Uses process.env.CLIHUB_NODE_PATH || 'node' to find the node
+  binary. In some VS Code environments node may not be on PATH. Risk:
+  PTY host fails to start silently (error is caught and shown as a
+  session error, which is recoverable, but the root cause is obscure).
+  
+  Refactoring Opportunities
+  
+  - src/clihub/main.ts:onDidReceiveMessage — 200-line if/else chain.
+  Extracting a message dispatch map would reduce visual complexity and
+  make it easier to add/remove handlers.
+  - src/clihub/main.ts:_getAgentLaunchExtensionMode — Three-branch
+  if/else manually mapping vscode.ExtensionMode enum values to a string
+  union. Could be expressed as a lookup map in one line.
+  - src/clihub/webview/core/terminal-cli/installation.ts:commandExists
+   — Uses sh -lc command -v with manual single-quote escaping
+  (replace(/'/g, "'\\''")). Could use which directly or be simplified.
+  - src/clihub/webview/webview.ts:getCliHubWebviewHtml — CSP string in
+  webview.ts includes https://lingva.thedaviddelta.com and
+  https://libretranslate.de but neither of these providers is used in
+  host-prompt-translator.ts (only MyMemory and Google). These are dead
+  CSP entries.
+  
+  Technical Debt
+  
+  - src/clihub/main.ts:_handlePromptPrepare — const ctx =
+  this._extensionContext || { globalStorageUri: undefined } as any uses
+  as any to paper over a missing context guard. The _extensionContext
+  is declared optional in the constructor but is always passed from
+  extension.ts. This optional typing adds noise and requires unsafe
+  casts downstream.
+  - src/clihub/webview/core/terminal-cli/data/cli-installers.ts — The
+  CliInstaller type allows both install: { unix, windows } and
+  installCommand shapes, but Copilot CLI uses installCommand with the
+  same value for all platforms. This dual-shape type adds conditional
+  logic in installation.ts:getInstallCommand with no real benefit for
+  the one case that uses it.
+  - No tests exist. The project uses type-checking and linting as the
+  only automated safety net. This is acceptable for the current size
+  but raises future development cost for any logic-heavy areas
+  (translation chunking, session management).
+  
+  ─────────────────────────────────────────────────────────────────────
+  
+  🏗️ Architecture Decision
+  
+  Recommended decision: Keep current architecture.
+  
+  Reason: The four-build-target structure (extension host, launcher
+  webview, terminal webview, PTY subprocess) is well-suited to VS
+  Code's security model and correctly isolates native code (node-pty)
+  from renderer processes. The boundaries are sound. Problems are
+  concentrated inside CliHubViewProvider (too many responsibilities)
+  and in duplicated/split agent data — internal cleanup is sufficient.
+  
+  Architecture adjustments
+  
+  - Extract message handlers out of CliHubViewProvider into a thin
+  dispatch layer to reduce the god-class.
+  - Consolidate launcherAgents (main.ts) and cliAgents (agents.ts) into
+  a single agent registry so each agent is defined once.
+  - Deduplicate getAgentSlug into the shared agents.ts module
+  (importable by both webview bundles at build time).
+  - Fix the two non-critical bugs in _handleWorkspaceListFiles and the
+  HTML template substitution.
+  - Remove dead CSP entries (lingva, libretranslate) from webview.ts.
+  - Tighten the _extensionContext optionality to remove the as any
+   cast.
+  
+  ─────────────────────────────────────────────────────────────────────
+  
+  🗺️ Proposed Plan
+  
+  1. Phase 1 — Agent registry consolidation (agents.ts, main.ts,
+  index.ts, terminal.ts) — Merge launcherAgents and cliAgents into one
+  registry in agents.ts. Remove the duplicate getAgentSlug from both
+  webview files and import the single version. This is the
+  highest-value change: it reduces the #1 sync risk and makes every
+  subsequent phase cleaner.
+  2. Phase 2 — Bug fixes and template/CSP cleanup (main.ts, webview.ts)
+  — Fix isDirectory dead assignment and HTML replace inconsistency in
+  main.ts. Remove dead CSP entries in webview.ts. Tighten
+  _extensionContext optionality to eliminate the as any cast.
+  3. Phase 3 — CliHubViewProvider message dispatch refactor (main.ts) —
+  Replace the 200-line if/else chain in onDidReceiveMessage with a
+  typed dispatch map. Extract _getAgentLaunchExtensionMode to a
+  one-line lookup. No behavior changes.
+  4. Phase 4 — CliInstaller type simplification (cli-installers.ts,
+  installation.ts) — Collapse the dual-shape CliInstaller type to a
+  single { unix, windows } shape, removing the conditional in
+  getInstallCommand.
+  
+  ─────────────────────────────────────────────────────────────────────
+  
+  🚫 Out of Scope
+  
+  - node_modules/, dist/, bun.lock — generated/dependency files, not
+  analyzed.
+  - public/ — static assets (GIFs, images, SVGs) for GitHub README, no
+  source logic.
+  -
+  src/clihub/webview/core/tools-cli-core/modal-voice/host-voice-tts.ts
+   — the Piper download/binary management logic is large and
+  self-contained. The supply-chain risk is noted as a risk but fixing
+  it requires adding checksum verification, which is a new feature
+  beyond cleanup scope.
+  - No test files will be created (none exist in the project).
+  
+  ─────────────────────────────────────────────────────────────────────
+  
+  │ No files were modified.
+  │ 
+  │ Recommended architecture decision: keep current architecture.
+  │ 
+  │ Reason: The four-build-target boundary design is correct for VS
+  Code's security model; problems are internal to CliHubViewProvider
+   and duplicated agent data.
+  │ 
+  │ Recommended first phase: Agent registry consolidation.
+  │ 
+  │ Ready when you are — say go, start, or proceed to begin phase 1.
