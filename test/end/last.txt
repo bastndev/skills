@@ -1,6 +1,6 @@
 🏆 (F1) Health Overview - Extension — 74 / 100
   
-  🔴 Bugs [1]    🟠 Risks [3]    🟡 Debt [4]    🟢 Opportunities [4]
+  🔴 Bugs [1]     🟡 Debt/Risks [4]    🟢 Suggestions [4]
   
   🏗️ Architecture     8/10
   🧩 Maintainability  7/10

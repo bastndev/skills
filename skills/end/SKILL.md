@@ -127,9 +127,13 @@ Sort every finding into exactly one category. Never present a risk or
 assumption as a confirmed bug.
 
 * **Confirmed Bugs** — defects that already produce incorrect behavior.
-* **Risks** — works today, could break with future changes.
-* **Refactoring Opportunities** — maintainability/readability/scalability gains.
-* **Technical Debt** — decisions that raise future development cost.
+* **Debt/Risks** — aspects that can be improved to optimize quality,
+  maintainability, security, performance, scalability, or project experience.
+  They are not urgent and the project can continue functioning correctly, but
+  it is advisable to address them when possible.
+* **Suggestions** — optional improvements that could take the project to a
+  higher level. They do not affect current stability or operation; implementation
+  is completely optional and aimed at adding extra value.
 
 Every finding must cite concrete evidence: exact file path, the
 function/class/component/hook/service/module name, and a line or range when
@@ -157,10 +161,16 @@ the project clearly benefits.
 
 ### 10. Health score
 
-Score the project 0–100 plus six categories 0–10 (Architecture,
-Maintainability, Performance, Security, Testing, Documentation). Be honest and
+Score the project 0–100 plus visible categories 0–10: Architecture,
+Maintainability, Performance, Security, and Documentation. Be honest and
 conservative; do not invent issues to justify a low score. If an area cannot be
 judged from the authorized scope, say so and score only on available evidence.
+
+Include a Testing score only when the authorized scope contains an existing test
+structure or test files. If no test folder or test files exist, omit Testing from
+the health overview and do not assign `0/10`; there is nothing to rate. Missing
+tests may still be mentioned as Debt/Risks when relevant, but do not lower the
+overall health score solely because no test structure exists.
 
 ### 11. Plan ordering & phases
 
@@ -214,17 +224,22 @@ items there that you already reported as findings.
 ### 📊 Health Overview
 
 ```text
-Health: [0-100] — [Improvement Refactor Only | Restructure Architecture]
+🏆 ([project name]) Health Overview - [project type] — [score] / 100
 
-🔴 Bugs [n]    🟠 Risks [n]    🟡 Debt [n]    🟢 Opportunities [n]
+🔴 Bugs [n]    🟡 Debt/Risks [n]    🟢 Suggestions [n]
 
 🏗️ Architecture     [x/10]
 🧩 Maintainability  [x/10]
 ⚡ Performance       [x/10]
 🔒 Security          [x/10]
-🧪 Testing           [x/10]
 📚 Documentation     [x/10]
 ```
+
+Use the shortest accurate project type label, such as Extension, Web App,
+Library, CLI, API, Service, Package, or Mobile App. Derive the project name from
+package metadata, extension metadata, the workspace folder, or the user's
+provided scope. If existing tests are present, insert
+`🧪 Testing           [x/10]` before Documentation.
 
 ### 🔍 Project Understanding
 
@@ -233,7 +248,7 @@ Max 10 lines: main purpose · entry points · main modules · high-level data fl
 
 ### ⚠️ Findings
 
-Group under the four headers below. Each finding uses this shape, max 3 short
+Group under the three headers below. Each finding uses this shape, max 3 short
 lines (no long paragraphs). If a category is empty, write
 `None found in the authorized scope.`
 
@@ -246,9 +261,8 @@ lines (no long paragraphs). If a category is empty, write
 
 * **🔴 Confirmed Bugs** — append severity to the recommendation:
   `— [critical | non-critical → phase N]`
-* **🟠 Risks**
-* **🟢 Refactoring Opportunities**
-* **🟡 Technical Debt**
+* **🟡 Debt/Risks**
+* **🟢 Suggestions**
 
 ### 🏗️ Architecture Decision
 
