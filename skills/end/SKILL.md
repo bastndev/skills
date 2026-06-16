@@ -305,8 +305,8 @@ If the architecture is already good:
 ```text
 🏗️ Architecture
 
-Decision:
-✅ Architecture ok, ready for work.
+Decision 1️⃣:
+[Architecture ok, ready for work.]
 
 Why: [one short reason.]
 ```
@@ -316,8 +316,8 @@ If only small structural adjustments are useful, show only the affected paths:
 ```text
 🏗️ Architecture
 
-Decision:
-📐 Small architecture adjustments needed.
+Decision 2️⃣:
+[Small architecture adjustments needed.]
 
 Why: [one short reason.]
 
@@ -342,8 +342,8 @@ only:
 ```text
 🏗️ Architecture
 
-Decision:
-🏗️ Restructure architecture recommended.
+Decision 3️⃣:
+[Restructure architecture recommended.]
 
 Why: [one short reason.]
 
