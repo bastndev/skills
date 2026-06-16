@@ -27,7 +27,7 @@
   
   ───────────────────────────────────────────────────────────────────────
   
-  ⚠️ Findings / sujestions:
+  ⚠️ Findings / sugestions:
   
   🔴 Confirmed Bugs
   
@@ -46,7 +46,7 @@
     03. """
     04. """
 
-  🟢 Sujerencia (optional)
+  🟢 Sugestions (optional)
 
     01. "text here..."
     02. """
