@@ -27,32 +27,54 @@
   
   ───────────────────────────────────────────────────────────────────────
   
-  ⚠️ Findings / sugestions:
+  ⚠️ Findings /  Suggestions:
   
-  🔴 Confirmed Bugs
-  
+  🔴 Bugs
+
+    00. --- --- --- .
+
+  🟡 Debt/Risks
+
     01. Example error information (brew not so long just really important points).
-
-  🟠 Risks
-  
-    01. "text here..."
-    02. """
-    03. """
-
-  🟡 Not burning
-
-    01. "text here..."
     02. """
     03. """
     04. """
 
-  🟢 Sugestions (optional)
+  🟢 Suggestions (optional)
 
     01. "text here..."
     02. """
     03. """
     04. """
    
+
+---
+⚠️ Findings / Suggestions:
+
+🔴 Bugs
+
+    00. --- --- --- .
+
+🟡 Debt/Risks
+
+1. Extension mode detection contains redundant logic and an unreachable fallback path, making future VS Code changes harder to detect.
+
+2. Workspace paths are shortened to project names, which can display incorrect locations when multiple workspaces share the same folder name.
+
+3. File listing generates synthetic directory entries that may create duplicates or confusing results in the @-mention picker.
+
+4. CliHubViewProvider concentrates too many responsibilities in a single class, increasing coupling and long-term maintenance costs.
+
+5. HTML template replacement relies on manual `replace()` calls, which may miss repeated placeholders and cause subtle rendering issues.
+
+🟢 Suggestions (optional)
+
+1. Make `_extensionContext` required instead of optional to simplify the codebase and remove defensive fallbacks.
+
+2. Move `serializeJsonForHtmlScript()` into a shared utility module to reduce the size and responsibility of `main.ts`.
+
+3. Keep `extension.ts` unchanged; its implementation is already clean and follows VS Code best practices.
+
 
   ───────────────────────────────────────────────────────────────────────
   
