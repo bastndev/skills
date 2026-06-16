@@ -21,11 +21,14 @@
 <br>
 
 <p align="center">
-  <strong>Agent skills for the complete project lifecycle.</strong><br><br>
   Bootstrap new projects with confidence. Iteratively refine and harden them as they grow. Perform deep, safe refactoring when the architecture needs to evolve.
 </p>
 
-[![skills.sh](https://skills.sh/b/bastndev/skills)](https://skills.sh/bastndev/skills)
+<p align="center">
+  <a href="https://skills.sh/bastndev/skills">
+    <img src="https://skills.sh/b/bastndev/skills" alt="skills.sh">
+  </a>
+</p>
 
 ## The Three Phases
 
