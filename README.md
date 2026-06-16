@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/logo.webp" width="140" />
+  <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/logo.webp" width="180" />
 </p>
 
 <h1 align="center">Start / Middle / End</h1>
@@ -26,7 +26,7 @@
 
 <p align="center">
   <a href="https://skills.sh/bastndev/skills">
-    <img src="https://skills.sh/b/bastndev/skills" alt="skills.sh">
+    <img src="https://img.shields.io/badge/skills.sh-bastndev%2Fskills-orange?style=flat-square" alt="skills.sh">
   </a>
 </p>
 
