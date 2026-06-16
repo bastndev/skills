@@ -22,6 +22,7 @@ I already understand your project: F1 is a VS Code extension providing a CLI Hub
 1. The _getAgentLaunchExtensionMode() method (main.ts:205) maps vscode.ExtensionMode to a string literal — a simple lookup or const object would be cleaner.
 2. tools.ts:60 has inconsistent indentation (tabs) compared to the rest of the codebase (2-space).
 3. Consider adding noFallthroughCasesInSwitch and noUnusedParameters to tsconfig.json (currently commented out) to catch more bugs at compile time.
+
 🏗️ Architecture Decision
 📐 Improvement Refactor Only
 Reason: The architecture is sound — clear separation between extension host, PTY subprocess, and webview; clean two-phase UI; well-scoped tool modals. The issues are localised (typos, duplication, one god class) and don't warrant restructuring.
