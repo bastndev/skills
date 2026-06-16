@@ -135,10 +135,11 @@ assumption as a confirmed bug.
   higher level. They do not affect current stability or operation; implementation
   is completely optional and aimed at adding extra value.
 
-Every finding must cite concrete evidence: exact file path, the
-function/class/component/hook/service/module name, and a line or range when
-possible. No vague findings ("bad architecture", "poor performance") without a
-specific code reference. For every confirmed bug assign a severity:
+Every finding must be based on concrete evidence from inspected code: exact file
+path, function/class/component/hook/service/module name, and a line or range
+when possible. Use that evidence to choose the finding, but keep the visible
+Findings list short and plain. No vague findings ("bad architecture", "poor
+performance"). For every confirmed bug assign a severity:
 
 * **Critical** — security holes, data loss, crashes, or anything blocking work.
 * **Non-critical** — incorrect but contained behavior.
@@ -251,23 +252,41 @@ Max 3 lines. Mention only the authorized scope, key entry points, and constraint
 that justify the findings and plan. Do not explain the full product, pitch what
 it does, or restate obvious details the maintainer already knows.
 
-### ⚠️ Findings
+### Findings / Suggestions Block
 
-Group under the three headers below. Each finding uses this shape, max 3 short
-lines (no long paragraphs). If a category is empty, write
-`None found in the authorized scope.`
+Use this compact display format exactly. Do not add a separate Markdown heading
+above it. Do not use bullets, code-reference headings, or `Problem` / `Impact` /
+`Recommendation` sublines here.
 
 ```text
-- `path/file:function-or-module`
-  Problem: [specific issue with concrete evidence]
-  Impact: [actual or potential consequence]
-  Recommendation: [specific fix]
+⚠️ Findings / Suggestions:
+
+🔴 Bugs
+
+  00. --- --- ---.
+
+🟡 Debt / Risks
+
+  01. [short direct finding.]
+  02. [short direct finding.]
+
+🟢 Suggestions (Optional)
+
+  01. [short optional suggestion.]
+  02. [short optional suggestion.]
 ```
 
-* **🔴 Confirmed Bugs** — append severity to the recommendation:
-  `— [critical | non-critical → phase N]`
-* **🟡 Debt/Risks**
-* **🟢 Suggestions**
+Rules:
+
+* Use two-digit numbering: `01.`, `02.`, `03.`.
+* If a category has no items, write exactly `00. --- --- ---.`
+* **🔴 Bugs** contains confirmed incorrect behavior only. Add `critical` or
+  `non-critical` only when a real bug is listed.
+* **🟡 Debt / Risks** shows only the top 3–5 items, ordered by practical
+  refactor value.
+* **🟢 Suggestions (Optional)** shows max 3 optional improvements.
+* Each item must be one short sentence. Prefer simple maintainer-facing language
+  over file paths unless a path is necessary to avoid ambiguity.
 
 ### 🏗️ Architecture Decision
 
@@ -338,19 +357,19 @@ What was **not** analyzed and why (areas, not already-reported findings):
 - Dependency upgrades — not authorized.
 ```
 
-### 🚀 Ready When You Are
+### Closing Prompt
 
 End every analysis with:
 
 ```text
-No files were modified.
+Any questions?
+If not, I'll start the refactor.
 
-Recommended decision: [Improvement Refactor Only | Restructure Architecture].
-Reason: [short reason].
-Recommended first phase: [phase name].
-
-🚀 Ready when you are — say `go`, `start`, or `proceed` to begin Phase 1.
+🚀 Ready when you are.
 ```
+
+Do not repeat the readiness line. Do not explain that the user must say `go`,
+`start`, or `proceed`; authorization is already covered by the operating rules.
 
 ### ✅ Per-Phase Report
 

@@ -1,0 +1,246 @@
+📊 [end] Health Overview — 79 / 100
+  
+  🔴 Bugs [0]    🟡 Debt/Risks [5]    🟢 Suggestions [3]
+  
+  🏗️ Architecture     8/10
+  🧩 Maintainability  7/10
+  ⚡ Performance       8/10
+  🔒 Security          7/10
+  📚 Documentation     5/10
+  
+  🔍 Project Understanding
+  
+  I already understand your project: a VS Code extension with a
+  two-phase webview
+  (fuzzy launcher → xterm.js terminal hub) that manages multiple AI CLI
+  sessions
+  via a node-pty subprocess (pty-host), plus host-side tools for
+  translation,
+  TTS, spellcheck, and image attachments.
+  Entry points: src/extension.ts → src/clihub/main.ts (host),
+  src/clihub/index.ts
+  (launcher webview), src/clihub/webview/ui/panel-terminal/terminal.ts
+  (terminal
+  webview), src/clihub/webview/core/terminal-cli/pty-host.ts (IPC child
+  process).
+  Key constraint: four separate esbuild targets; shared types cannot
+  import
+  host-only or browser-only APIs.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  ⚠️ Findings / Suggestions
+  
+  ⚠️ Findings / Suggestions:
+  
+  🔴 Bugs
+  
+  00. --- --- ---.
+  
+  🟡 Debt/Risks
+  
+  1. `getAgentSlug` is duplicated verbatim in `src/clihub/index.ts` and
+     `src/clihub/webview/ui/panel-terminal/terminal.ts` — any new agent
+  requires
+     two edits and the functions can silently diverge (index.ts returns
+  `''`
+     on no-match; terminal.ts returns `'default'`).
+  
+  2. `main.ts` has grown to ~500 lines, mixing HTML generation, message
+  dispatch,
+     voice, translation, spellcheck, workspace listing, and clipboard
+  into a
+     single class — high change frequency and cognitive load for any
+  future
+     feature work.
+  
+  3. `launcherAgents` (main.ts) and `cliAgents` (agents.ts) are parallel
+  arrays
+     that must be kept in sync manually; adding a new agent requires
+  edits in
+     both plus `getAgentSlug` in two files, the icon folder, and
+  cli-installers —
+     four separate locations with no compile-time guard if one is
+  missed.
+  
+  4. `_handleWorkspaceListFiles` builds the directory list by deriving
+  parent
+     paths from file paths in JS rather than using
+  `vscode.workspace.fs.readDirectory`,
+     causing unnecessary work and making the dir list unreliable for
+  empty directories.
+  
+  5. Translation and image-save requests in `main.ts` use `any` casts
+     (`ctx ... as any`) and absence of an `_extensionContext` guard on
+     `preparePromptForCLI` — if the provider is ever constructed without
+  a context
+     the call reaches `vscode.workspace.fs` with
+  `undefined.globalStorageUri`
+     and throws at runtime.
+  
+  🟢 Suggestions (optional)
+  
+  1. The `CliHubMessage` type in `main.ts` uses all-optional fields,
+  making every
+     handler do its own field-type-narrowing; a discriminated union
+  (matching the
+     already-typed `ClientMessage` in terminal.ts) would remove that
+  boilerplate.
+  
+  2. `ARCHITECTURE.md` and `README.md` are empty files — filling them in
+  would
+     significantly lower onboarding cost given how non-obvious the
+  two-phase
+     webview and four build-target setup is.
+  
+  3. The `tsconfig.json` has `noImplicitReturns`,
+  `noFallthroughCasesInSwitch`,
+     and `noUnusedParameters` commented out — enabling them would catch
+  classes
+     of bugs for free during type-check.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🏗️ Architecture Decision
+  
+  📐 Improvement Refactor Only
+  
+  Reason: The four-target build split, PTY subprocess isolation, and
+  host/webview message boundary are sound architectural decisions.
+  Issues are
+  internal to existing modules — duplicated logic, an oversized class,
+  and
+  parallel data tables — not structural problems.
+  
+  Adjustments:
+  - Extract a shared `getAgentSlug` utility into a file importable by
+  both
+    launcher and terminal bundles, or consolidate the slug map in
+  `agents.ts`.
+  - Break `CliHubViewProvider` into focused handler modules (voice,
+  translation,
+    workspace, prompt) that the provider delegates to.
+  - Merge `launcherAgents` and `cliAgents` (or derive one from the
+  other) so
+    a single source of truth drives both the launcher UI and the PTY
+  session.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🗺️ Proposed Plan
+  
+  Phase 1 — Consolidate agent registry
+  
+  Goal: Single source of truth for agent metadata (command, icon,
+  aliases, slug,
+        installer) so adding a new agent is one edit, not four.
+  
+  Affected files: 5
+  - `src/clihub/webview/core/terminal-cli/agents.ts`
+  - `src/clihub/main.ts`
+  - `src/clihub/index.ts`
+  - `src/clihub/webview/ui/panel-terminal/terminal.ts`
+  - `src/clihub/webview/core/terminal-cli/data/cli-installers.ts`
+  
+  Why now: All subsequent phases touch agent data; a unified registry
+  makes
+           them cheaper. Also eliminates the divergent `getAgentSlug`
+  return
+           values ('default' vs '') which is the closest thing to a
+  silent bug.
+  
+  Validation: typecheck · lint · manual smoke (F5, open two agents)
+  
+  Phase 2 — Decompose CliHubViewProvider
+  
+  Goal: Extract the five handler concerns (translation, voice,
+  workspace,
+        prompt/spellcheck, HTML generation) from `main.ts` into focused
+        collaborator modules, reducing the class to a thin dispatcher.
+  
+  Affected files: 6
+  - `src/clihub/main.ts`
+  - `src/clihub/webview/core/tools-cli-core/modal-translation/` (new
+  host adapter)
+  - `src/clihub/webview/core/tools-cli-core/modal-voice/` (new host
+  adapter)
+  - `src/clihub/webview/core/tools-cli-core/prompt/` (new host adapter)
+  - `src/clihub/webview/core/terminal-cli/` (workspace handler)
+  - `src/clihub/webview/webview.ts` (HTML builder extraction)
+  
+  Why now: Once the registry is stable, the class decomposition has a
+  clean
+           foundation and reduces future change-scope per feature.
+  
+  Validation: typecheck · lint
+  
+  Phase 3 — Harden types and tsconfig
+  
+  Goal: Replace `CliHubMessage` all-optional bag with a discriminated
+  union,
+        remove the `any` cast in `_handlePromptPrepare`, and enable the
+  three
+        commented-out strict tsconfig flags.
+  
+  Affected files: 3
+  - `src/clihub/main.ts`
+  -
+  `src/clihub/webview/core/tools-cli-core/prompt/attachments/host-prepar
+  er.ts`
+  - `tsconfig.json`
+  
+  Why now: Safer to do after Phase 2 removes the mixed-dispatch handler
+  loop;
+           the discriminated union replaces the if-chain naturally at
+  that point.
+  
+  Validation: typecheck · lint
+  
+  Phase 4 — Fix workspace directory listing
+  
+  Goal: Replace the JS-derived directory set in
+  `_handleWorkspaceListFiles`
+        with a proper recursive `vscode.workspace.fs.readDirectory`
+  walk,
+        ensuring empty directories appear and reducing redundant
+  computation.
+  
+  Affected files: 1
+  - `src/clihub/main.ts`
+  
+  Why now: Isolated fix with no cross-cutting dependencies; last because
+  it
+           touches a single method that will have been extracted in
+  Phase 2.
+  
+  Validation: typecheck · manual verification (@ mention picker in
+  prompt modal)
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🚫 Out of Scope
+  
+  -
+  `src/clihub/webview/ui/panel-terminal/tools-cli-ui/modal-prompt/prompt
+  .ts`
+    (49 KB UI module) — not analyzed in detail; no cross-cutting issues
+  found
+    from its imports/exports that affect the plan.
+  - Test suite creation — no existing test structure found.
+  - Dependency upgrades — not authorized.
+  - `public/` and asset files — not source code.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🚀 Ready When You Are
+  
+  No files were modified.
+  
+  Recommended decision: Improvement Refactor Only.
+  Reason: Architecture is sound; issues are duplicated logic, an
+  oversized
+          class, and parallel data tables — not structural boundaries.
+  Recommended first phase: Consolidate agent registry.
+  
+  🚀 Ready when you are — say `go`, `start`, or `proceed` to begin Phase
+  1.

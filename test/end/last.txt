@@ -35,17 +35,16 @@
 
   🟡 Debt/Risks
 
-    01. Example error information (brew not so long just really important points).
-    02. """
-    03. """
-    04. """
+    01. Agregar  try cach, en esta funcion
+    02. correcion al hacer trnsicion no se  aplica globalmente
+    03. el color rojo que declaras no es rojo si no azul
+    04. tienes una funcion que no utilisas
 
   🟢 Suggestions (optional)
 
-    01. "text here..."
-    02. """
-    03. """
-    04. """
+    01. ahora puedes usar este neuvo packte mas moderno
+    02. si deceas los colores lo puedo hacer global.
+    03. puedo mejorar tu animacion/transicion 
    
 
 ---
@@ -181,3 +180,9 @@
   ───────────────────────────────────────────────────────────────────────
   
   🚀 Ready to Start when you are....
+
+Any questions?
+If not, I'll start the refactor.
+
+🚀 Ready when you are.
+
