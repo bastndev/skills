@@ -224,7 +224,7 @@ items there that you already reported as findings.
 ### 📊 Health Overview
 
 ```text
-🏆 ([project name]) Health Overview - [project type] — [score] / 100
+📊 Health Overview — [score] / 100
 
 🔴 Bugs [n]    🟡 Debt/Risks [n]    🟢 Suggestions [n]
 
@@ -235,16 +235,21 @@ items there that you already reported as findings.
 📚 Documentation     [x/10]
 ```
 
-Use the shortest accurate project type label, such as Extension, Web App,
-Library, CLI, API, Service, Package, or Mobile App. Derive the project name from
-package metadata, extension metadata, the workspace folder, or the user's
-provided scope. If existing tests are present, insert
-`🧪 Testing           [x/10]` before Documentation.
+Use this exact title shape; do not add the project name or project type here.
+If existing tests are present, insert `🧪 Testing           [x/10]` before
+Documentation.
 
 ### 🔍 Project Understanding
 
-Max 10 lines: main purpose · entry points · main modules · high-level data flow
-· relevant runtime/framework · important architectural boundaries.
+Keep this section short and useful to the maintainer. Start with:
+
+```text
+💡 I already understand your project: [brief refactor-relevant context].
+```
+
+Max 3 lines. Mention only the authorized scope, key entry points, and constraints
+that justify the findings and plan. Do not explain the full product, pitch what
+it does, or restate obvious details the maintainer already knows.
 
 ### ⚠️ Findings
 
