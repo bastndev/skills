@@ -1,6 +1,6 @@
-# bastndev/skills
+# Skills
 
-![banner](https://raw.githubusercontent.com/bastndev/skills/main/public/banner.webp)
+![banner](https://raw.githubusercontent.com/bastndev/skills/main/public/logo.webp)
 
 Agent skills for code refactoring workflows.
 
