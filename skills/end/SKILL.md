@@ -144,19 +144,26 @@ performance"). For every confirmed bug assign a severity:
 * **Critical** — security holes, data loss, crashes, or anything blocking work.
 * **Non-critical** — incorrect but contained behavior.
 
-### 9. Architecture decision (decide it yourself)
+### 9. Architecture (decide it yourself)
 
-After analyzing, recommend one direction. Do not ask the user to choose A/B.
+After analyzing, recommend one architecture outcome. Do not ask the user to
+choose A/B. Pick the smallest direction that solves the real issue.
 
-* **Improvement Refactor Only** — structure is solid; needs internal cleanup,
-  boundary/naming improvements, dependency cleanup, responsibility separation,
-  or debt reduction. Keep files in place; no unnecessary moves.
-* **Restructure Architecture** — only with clear reasons: poor scalability, weak
-  boundaries, excessive coupling, repeated architectural patterns, confusing
-  ownership, or high future development cost.
+* **✅ Architecture ok, ready for work.** — the current architecture is healthy;
+  refactoring can happen in place with no structural moves.
+* **📐 Small architecture adjustments needed.** — the architecture is decent,
+  but a few targeted structural changes would reduce maintenance cost: splitting
+  a very large file/class, moving code to a better existing owner, creating a
+  small helper/module, removing obsolete files, or consolidating duplicated
+  modules.
+* **🏗️ Restructure architecture recommended.** — the current structure harms
+  maintainability, scalability, performance, UI evolution, or future development
+  cost through weak boundaries, unclear ownership, repeated patterns, or
+  excessive coupling.
 
-Use these two exact labels everywhere. When restructuring, the move/rename work
-becomes its own dedicated phase and must never mix structure changes with logic
+Use these exact decision lines in the report. Add one short reason for the
+choice. If files or directories must move, be created, or be deleted, keep that
+architecture work in its own phase and do not mix structure changes with logic
 changes. Never force hexagonal, clean architecture, MVC, or any pattern unless
 the project clearly benefits.
 
@@ -288,46 +295,73 @@ Rules:
 * Each item must be one short sentence. Prefer simple maintainer-facing language
   over file paths unless a path is necessary to avoid ambiguity.
 
-### 🏗️ Architecture Decision
+### 🏗️ Architecture
 
-Lead with the chosen label in bold, then the reason.
+Use this section title exactly: `🏗️ Architecture`. Do not call it
+`Architecture Decision`. Start with `Decision:` and keep the explanation short.
 
-If **📐 Improvement Refactor Only**:
-
-```text
-📐 Improvement Refactor Only
-
-Reason: [short reason based on the actual project]
-
-Adjustments:
-- [specific adjustment 1]
-- [specific adjustment 2]
-- [specific adjustment 3]
-```
-
-If **🏗️ Restructure Architecture**, give the reason, then both trees:
+If the architecture is already good:
 
 ```text
-🏗️ Restructure Architecture
+🏗️ Architecture
 
-Reason: [why the current structure limits the project]
+Decision:
+✅ Architecture ok, ready for work.
+
+Why: [one short reason.]
 ```
 
-#### Current Structure
+If only small structural adjustments are useful, show only the affected paths:
 
 ```text
-[ASCII tree of the current relevant directories]
+🏗️ Architecture
+
+Decision:
+📐 Small architecture adjustments needed.
+
+Why: [one short reason.]
+
+Before:
+
+src/
+├── feature-a/
+└── large-file.ts
+
+After:
+
+src/
+├── feature-a/
+│   ├── index.ts
+│   └── helpers.ts              # extracted from large-file.ts
+└── large-file.ts               # smaller owner
 ```
 
-#### Proposed Structure
+If the project needs a real architecture change, show the proposed structure
+only:
 
 ```text
-[ASCII tree of the proposed structure, with `# was ...` notes on moves]
+🏗️ Architecture
+
+Decision:
+🏗️ Restructure architecture recommended.
+
+Why: [one short reason.]
+
+Proposed structure:
+
+src/
+├── core/                       # shared foundations
+├── features/                   # feature-owned modules
+├── shared/                     # reusable UI/helpers
+├── infrastructure/             # external services/config
+└── app/                        # startup/routes/bootstrap
 ```
 
-Tree rules: show only relevant directories and key entry files (not every
-file); mark moves/renames with `# was src/x`; the restructure is its own phase
-with no logic changes mixed in.
+Rules: keep `Why` to one sentence; omit trees for the architecture-ok case;
+for small adjustments, show `Before` and `After`; for full restructuring, show
+only `Proposed structure`. Show only relevant directories and key files, not the
+whole project. Mark moves or extractions with `# was ...` or `# extracted from
+...` when useful.
 
 ### 🗺️ Proposed Plan
 
