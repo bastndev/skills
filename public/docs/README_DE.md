@@ -36,43 +36,49 @@
 | --- | --- | --- | --- | --- |
 | **Start** | Projektinitialisierung | Erstellen produktionsbereiter Ordnerstrukturen, Initialisieren von Frameworks, Anwenden von Best-Practice-Standards ab dem ersten Commit. | `start-nextjs`, `start-vite`... | Geplant |
 | **Middle** | Kontinuierliche Verbesserung | Verbessern von UI/UX, Erhöhen der Sicherheit, Steigern der Leistung, Bereinigen von Logik, Entfernen von totem Code. | Gezielt (TBD) | Geplant |
-| **End** | Audit & Refaktorierung | Vollständige Architektur- & Qualitätsanalyse. Priorisierter Stufenplan, der **nur mit expliziter Genehmigung** ausgeführt wird. | `refactor-project` | ✅ |
+| **End** | Audit & Refaktorierung | Vollständige Architektur- & Qualitätsanalyse. Priorisierter Stufenplan, der **nur mit expliziter Genehmigung** ausgeführt wird. | `refactor-project` | ✅ Verfügbar |
 
 ## Verfügbare Skills
 
 | Skill | Beschreibung |
 | --- | --- |
-| **[end](../../skills/end)** | **`refactor-project`** — Versteht Ihr Projekt von A bis Z. Liefert eine klare Diagnose mit konkreten Referenzen. Empfiehlt die richtige Architekturrichtung und erstellt einen geordneten Ausführungsplan. Sie behalten die volle Kontrolle. |
+| **[end](../../skills/end/README.md)** | **`refactor-project`** — Versteht Ihr Projekt von A bis Z. Liefert eine klare Diagnose mit konkreten Referenzen. Empfiehlt die richtige Architekturrichtung und erstellt einen geordneten Ausführungsplan. Sie behalten die volle Kontrolle.<br><br>→ [Vollständige Dokumentation & Beispiele](../../skills/end/README.md) |
+
+> **Hinweis:** Jeder Skill verfügt über eine eigene detaillierte README. Die Startseite bietet einen groben Überblick; schau in `../../skills/<skill>/README.md` für detaillierte Nutzung, Berichtbeispiele und Garantien.
 
 ## Installation
 
 ```bash
-# Aktuellen Skill hinzufügen (End / refactor-project)
+# Installiere den End-Skill (refactor-project)
 npx skills add bastndev/skills --skill end
 ```
 
-Zukünftige Skills werden auf die gleiche Weise installiert:
+Zusätzliche Skills (sobald veröffentlicht) werden auf die gleiche Weise installiert:
 
 ```bash
 npx skills add bastndev/skills --skill start-nextjs
-npx skills add bastndev/skills --skill middle-perf
 ```
 
 ## Wie der End-Skill funktioniert
 
-1. **Nur Analyse** — Kartiert Einstiegspunkte, versteht die Struktur. **Keine Änderungen.**
-2. **Strukturierter Bericht** — Erkenntnisse werden in Bugs, Risiken, Chancen und technische Schulden unterteilt.
-3. **Maßgeschneiderter Plan** — Phasen werden nach echtem Wert für Ihr Projekt geordnet.
-4. **Schritt-für-Schritt** — Führt _eine_ Phase nach Ihrer Autorisierung aus und stoppt.
-5. **Sicherheit geht vor** — Erstellt niemals Tests, wenn keine vorhanden waren. Fügt keine Abhängigkeiten ohne Erlaubnis hinzu.
+1. **Analyse zuerst** — Kartiert Einstiegspunkte und versteht das Projekt. **Es werden keine Dateien geändert.**
+2. **Strukturierter Bericht** — Klare Ergebnisse in vier Kategorien (Bestätigte Bugs mit Schweregrad, Risiken, Refactoring-Möglichkeiten, Technische Schulden) + eine Architekturempfehlung und ein geordneter Plan. Alle Einträge enthalten konkrete Datei- und Zeilenreferenzen.
+3. **Sie autorisieren jede Phase** — Es wird **genau eine Phase** auf einmal ausgeführt. Nach jeder Phase erhalten Sie eine genaue Zusammenfassung der Änderungen, durchgeführten Validierungen und die Liste der verbleibenden Phasen.
+4. **Volle Kontrolle & Sicherheit** — Erstellt niemals Tests, wenn das Projekt keine hatte. Fügt ohne Erlaubnis keine Abhängigkeiten hinzu oder ändert den Paketmanager. Respektiert Ihre nicht committete Arbeit und behält immer das aktuelle Verhalten bei, es sei denn, ein gerechtfertigter Bug wird behoben.
 
-Vollständige Spezifikation unter [skills/end/SKILL.md](../../skills/end/SKILL.md).
+Für den vollständigen Workflow, genaue Berichtsformate (einschließlich der erforderlichen Abschlussblöcke), Architektur-Entscheidungsregeln und alle Sicherheitsgarantien lesen Sie die dedizierte Skill-Dokumentation:
+
+→ **[End – Refactor Project](../../skills/end/README.md)**
+
+Die vollständige interne Spezifikation finden Sie in [skills/end/SKILL.md](../../skills/end/SKILL.md).
 
 ## Roadmap
 
-- **Start**-Familie: Ein-Klick-Projektgeneratoren für beliebte Stacks.
-- **Middle**-Familie: Fokussierte Verbesserungsexperten.
-- Erweiterte **End**-Fähigkeiten und zusätzliche Sprachunterstützung.
+- **Start-Skills** — Ein-Befehl-Projekt-Scaffolding für beliebte Stacks (Next.js, Vite, FastAPI, etc.)
+- **Middle-Skills** — Fokussierte On-Demand-Verbesserer (Leistung, Sicherheit, UX, Entfernung toten Codes, etc.)
+- **End-Erweiterungen** — Mehr Runtimes, zusätzliche spezialisierte Refactoring-Modi und Dienstprogramme.
+
+Jeder Skill hat seine eigene dedizierte Dokumentation (wie das aktuelle [End – Refactor Project](../../skills/end/README.md)).
 
 ---
 
