@@ -1,5 +1,5 @@
 ---
-name: refactor-project
+name: end
 description: "Analyzes the project's architecture, structure, and code quality. Builds a phased refactoring plan and applies changes only with explicit authorization."
 license: MIT
 metadata:
