@@ -1,0 +1,264 @@
+📊 health overview  — 79 / 100
+  
+  🔴 Bugs [1]    🟡 Debt/Risks [6]    🟢 Suggestions [3]
+  
+  🏗️ Architecture     8/10
+  🧩 Maintainability  7/10
+  ⚡ Performance       8/10
+  🔒 Security          7/10
+  📚 Documentation     4/10
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🔍 Project Understanding
+  
+  F1 is a VS Code extension with a single activation point
+  (src/extension.ts) that registers a CliHubViewProvider webview panel.
+  The extension operates across two phases: a fuzzy-search launcher
+  (src/clihub/index.ts + index.html) and a full terminal view
+  (src/clihub/webview/). A PTY host subprocess (pty-host.ts) owns
+  node-pty and communicates with the extension host via Node.js IPC. The
+  extension host acts as a middleware hub: it handles translation
+  (MyMemory + Google), TTS (Spanish voice), spellcheck (cspell), image
+  attachment preparation, workspace file listing, and agent launch
+  guards — all via postMessage protocol. Four separate esbuild targets
+  compile: the extension itself, the launcher IIFE, the terminal IIFE,
+  and the pty-host CJS module. No test suite exists.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  ⚠️ Findings
+  
+  🔴 Confirmed Bugs
+  
+  - src/clihub/main.ts:_handleWorkspaceListFiles
+  
+    Problem: const isDirectory = false is hardcoded — file entries never
+  carry isDirectory: true; only the derived dirs Set gets that flag, but
+  files that are directories (if findFiles somehow returns a dir URI)
+  are misclassified, and the comment notes findFiles only returns files
+  while the code then separately builds a directory list from path
+  parsing.
+    Impact: Non-critical: the webview's @-mention file picker receives
+  inconsistent isDirectory values if the heuristic ever diverges from
+  actual filesystem structure. — non-critical → phase 2
+  
+  🟡 Debt/Risks
+  
+  - src/clihub/main.ts:_getAgentHtmlForWebview / _getHtmlForWebview
+  
+    Problem: HTML string templates are built with manual
+  replace('${key}', ...) calls using regex-unsafe literal strings.
+  index.html file is read with fs.readFileSync at runtime (blocking I/O
+  on the extension host thread) on every launcher render.
+    Impact: Any key collision or template typo silently produces
+  malformed HTML; blocking read can stall the UI on slower disks.
+  
+  - src/clihub/main.ts:CliHubMessage type
+  
+    Problem: All 12+ message types share a single flat union type with
+  every possible field marked optional. There is no discriminated union.
+    Impact: Every handler must manually narrow message.type and then
+  cast/assume fields; TypeScript cannot enforce that prompt.translate
+  always has text, or that cli.input always has data. Bugs introduced in
+  new message types are invisible at compile time.
+  
+  - src/clihub/main.ts:_getWorkspacePath
+  
+    Problem: Returns ~/projectName (basename only) regardless of actual
+  workspace structure. Comment in _getHtmlForWebview inserts this as a
+  display value without escaping beyond what escapeHtml would do, yet
+  this path is also injected into the terminal HTML as workspacePath and
+  used by the CLI itself.
+    Impact: If the workspace folder name contains shell-special
+  characters, the display path passed to the agent shell could cause
+  confusion or misinterpretation.
+  
+  -
+  src/clihub/webview/core/terminal-cli/session-manager.ts:getPtyHostPath
+  
+    Problem: Uses __dirname to resolve the pty-host path, which points
+  to the extension bundle's dist/ output directory. This is fragile: if
+  the dist layout changes or the extension runs from a different CWD,
+  the path silently resolves incorrectly.
+    Impact: Silent failure launching any PTY session; the error message
+  reveals an internal path.
+  
+  - src/clihub/webview/core/terminal-cli/installation.ts:commandExists
+  
+    Problem: On Unix, the shell command uses string interpolation with
+  replace(/'/g, "'\\''") to escape the command name, but the entire
+  expression is passed to sh -lc as a single argument string — a further
+  outer quote level is not applied, so a command name containing special
+  shell metacharacters (e.g. $(...)) could execute arbitrary shell code.
+    Impact: Low-risk in practice (agent labels are hardcoded), but a
+  latent injection risk if agent.command is ever sourced from
+  user-controlled input.
+  
+  - src/tsconfig.json — noImplicitReturns, noUnusedParameters,
+  noFallthroughCasesInSwitch are all commented out.
+  
+    Problem: The compiler allows implicit undefined returns and unused
+  parameters across all source files; combined with the lax eslint
+  config (only 4 rules), there is minimal static enforcement.
+    Impact: Increases risk of silent bugs in message handler dispatch
+  and session lifecycle code.
+  
+  🟢 Suggestions
+  
+  - src/clihub/main.ts — The class is ~480 lines and owns launcher HTML
+  building, agent HTML building, 8 distinct message handlers, voice
+  state, translation, spellcheck, workspace listing, and session
+  lifecycle. It could be split into a thin CliHubViewProvider (routing
+  only) and dedicated handler modules without changing behavior.
+  - src/clihub/index.ts — The launcher file contains both the
+  CliHubViewProvider-side types (VsCodeApi, LauncherModel, etc.) and all
+  the browser-side launcher logic in the same file (combined ~700
+  lines). Splitting the type declarations and the getAgentSlug utility
+  (duplicated verbatim from terminal.ts) into shared modules would
+  eliminate the duplication.
+  - src/clihub/webview/core/terminal-cli/agents.ts +
+  src/clihub/main.ts:launcherAgents — Two parallel agent lists must be
+  kept in sync by hand. launcherAgents adds icon/alias metadata that
+  cliAgents omits. Merging them into a single source of truth (with
+  optional UI fields) would remove the maintenance burden and the
+  "Adding a new CLI agent" 5-step manual process.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🏗️ Architecture Decision
+  
+  📐 Improvement Refactor Only
+  
+  Reason: The overall architecture is sound — the two-phase webview, IPC
+  subprocess, and
+  message protocol are well-designed and intentional. The problems are
+  internal: a
+  single oversized host class, duplicated agent data, weak message
+  typing, and a handful
+  of implementation-level risks. No structural reorganization is needed.
+  
+  Adjustments:
+  - Introduce discriminated union message types to replace the flat
+  CliHubMessage bag.
+  - Split launcherAgents and cliAgents into one merged agents registry.
+  - Break CliHubViewProvider's message handlers into dedicated handler
+  functions/modules.
+  - Enable stricter tsconfig checks (noImplicitReturns,
+  noUnusedParameters).
+  - Replace blocking fs.readFileSync for index.html with a one-time
+  cached read.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🗺️ Proposed Plan
+  
+  Phase 1 — Merge agent registries & eliminate duplication
+  
+  Goal: Combine cliAgents and launcherAgents into a single source of
+  truth,
+  removing the manual 5-step "add a new agent" process and the
+  duplicated
+  getAgentSlug function between index.ts and terminal.ts.
+  
+  Affected files: 4
+  - `src/clihub/webview/core/terminal-cli/agents.ts`
+  - `src/clihub/main.ts`
+  - `src/clihub/index.ts`
+  - `src/clihub/webview/ui/panel-terminal/terminal.ts`
+  
+  Why now: This is the smallest, most self-contained change and unlocks
+  all
+  subsequent work without touching any message-handling logic.
+  
+  Validation: typecheck (tsc --noEmit), lint (eslint src)
+  
+  Phase 2 — Introduce discriminated union message types
+  
+  Goal: Replace the flat CliHubMessage type with a proper discriminated
+  union
+  so TypeScript enforces correct field presence per message type. Also
+  fix
+  the non-critical isDirectory bug in _handleWorkspaceListFiles.
+  
+  Affected files: 2
+  - `src/clihub/main.ts`
+  - `src/clihub/webview/core/terminal-cli/session-manager.ts`
+  
+  Why now: Once agent data is consolidated, the message types are the
+  next
+  biggest source of invisible correctness risk.
+  
+  Validation: typecheck, lint
+  
+  Phase 3 — Decompose CliHubViewProvider message handlers
+  
+  Goal: Extract each _handle* method from CliHubViewProvider into
+  standalone
+  handler functions in dedicated files under a new host-handlers/
+  directory.
+  The provider becomes a thin router.
+  
+  Affected files: 6–8
+  - `src/clihub/main.ts`
+  - `src/clihub/host-handlers/translate.ts` (new)
+  - `src/clihub/host-handlers/voice.ts` (new)
+  - `src/clihub/host-handlers/prompt.ts` (new)
+  - `src/clihub/host-handlers/workspace.ts` (new)
+  
+  Why now: Types are now correct, making extraction safe and easy to
+  verify.
+  
+  Validation: typecheck, lint, manual F5 launch in Extension Development
+  Host
+  
+  Phase 4 — Tighten build & TypeScript config
+  
+  Goal: Enable noImplicitReturns, noFallthroughCasesInSwitch in
+  tsconfig.json;
+  replace blocking fs.readFileSync for index.html with a lazily cached
+  read;
+  fix getPtyHostPath to use a config constant rather than __dirname
+  heuristic.
+  
+  Affected files: 3
+  - `tsconfig.json`
+  - `src/clihub/main.ts`
+  - `src/clihub/webview/core/terminal-cli/session-manager.ts`
+  
+  Why now: Clean-up phase; earlier work already eliminated the
+  implicit-return
+  patterns that would have triggered new errors.
+  
+  Validation: typecheck, lint
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🚫 Out of Scope
+  
+  - `src/clihub/webview/ui/` (terminal.ts, prompt.ts, translator.ts,
+  tab.ts) — UI/browser-side logic; not in the authorized scope
+  (src/extension.ts entry point and its host-side imports).
+  -
+  `src/clihub/webview/core/tools-cli-core/modal-voice/host-voice-tts.ts`
+  — analyzed for context only; no changes planned.
+  - Test suite creation — no existing test structure found.
+  - Dependency upgrades — not authorized.
+  - `.vscodeignore`, `esbuild.js` — build tooling, no changes needed.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🚀 Ready When You Are
+  
+  No files were modified.
+  
+  Recommended decision: Improvement Refactor Only.
+  Reason: Architecture is well-structured; problems are scoped to data
+  duplication,
+  message type safety, handler organization, and minor implementation
+  risks.
+  Recommended first phase: Merge agent registries & eliminate
+  duplication.
+  
+  🚀 Ready when you are — say `go`, `start`, or `proceed` to begin Phase
+  1.

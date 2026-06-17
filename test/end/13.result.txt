@@ -1,0 +1,161 @@
+📊 [end] Health Overview — 78 / 100
+  
+  🔴 Bugs [0]    🟡 Debt/Risks [5]    🟢 Suggestions [3]
+  
+  🏗️ Architecture     8/10
+  🧩 Maintainability  7/10
+  ⚡ Performance       8/10
+  🔒 Security          7/10
+  📚 Documentation     5/10
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🔍 Project Understanding
+  
+  I already understand your project: a VS Code extension (F1) with a CLI
+  Hub panel that
+  embeds multiple AI coding CLIs in xterm.js terminals. Entry points:
+  src/extension.ts →
+  src/clihub/main.ts (host), src/clihub/index.ts (launcher webview),
+  terminal.ts + webview.ts
+  (terminal phase). Four esbuild targets; node-pty is isolated in a
+  subprocess (pty-host.ts).
+  The main maintainability pressure is main.ts (600+ lines, ~15 message
+  handlers) and the
+  duplicated getAgentSlug function across two files.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  ⚠️ Findings / Suggestions:
+  
+  🔴 Bugs
+  
+    00. --- --- --- --- --- --- --- --- --- --- ---.
+  
+  🟡 Debt / Risks
+  
+    01. main.ts is a 600-line God class handling webview lifecycle, 8+
+  message types,
+        voice, translation, spellcheck, files, skills, and HTML
+  generation — high change
+        friction and test surface.
+    02. getAgentSlug is duplicated verbatim in src/clihub/index.ts and
+  terminal.ts; slug
+        mappings will drift as new agents are added.
+    03. launcherAgents in main.ts and cliAgents in agents.ts are
+  parallel arrays that must
+        stay manually in sync (label, command, icon, installer) with no
+  enforcement.
+    04. _handleWorkspaceListFiles builds directory entries with a nested
+  forEach+while loop
+        rebuilding all parent paths per file — O(n·d) work done on the
+  extension host for
+        every @-mention open.
+    05. install scripts in cli-installers.ts are fetched/piped through
+  sh/bash/powershell
+        without integrity checks (no hash, no HTTPS-only enforcement for
+  Windows commands).
+  
+  🟢 Suggestions (Optional)
+  
+    01. ARCHITECTURE.md and README.md are empty; adding even 2–3 lines
+  to each would
+        meaningfully lower onboarding cost.
+    02. The `_getAgentLaunchExtensionMode` method in main.ts uses three
+  if-branches over an
+        enum; a single lookup object would be shorter and safer against
+  future modes.
+    03. The `as any` cast in `_handlePromptPrepare` (passing a fake
+  context when
+        _extensionContext is absent) silently swallows the
+  missing-context case instead of
+        surfacing it as an error.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🏗️ Architecture
+  
+  Decision 2️⃣:
+  Small architecture adjustments needed.
+  
+  Why: The architecture is sound, but main.ts owns too many unrelated
+  responsibilities;
+  splitting message dispatch into a dedicated handler and isolating
+  agent metadata into one
+  shared source would reduce coupling with minimal structural change.
+  
+  Before:
+  
+  src/clihub/
+  ├── main.ts                          # 600 lines: provider + all
+  message handlers + HTML builder
+  ├── index.ts                         # contains getAgentSlug
+  (duplicated)
+  └── webview/ui/panel-terminal/
+      └── terminal.ts                  # contains getAgentSlug
+  (duplicated)
+  
+  After:
+  
+  src/clihub/
+  ├── main.ts                          # smaller: provider wiring + HTML
+  builder only
+  ├── message-handlers.ts (new)        # extracted: all
+  onDidReceiveMessage handler logic
+  ├── agent-registry.ts (new)          # extracted: single source for
+  label/slug/icon/command
+  ├── index.ts                         # imports getAgentSlug from
+  agent-registry
+  └── webview/ui/panel-terminal/
+      └── terminal.ts                  # imports getAgentSlug from
+  agent-registry
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🗺️ Proposed Plan
+  
+  Phase 1 — Extract shared agent-registry
+  Outcome: Single source of truth for agent slugs, labels, icons;
+  eliminates getAgentSlug duplication.
+  Files: `src/clihub/agent-registry.ts` (new), `src/clihub/main.ts`,
+  `src/clihub/index.ts`,
+         `src/clihub/webview/ui/panel-terminal/terminal.ts`
+  Check: bun run check-types && bun run lint
+  
+  Phase 2 — Extract message handlers from main.ts
+  Outcome: main.ts reduced to provider wiring + HTML; each handler is
+  independently readable.
+  Files: `src/clihub/message-handlers.ts` (new), `src/clihub/main.ts`
+  Check: bun run check-types && bun run lint
+  
+  Phase 3 — Fix O(n·d) directory-path expansion in
+  _handleWorkspaceListFiles
+  Outcome: Directory entries built in a single pass; no repeated string
+  splitting per file.
+  Files: `src/clihub/main.ts`
+  Check: bun run check-types && bun run lint
+  
+  Phase 4 — Fill ARCHITECTURE.md and README.md
+  Outcome: Minimal but accurate onboarding docs matching the real
+  structure.
+  Files: `ARCHITECTURE.md`, `README.md`
+  Check: manual review
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🚫 Out of Scope
+  
+  - src/clihub/webview/ui/panel-terminal/terminal.ts (34 KB) — deep
+  UI/xterm logic not analyzed line-by-line.
+  - src/clihub/webview/core/tools-cli-core/modal-voice/ — voice TTS
+  internals not analyzed.
+  - prompt.ts (49 KB) — prompt modal UI not analyzed.
+  - Test suite creation — no existing test structure found.
+  - Dependency upgrades — not authorized.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  Any questions?
+  If not, I'll start the refactor.
+  
+  🚀 Ready when you are.

@@ -1,6 +1,6 @@
 🏆 (F1) Health Overview - Extension — 74 / 100
   
-  🔴 Bugs [1]    🟠 Risks [3]    🟡 Debt [4]    🟢 Opportunities [4]
+  🔴 Bugs [1]     🟡 Debt/Risks [4]    🟢 Suggestions [4]
   
   🏗️ Architecture     8/10
   🧩 Maintainability  7/10
@@ -27,32 +27,53 @@
   
   ───────────────────────────────────────────────────────────────────────
   
-  ⚠️ Findings / sugestions:
+  ⚠️ Findings /  Suggestions:
   
-  🔴 Confirmed Bugs
-  
-    01. Example error information (brew not so long just really important points).
+  🔴 Bugs
 
-  🟠 Risks
-  
-    01. "text here..."
-    02. """
-    03. """
+    00. --- --- --- .
 
-  🟡 Not burning
+  🟡 Debt/Risks
 
-    01. "text here..."
-    02. """
-    03. """
-    04. """
+    01. Agregar  try cach, en esta funcion
+    02. correcion al hacer trnsicion no se  aplica globalmente
+    03. el color rojo que declaras no es rojo si no azul
+    04. tienes una funcion que no utilisas
 
-  🟢 Sugestions (optional)
+  🟢 Suggestions (optional)
 
-    01. "text here..."
-    02. """
-    03. """
-    04. """
+    01. ahora puedes usar este neuvo packte mas moderno
+    02. si deceas los colores lo puedo hacer global.
+    03. puedo mejorar tu animacion/transicion 
    
+
+---
+⚠️ Findings / Suggestions:
+
+🔴 Bugs
+
+    00. --- --- --- .
+
+🟡 Debt/Risks
+
+1. Extension mode detection contains redundant logic and an unreachable fallback path, making future VS Code changes harder to detect.
+
+2. Workspace paths are shortened to project names, which can display incorrect locations when multiple workspaces share the same folder name.
+
+3. File listing generates synthetic directory entries that may create duplicates or confusing results in the @-mention picker.
+
+4. CliHubViewProvider concentrates too many responsibilities in a single class, increasing coupling and long-term maintenance costs.
+
+5. HTML template replacement relies on manual `replace()` calls, which may miss repeated placeholders and cause subtle rendering issues.
+
+🟢 Suggestions (optional)
+
+1. Make `_extensionContext` required instead of optional to simplify the codebase and remove defensive fallbacks.
+
+2. Move `serializeJsonForHtmlScript()` into a shared utility module to reduce the size and responsibility of `main.ts`.
+
+3. Keep `extension.ts` unchanged; its implementation is already clean and follows VS Code best practices.
+
 
   ───────────────────────────────────────────────────────────────────────
   
@@ -159,3 +180,22 @@
   ───────────────────────────────────────────────────────────────────────
   
   🚀 Ready to Start when you are....
+
+Any questions?
+If not, I'll start the refactor.
+
+🚀 Ready when you are.
+
+
+  🔍 Project Understanding
+  
+  I already understand your project: a VS Code extension with a
+  two-phase webview — a fuzzy-search launcher (Phase 1) and an xterm.js
+  multi-session terminal hub (Phase 2). The extension host owns session
+  management, translation, spellcheck, and voice TTS; the PTY is
+  isolated in a child process. The main growth risk is main.ts (19 kB,
+  12 message types in one onDidReceiveMessage handler) and terminal.ts
+  (34 kB, single browser module).
+
+  Review Scope:  terminal.ts (34 kB), prompt.ts (49 kB) , CSS files, etc. 
+

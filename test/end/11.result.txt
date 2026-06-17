@@ -1,0 +1,169 @@
+ 📊 [end] Health Overview — 82 / 100
+  
+  🔴 Bugs [0]    🟡 Debt/Risks [4]    🟢 Suggestions [2]
+  
+  🏗️ Architecture     8/10
+  🧩 Maintainability  7/10
+  ⚡ Performance       8/10
+  🔒 Security          8/10
+  📚 Documentation     9/10
+  
+  🔍 Project Understanding
+  
+  I already understand your project: a VS Code extension (F1) providing
+  a CLI Hub webview panel
+  for managing multiple AI coding CLIs through embedded xterm.js
+  terminals.
+  Authorized scope: src/extension.ts (entry point) — analysis extended
+  to direct
+  dependents (main.ts, session-manager.ts, agents.ts, etc.) to
+  understand ownership and boundaries.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  ⚠️ Findings / Suggestions:
+  
+  🔴 Bugs
+  
+    00. --- --- ---.
+  
+  🟡 Debt / Risks
+  
+    01. `main.ts` has two separate agent lists (cliAgents in agents.ts +
+  launcherAgents in main.ts)
+        that must be kept in sync manually — a structural source of
+  drift with every new CLI added.
+    02. `main.ts` is 430+ lines mixing webview lifecycle, message
+  routing, HTML generation, workspace
+        utilities, and voice/translation coordination — single-class
+  God-object.
+    03. `_handleWorkspaceListFiles` builds a directory tree manually
+  from findFiles results using
+        two separate loops and a Set — unnecessarily complex and
+  allocates O(n) extra data structures.
+    04. HTML template injection in `_getHtmlForWebview` uses fragile
+  `html.replace('${key}', val)`
+        with no verification that placeholders exist — a silent failure
+  risk on any template change.
+  
+  🟢 Suggestions (Optional)
+  
+    01. `index.ts` (launcher webview) and `main.ts` each define an
+  independent `getAgentSlug` function
+        that maps labels to slugs — the logic could live in agents.ts
+  and be shared.
+    02. `getPtyHostPath` in session-manager.ts reconstructs the dist
+  path by appending 'clihub/...'
+        to `__dirname`, which is brittle if the output directory layout
+  changes; using the extensionUri
+        passed to CliSessionManager would be more robust.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🏗️ Architecture
+  
+  Decision:
+  📐 Small architecture adjustments needed.
+  
+  Why: CliHubViewProvider in main.ts has grown into a God object —
+  splitting out the
+  message handler and HTML builders reduces the file to a thin
+  coordinator without
+  any structural moves.
+  
+  Before:
+  
+  src/clihub/
+  ├── main.ts                    # 430+ lines: lifecycle + routing +
+  HTML + workspace + voice
+  └── webview/core/terminal-cli/
+      └── agents.ts              # cliAgents only
+  
+  After:
+  
+  src/clihub/
+  ├── main.ts                    # thin provider: resolveWebviewView +
+  dispose
+  ├── message-handler.ts         # extracted: onDidReceiveMessage
+  routing logic
+  ├── html-builder.ts            # extracted: _getHtmlForWebview +
+  _getAgentHtmlForWebview
+  └── webview/core/terminal-cli/
+      └── agents.ts              # + getAgentSlug (shared, removes
+  duplicate in index.ts)
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🗺️ Proposed Plan
+  
+  Phase 1 — Merge duplicate agent data
+  
+  Goal: Eliminate the dual-list maintenance burden by deriving
+  launcherAgents
+        from cliAgents or co-locating icon/alias metadata in agents.ts.
+  
+  Affected files: 3
+  - `src/clihub/webview/core/terminal-cli/agents.ts`
+  - `src/clihub/main.ts`
+  - `src/clihub/index.ts`  (move shared getAgentSlug here from both
+  files)
+  
+  Why now: This is the root cause of new-agent addition being
+  error-prone (5
+           manual steps in AGENTS.md); fixing it simplifies all
+  subsequent changes.
+  
+  Validation: typecheck (bun run check-types)
+  
+  ---
+  
+  Phase 2 — Simplify _handleWorkspaceListFiles
+  
+  Goal: Remove redundant manual directory derivation; use the file list
+  directly.
+  
+  Affected files: 1
+  - `src/clihub/main.ts`
+  
+  Why now: Quick, self-contained cleanup with no architectural impact —
+  good to
+           do before Phase 3 splits the file.
+  
+  Validation: typecheck (bun run check-types)
+  
+  ---
+  
+  Phase 3 — Split CliHubViewProvider (God object)
+  
+  Goal: Extract message routing and HTML builders into dedicated modules
+  so
+        main.ts is a thin coordinator.
+  
+  Affected files: 3 (new) + 1 (modified)
+  - `src/clihub/main.ts`           (reduced to provider shell)
+  - `src/clihub/message-handler.ts` (new — onDidReceiveMessage logic)
+  - `src/clihub/html-builder.ts`    (new — HTML generation helpers)
+  
+  Why now: Depends on Phase 1 data consolidation; doing it last avoids
+  moving
+           code that still contains the merged agent logic.
+  
+  Validation: typecheck + lint (bun run compile)
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🚫 Out of Scope
+  
+  - `src/clihub/webview/ui/` — not analyzed; UI panel logic outside the
+  requested scope.
+  - `src/clihub/webview/core/tools-cli-core/` — read for context only;
+  not in plan.
+  - Test suite creation — no existing test structure found.
+  - Dependency upgrades — not authorized.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  Any questions?
+  If not, I'll start the refactor.
+  
+  🚀 Ready when you are.

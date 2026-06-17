@@ -7,7 +7,7 @@ metadata:
   version: "2.0.0"
 ---
 
-# Refactor Project [End]
+# Refactor Project / [End]
 
 A structured, architecture-aware refactoring skill that analyzes a project,
 identifies the highest-value improvements, builds a phased execution plan, and
@@ -127,40 +127,58 @@ Sort every finding into exactly one category. Never present a risk or
 assumption as a confirmed bug.
 
 * **Confirmed Bugs** — defects that already produce incorrect behavior.
-* **Risks** — works today, could break with future changes.
-* **Refactoring Opportunities** — maintainability/readability/scalability gains.
-* **Technical Debt** — decisions that raise future development cost.
+* **Debt/Risks** — aspects that can be improved to optimize quality,
+  maintainability, security, performance, scalability, or project experience.
+  They are not urgent and the project can continue functioning correctly, but
+  it is advisable to address them when possible.
+* **Suggestions** — optional improvements that could take the project to a
+  higher level. They do not affect current stability or operation; implementation
+  is completely optional and aimed at adding extra value.
 
-Every finding must cite concrete evidence: exact file path, the
-function/class/component/hook/service/module name, and a line or range when
-possible. No vague findings ("bad architecture", "poor performance") without a
-specific code reference. For every confirmed bug assign a severity:
+Every finding must be based on concrete evidence from inspected code: exact file
+path, function/class/component/hook/service/module name, and a line or range
+when possible. Use that evidence to choose the finding, but keep the visible
+Findings list short and plain. No vague findings ("bad architecture", "poor
+performance"). For every confirmed bug assign a severity:
 
 * **Critical** — security holes, data loss, crashes, or anything blocking work.
 * **Non-critical** — incorrect but contained behavior.
 
-### 9. Architecture decision (decide it yourself)
+### 9. Architecture (decide it yourself)
 
-After analyzing, recommend one direction. Do not ask the user to choose A/B.
+After analyzing, recommend one architecture outcome. Do not ask the user to
+choose A/B. Pick the smallest direction that solves the real issue.
 
-* **Improvement Refactor Only** — structure is solid; needs internal cleanup,
-  boundary/naming improvements, dependency cleanup, responsibility separation,
-  or debt reduction. Keep files in place; no unnecessary moves.
-* **Restructure Architecture** — only with clear reasons: poor scalability, weak
-  boundaries, excessive coupling, repeated architectural patterns, confusing
-  ownership, or high future development cost.
+* **✅ Architecture ok, ready for work.** — the current architecture is healthy;
+  refactoring can happen in place with no structural moves.
+* **📐 Small architecture adjustments needed.** — the architecture is decent,
+  but a few targeted structural changes would reduce maintenance cost: splitting
+  a very large file/class, moving code to a better existing owner, creating a
+  small helper/module, removing obsolete files, or consolidating duplicated
+  modules.
+* **🏗️ Restructure architecture recommended.** — the current structure harms
+  maintainability, scalability, performance, UI evolution, or future development
+  cost through weak boundaries, unclear ownership, repeated patterns, or
+  excessive coupling.
 
-Use these two exact labels everywhere. When restructuring, the move/rename work
-becomes its own dedicated phase and must never mix structure changes with logic
+Use these exact decision lines in the report. Add one short reason for the
+choice. If files or directories must move, be created, or be deleted, keep that
+architecture work in its own phase and do not mix structure changes with logic
 changes. Never force hexagonal, clean architecture, MVC, or any pattern unless
 the project clearly benefits.
 
 ### 10. Health score
 
-Score the project 0–100 plus six categories 0–10 (Architecture,
-Maintainability, Performance, Security, Testing, Documentation). Be honest and
+Score the project 0–100 plus visible categories 0–10: Architecture,
+Maintainability, Performance, Security, and Documentation. Be honest and
 conservative; do not invent issues to justify a low score. If an area cannot be
 judged from the authorized scope, say so and score only on available evidence.
+
+Include a Testing score only when the authorized scope contains an existing test
+structure or test files. If no test folder or test files exist, omit Testing from
+the health overview and do not assign `0/10`; there is nothing to rate. Missing
+tests may still be mentioned as Debt/Risks when relevant, but do not lower the
+overall health score solely because no test structure exists.
 
 ### 11. Plan ordering & phases
 
@@ -172,11 +190,19 @@ Bug hierarchy: Critical bugs jump the queue and become Phase 1. Non-critical
 bugs attach to the phase for their area. Every bug appears in the plan exactly
 once, at the phase where it will be fixed.
 
+Keep the visible plan compact. Prefer 2–5 phases. Each phase must be actionable,
+safe to execute independently, and tied to a finding or architecture decision.
+Do not turn optional suggestions into phases unless they unlock the main
+refactor or the user explicitly asked for them.
+
 ### 12. Execution & authorization
 
-Refactor only on explicit authorization. Accepted tokens: `go`, `start`,
-`proceed`, `green light` (or a clear equivalent). The architecture direction is
-recommended by the analysis, never chosen by the user as A/B.
+Refactor only on explicit authorization. Accept any clear approval phrase, for
+example: `go`, `start`, `proceed`, `green light`, `come on`, `you can start`,
+`I approve`, `approved`, `do it`, `dale`, or a clear equivalent. Do not execute
+on ambiguous discussion such as `what do you think?`, `maybe`, or `explain
+first`. The architecture direction is recommended by the analysis, never chosen
+by the user as A/B.
 
 On authorization, execute **only the first pending phase** — never multiple
 phases in one response — then stop and report (per template) and wait for
@@ -204,7 +230,8 @@ Stay within the authorized scope for all changes. **Exception:** if you notice a
 **Critical** security or data-loss issue outside scope, surface it report-only
 (as a finding) without adding a plan phase for it.
 
-"Out of Scope" lists areas that were **not** analyzed and why. Do not re-list
+`Project Understanding` includes a short `Review Scope:` line for areas that
+were not deeply reviewed. Keep limitations clear before findings. Do not re-list
 items there that you already reported as findings.
 
 ---
@@ -214,124 +241,191 @@ items there that you already reported as findings.
 ### 📊 Health Overview
 
 ```text
-Health: [0-100] — [Improvement Refactor Only | Restructure Architecture]
+📊 [end] Health Overview — [score] / 100
 
-🔴 Bugs [n]    🟠 Risks [n]    🟡 Debt [n]    🟢 Opportunities [n]
+🔴 Bugs [n]    🟡 Debt/Risks [n]    🟢 Suggestions [n]
 
 🏗️ Architecture     [x/10]
 🧩 Maintainability  [x/10]
 ⚡ Performance       [x/10]
 🔒 Security          [x/10]
-🧪 Testing           [x/10]
 📚 Documentation     [x/10]
 ```
 
+Use this exact title shape; do not add the project name or project type here.
+If existing tests are present, insert `🧪 Testing           [x/10]` before
+Documentation.
+
 ### 🔍 Project Understanding
 
-Max 10 lines: main purpose · entry points · main modules · high-level data flow
-· relevant runtime/framework · important architectural boundaries.
-
-### ⚠️ Findings
-
-Group under the four headers below. Each finding uses this shape, max 3 short
-lines (no long paragraphs). If a category is empty, write
-`None found in the authorized scope.`
+Keep this section short and useful to the maintainer. Start with:
 
 ```text
-- `path/file:function-or-module`
-  Problem: [specific issue with concrete evidence]
-  Impact: [actual or potential consequence]
-  Recommendation: [specific fix]
+I already understand your project: [brief refactor-relevant context].
+
+Review Scope: [areas not deeply reviewed, if any.]
 ```
 
-* **🔴 Confirmed Bugs** — append severity to the recommendation:
-  `— [critical | non-critical → phase N]`
-* **🟠 Risks**
-* **🟢 Refactoring Opportunities**
-* **🟡 Technical Debt**
+Max 4 lines total. The first sentence should mention only the authorized scope,
+key entry points, and constraints that justify the findings and plan. Add
+`Review Scope:` as one short line only when there are meaningful analysis-depth
+limits, such as very large files, CSS, tests, dependencies, generated output, or
+internals intentionally not traced line-by-line. Do not explain the full
+product, pitch what it does, or restate obvious details the maintainer already
+knows.
 
-### 🏗️ Architecture Decision
+### Findings / Suggestions Block
 
-Lead with the chosen label in bold, then the reason.
-
-If **📐 Improvement Refactor Only**:
+Use this compact display format exactly. Do not add a separate Markdown heading
+above it. Do not use bullets, code-reference headings, or `Problem` / `Impact` /
+`Recommendation` sublines here.
 
 ```text
-📐 Improvement Refactor Only
+⚠️ Findings / Suggestions:
 
-Reason: [short reason based on the actual project]
+🔴 Bugs
 
-Adjustments:
-- [specific adjustment 1]
-- [specific adjustment 2]
-- [specific adjustment 3]
+  00. --- --- --- --- --- --- --- --- --- --- ---.
+
+🟡 Debt / Risks
+
+  01. [short direct finding.]
+  02. [short direct finding.]
+
+🟢 Suggestions (Optional)
+
+  01. [short optional suggestion.]
+  02. [short optional suggestion.]
 ```
 
-If **🏗️ Restructure Architecture**, give the reason, then both trees:
+Rules:
+
+* Use two-digit numbering: `01.`, `02.`, `03.`.
+* If a category has no items, write exactly `00. --- --- ---.`
+* **🔴 Bugs** contains confirmed incorrect behavior only. Add `critical` or
+  `non-critical` only when a real bug is listed.
+* **🟡 Debt / Risks** shows only the top 3–5 items, ordered by practical
+  refactor value.
+* **🟢 Suggestions (Optional)** shows max 3 optional improvements.
+* Each item must be one short sentence. Prefer simple maintainer-facing language
+  over file paths unless a path is necessary to avoid ambiguity.
+
+### 🏗️ Architecture
+
+Use this section title exactly: `🏗️ Architecture`. Do not call it
+`Architecture Decision`. Start with `Decision:` and keep the explanation short.
+
+If the architecture is already good:
 
 ```text
-🏗️ Restructure Architecture
+🏗️ Architecture
 
-Reason: [why the current structure limits the project]
+Decision 1️⃣:
+[Architecture ok, ready for work.]
+
+Why: [one short reason.]
 ```
 
-#### Current Structure
+If only small structural adjustments are useful, show only the affected paths:
 
 ```text
-[ASCII tree of the current relevant directories]
+🏗️ Architecture
+
+Decision 2️⃣:
+[Small architecture adjustments needed.]
+
+Why: [one short reason.]
+
+Before:
+
+src/
+├── feature-a/
+└── large-file.ts
+
+After:
+
+src/
+├── feature-a/
+│   ├── index.ts
+│   └── helpers.ts              # extracted from large-file.ts
+└── large-file.ts               # smaller owner
 ```
 
-#### Proposed Structure
+If the project needs a real architecture change, show the proposed structure
+only:
 
 ```text
-[ASCII tree of the proposed structure, with `# was ...` notes on moves]
+🏗️ Architecture
+
+Decision 3️⃣:
+[Restructure architecture recommended.]
+
+Why: [one short reason.]
+
+Proposed structure:
+
+src/
+├── core/                       # shared foundations
+├── features/                   # feature-owned modules
+├── shared/                     # reusable UI/helpers
+├── infrastructure/             # external services/config
+└── app/                        # startup/routes/bootstrap
 ```
 
-Tree rules: show only relevant directories and key entry files (not every
-file); mark moves/renames with `# was src/x`; the restructure is its own phase
-with no logic changes mixed in.
+Rules: keep `Why` to one sentence; omit trees for the architecture-ok case;
+for small adjustments, show `Before` and `After`; for full restructuring, show
+only `Proposed structure`. Show only relevant directories and key files, not the
+whole project. Mark moves or extractions with `# was ...` or `# extracted from
+...` when useful.
 
 ### 🗺️ Proposed Plan
 
-One block per phase, ordered by value for this project:
+Use this compact display format. Do not add long `Goal`, `Affected files`, or
+`Why now` paragraphs. The phase title explains the action; `Outcome` explains
+the value.
 
 ```text
-Phase N — [phase name]
+🗺️ Proposed Plan
 
-Goal: [what this phase improves]
+Phase 1 — [verb + short target]
+Outcome: [one concrete result.]
+Files: `path/file`, `path/file` (new)
+Check: [typecheck + lint | build | manual verification]
 
-Affected files: [count]
-- `path/file`
-- `path/file`
-
-Why now: [why this phase happens at this point]
-
-Validation: [build | typecheck | lint | test | manual verification]
+Phase 2 — [verb + short target]
+Outcome: [one concrete result.]
+Files: `path/file`, `path/file`
+Check: [typecheck + lint | build | manual verification]
 ```
 
-### 🚫 Out of Scope
+Rules:
 
-What was **not** analyzed and why (areas, not already-reported findings):
+* Use `Phase N — ...` because execution happens one phase at a time.
+* Start phase names with a verb: Fix, Extract, Split, Consolidate, Move, Remove,
+  Harden, Document, or similar.
+* Keep each phase to 3 lines after the title: `Outcome`, `Files`, `Check`.
+* Use one-line `Files:` when there are 1–4 files. Use a short file list only
+  when more than 4 files are affected.
+* Mark new files with `(new)` and deleted files with `(delete)`.
+* Omit ordering explanations by default. Add `Why:` only when the order would
+  otherwise be surprising.
+* Do not include more than 5 phases unless critical bugs require it.
+* Do not include optional suggestions unless they are part of the recommended
+  refactor path.
 
-```text
-- `packages/legacy-api/` — unrelated to the requested scope.
-- Test suite creation — no existing test structure found.
-- Dependency upgrades — not authorized.
-```
-
-### 🚀 Ready When You Are
+### Closing Prompt
 
 End every analysis with:
 
 ```text
-No files were modified.
+Any questions?
+If not, I'll start with Phase 1.
 
-Recommended decision: [Improvement Refactor Only | Restructure Architecture].
-Reason: [short reason].
-Recommended first phase: [phase name].
-
-🚀 Ready when you are — say `go`, `start`, or `proceed` to begin Phase 1.
+🚀 Ready when you are.
 ```
+
+Do not repeat the readiness line. Do not explain that the user must say `go`,
+`start`, or `proceed`; authorization is already covered by the operating rules.
 
 ### ✅ Per-Phase Report
 
@@ -382,8 +476,10 @@ known risks or debt remain.]
 * **"analyze my project"** → analyze structure, produce the phased plan, modify
   nothing.
 * **"refactor src/auth"** → analyze only the auth scope, build the plan, wait.
-* **"go"** → execute Phase 1 only, report, wait.
-* **"green light"** → execute the next pending phase only, report, stop.
+* **Approval after analysis** (`go`, `start`, `you can start`, `I approve`,
+  `dale`) → execute Phase 1 only, report, wait.
+* **Approval after a phase report** (`continue`, `next`, `go`, `green light`)
+  → execute the next pending phase only, report, wait.
 
 ## Philosophy
 

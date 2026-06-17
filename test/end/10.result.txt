@@ -1,0 +1,63 @@
+I now have a thorough understanding of the codebase. Here is the full analysis:
+📊 end Health Overview — 62 / 100
+🔴 Bugs 2    🟡 Debt/Risks 5    🟢 Suggestions 3
+🏗️ Architecture     7/10
+🧩 Maintainability  6/10
+⚡ Performance       8/10
+🔒 Security          7/10
+📚 Documentation     5/10
+🔍 Project Understanding
+I already understand your project: F1 is a VS Code extension providing a CLI Hub panel that launches/manages 10 AI coding CLI tools in embedded xterm.js terminals. The authorized scope is src/ — 48 TypeScript files across a two-phase webview (launcher → terminal), PTY host subprocess, and tool modals (prompt, translator, keymaps, voice TTS, spellcheck). The architecture is intentional and well-layered; the issues are localised.
+⚠️ Findings / Suggestions:
+🔴 Bugs
+0. src/extension.ts:8 — Critical: regwisterWebviewViewProvider is a typo; must be registerWebviewViewProvider. The extension will crash on activation — the provider is never registered.
+1. src/extension.ts:8 — Critical: cliHqwubProvider is a typo; must be cliHubProvider. Same line, same crash — the variable name doesn't match the declared binding.
+🟡 Debt / Risks
+1. src/clihub/index.ts:1,7 — tywpe and typwe are typos for type. These are TypeScript syntax errors that prevent compilation of the launcher entry point.
+2. getAgentSlug is duplicated in src/clihub/index.ts:124 and src/clihub/webview/ui/panel-terminal/terminal.ts:574 with divergent return values ('' vs 'default'). Should be a shared utility.
+3. SpellIssue type is duplicated in src/clihub/webview/core/tools-cli-core/prompt/spellcheck-types.ts and src/clihub/webview/core/tools-cli-core/autocorrect/host-spellcheck.ts. One should re-export the other.
+4. CliHubViewProvider (main.ts) is a 599-line god class handling 12+ message types. The message handler chain would benefit from extraction into a router.
+5. browser-terminal-translator.ts and host-prompt-translator.ts use different provider sets (Lingva/LibreTranslate vs MyMemory/Google) for the same EN↔ES translation task, creating inconsistent translation quality.
+🟢 Suggestions (Optional)
+1. The _getAgentLaunchExtensionMode() method (main.ts:205) maps vscode.ExtensionMode to a string literal — a simple lookup or const object would be cleaner.
+2. tools.ts:60 has inconsistent indentation (tabs) compared to the rest of the codebase (2-space).
+3. Consider adding noFallthroughCasesInSwitch and noUnusedParameters to tsconfig.json (currently commented out) to catch more bugs at compile time.
+
+🏗️ Architecture Decision
+📐 Improvement Refactor Only
+Reason: The architecture is sound — clear separation between extension host, PTY subprocess, and webview; clean two-phase UI; well-scoped tool modals. The issues are localised (typos, duplication, one god class) and don't warrant restructuring.
+Adjustments:
+- Fix the 4 confirmed typos in extension.ts and index.ts (critical bugs)
+- Extract getAgentSlug into a shared module
+- Consolidate the duplicated SpellIssue type
+- Refactor CliHubViewProvider message handling into a router pattern
+🗺️ Proposed Plan
+Phase 1 — Fix Critical Bugs
+Goal: Fix the typos that prevent the extension from compiling and activating.
+Affected files: 2
+- src/extension.ts — fix regwisterWebviewViewProvider → registerWebviewViewProvider and cliHqwubProvider → cliHubProvider
+- src/clihub/index.ts — fix tywpe → type and typwe → type
+Why now: These are blocking bugs — the extension cannot activate or compile.
+Validation: typecheck + lint
+Phase 2 — Deduplicate Shared Code
+Goal: Extract getAgentSlug and SpellIssue into shared modules to eliminate duplication.
+Affected files: 3
+- src/clihub/webview/core/tools-cli-core/prompt/spellcheck-types.ts — canonical SpellIssue source
+- src/clihub/webview/core/tools-cli-core/autocorrect/host-spellcheck.ts — re-export from shared
+- src/clihub/webview/shared/ (new) or existing shared location — getAgentSlug utility
+Why now: Reduces maintenance cost and eliminates divergent behavior between duplicate implementations.
+Validation: typecheck + lint
+Phase 3 — Refactor CliHubViewProvider Message Router
+Goal: Extract the 12+ message handler branches from resolveWebviewView into a clean message router.
+Affected files: 1
+- src/clihub/main.ts
+Why now: The god class is the biggest maintainability risk; a router makes adding new message types trivial.
+Validation: typecheck + lint
+🚫 Out of Scope
+- esbuild.js, eslint.config.mjs, package.json, tsconfig.json — build/config files, not part of the source refactor.
+- browser-terminal-translator.ts provider inconsistency — reported as debt but not included in the plan since it's a design choice, not a bug.
+- CSS/HTML files — not analysed in depth; the audit focused on TypeScript source.
+- Test suite creation — no existing test structure found; per policy, tests are not created.
+Any questions?
+If not, I'll start the refactor.
+🚀 Ready when you are.

@@ -1,0 +1,26 @@
+  
+  📊 Health Overview
+  
+  📊 Health Overview — 74 / 100
+  
+  🔴 Bugs [1]    🟡 Debt/Risks [5]    🟢 Suggestions [3]
+  
+  🏗️ Architecture     8/10
+  🧩 Maintainability  7/10
+  ⚡ Performance       7/10
+  🔒 Security          6/10
+  📚 Documentation     5/10
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🔍 Project Understanding
+  
+  💡 I already understand your project: a VS Code extension (F1) with a
+  two-phase webview — a fuzzy-search CLI launcher and a multi-session
+  terminal panel powered by xterm.js. The extension host owns PTY
+  management, translation, voice TTS, spell-check, and image
+  attachments; the webview communicates via typed messages.
+
+    
+  ──────────────────────────────────────────────────────────────────────
+  

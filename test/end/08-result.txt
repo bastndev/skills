@@ -1,0 +1,209 @@
+
+  📊 [end] Health Overview — 74 / 100
+  
+  🔴 Bugs [0]    🟡 Debt/Risks [5]    🟢 Suggestions [3]
+  
+  🏗️ Architecture     8/10
+  🧩 Maintainability  6/10
+  ⚡ Performance       8/10
+  🔒 Security          7/10
+  📚 Documentation     5/10
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🔍 Project Understanding
+  
+  I already understand your project: a VS Code extension (F1) with a
+  4-target esbuild
+  build. Entry point is src/extension.ts → CliHubViewProvider in
+  src/clihub/main.ts,
+  which owns the full webview lifecycle, session management, and all
+  host-side handlers.
+  The authorized scope is src/extension.ts, with main.ts as its direct
+  dependency.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  ⚠️ Findings
+  
+  🔴 Bugs
+  
+  None found in the authorized scope.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🟡 Debt/Risks
+  
+  - src/clihub/main.ts:CliHubViewProvider._getAgentLaunchExtensionMode
+  
+    Problem: Three if branches return identical extensionMode values in
+  the same order VS Code evaluates them internally; the final return
+  'unknown' is unreachable in practice but adds noise and could silently
+  hide a future new mode.
+    Impact: Dead code path; any new ExtensionMode value added by VS Code
+  will silently fall to 'unknown' without a type error.
+    Recommendation: Replace the if-chain with a const lookup map
+  (Map<vscode.ExtensionMode, AgentLaunchExtensionMode>) so adding a new
+  mode produces a TS error immediately.
+  
+  - src/clihub/main.ts:CliHubViewProvider._getWorkspacePath
+  
+    Problem: Always returns ~/${projectName}, stripping the real
+  absolute path. If two projects share the same basename (e.g. both
+  named src), the terminal CWD display will silently show the wrong
+  path.
+    Impact: Misleading CWD displayed in terminal status bar; harder to
+  debug multi-root workspace setups.
+    Recommendation: Return the real workspace path, or at minimum
+  document the intentional shortening.
+  
+  - src/clihub/main.ts:CliHubViewProvider._handleWorkspaceListFiles
+  
+    Problem: The isDirectory = false comment says "findFiles only
+  returns files", yet the function then constructs dirs from those file
+  paths and re-injects them as entries with isDirectory: true. This
+  creates duplicate path entries (file + synthetic dir) and skips any
+  empty directories.
+    Impact: The @-mention file picker may show duplicate or phantom
+  entries, confusing the user.
+    Recommendation: Separate file listing from directory listing, or
+  document that synthetic dirs are intentional and deduplicate entries.
+  
+  - src/clihub/main.ts:CliHubViewProvider (class level)
+  
+    Problem: CliHubViewProvider handles 12+ distinct message types, HTML
+  generation (launcher + agent), HTML template string replacement,
+  workspace file listing, workspace skill listing, spellcheck,
+  translation, voice, clipboard, CSP assembly, and session lifecycle —
+  all in one 500-line class.
+    Impact: High coupling makes future changes brittle; adding a new
+  tool feature requires modifying the already large resolveWebviewView
+  handler.
+    Recommendation: Extract message handlers into a dedicated
+  CliHubMessageRouter and HTML builders into a CliHubHtmlBuilder; keep
+  the provider as thin coordinator.
+  
+  - src/clihub/main.ts:CliHubViewProvider._getHtmlForWebview
+  
+    Problem: Uses fs.readFileSync + manual html.replace('${key}', value)
+   for HTML templating. If the template ever contains a key more than
+  once (other than ${nonce} which already uses replaceAll), the second
+  occurrence silently goes unreplaced.
+    Impact: Subtle rendering bugs if template keys appear more than
+  once; replaceAll is used inconsistently (only for nonce).
+    Recommendation: Use replaceAll for all template key replacements for
+  consistency and safety.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🟢 Suggestions
+  
+  - src/clihub/main.ts:CliHubViewProvider — The _extensionContext
+  constructor parameter is typed as optional (?), but it is required for
+  voice and image attachment features, and _getAgentLaunchExtensionMode
+  already branches on its absence. Making it non-optional (matching what
+  activate always passes) would remove several defensive || {
+  globalStorageUri: undefined } as any casts inside handlers.
+  - src/clihub/main.ts:serializeJsonForHtmlScript — This is a
+  module-level utility with no dependency on the class. It could be
+  moved to a shared webview-utils.ts alongside similar pure functions
+  (like _getNonce, _getCliHubAssetUri) to reduce the size of main.ts.
+  - src/extension.ts — The file is minimal and correct as-is. A
+  deactivate no-op is fine; VS Code calls dispose() on subscriptions
+  automatically.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🏗️ Architecture Decision
+  
+  📐 Improvement Refactor Only
+  
+  Reason: The architecture (provider → session manager → pty-host
+  subprocess) is
+  sound and well-layered. The issues are internal to main.ts: it has
+  grown to
+  handle too many concerns in a single class.
+  
+  Adjustments:
+  - Extract message routing out of resolveWebviewView into a
+  CliHubMessageRouter
+  - Extract HTML assembly into a CliHubHtmlBuilder (already partially
+  exists in webview.ts)
+  - Make _extensionContext non-optional to remove defensive casts
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🗺️ Proposed Plan
+  
+  Phase 1 — Fix template replacement consistency in _getHtmlForWebview
+  
+  Goal: Replace all single-occurrence html.replace() calls with
+  replaceAll() to
+  prevent silent partial-replacement bugs as the template evolves.
+  
+  Affected files: 1
+  - `src/clihub/main.ts`
+  
+  Why now: Lowest risk, zero behavior change, prevents a class of silent
+  bugs
+  before the larger refactor moves code around.
+  
+  Validation: typecheck + lint (bun run check-types && bun run lint)
+  
+  Phase 2 — Make _extensionContext non-optional
+  
+  Goal: Remove the optional marker from the constructor parameter and
+  delete
+  all defensive `|| { globalStorageUri: undefined } as any` casts.
+  
+  Affected files: 1
+  - `src/clihub/main.ts`
+  
+  Why now: Tightens the type surface before extracting the message
+  router, so
+  extracted handlers receive a typed context without additional
+  null-checks.
+  
+  Validation: typecheck + lint
+  
+  Phase 3 — Extract CliHubMessageRouter
+  
+  Goal: Move the 12+ message-type dispatch chain out of
+  resolveWebviewView into
+  a dedicated CliHubMessageRouter class. The provider becomes a thin
+  coordinator.
+  
+  Affected files: 2
+  - `src/clihub/main.ts`
+  - `src/clihub/message-router.ts` (new)
+  
+  Why now: Resolves the largest maintainability debt; every future
+  tool/modal
+  addition has a clear, isolated place to land.
+  
+  Validation: typecheck + lint + manual F5 verification
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🚫 Out of Scope
+  
+  - src/clihub/webview/** — not requested; no analysis performed.
+  - Test suite creation — no existing test structure found.
+  - Dependency upgrades — not authorized.
+  - esbuild.js / tsconfig.json / eslint.config.mjs — build config, not
+  in scope.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🚀 Ready When You Are
+  
+  No files were modified.
+  
+  Recommended decision: Improvement Refactor Only.
+  Reason: Architecture is solid; main.ts has accumulated too many
+  responsibilities
+  in one class, with a minor template-safety gap worth fixing first.
+  Recommended first phase: Fix template replacement consistency.
+  
+  🚀 Ready when you are — say `go`, `start`, or `proceed` to begin Phase
+  1.
