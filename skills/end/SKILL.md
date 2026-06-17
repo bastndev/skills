@@ -55,6 +55,10 @@ each section per its template; do not redefine formats here.
 * **Monorepo:** analyze only the workspace tied to the path or request. Do not
   analyze unrelated packages or run a repo-wide audit unless explicitly asked.
 * Never scan the entire repository blindly.
+* For codebases with more than 50 source files, do not attempt to read every
+  file. Instead: read all entry points and front-door files, the 5 largest files
+  by line count, all shared/protocol/types files, and 2–3 representative files
+  per major directory. List unread areas explicitly in `Review Scope:`.
 
 ### 2. What to ignore
 
@@ -174,6 +178,11 @@ Maintainability, Performance, Security, and Documentation. Be honest and
 conservative; do not invent issues to justify a low score. If an area cannot be
 judged from the authorized scope, say so and score only on available evidence.
 
+Calibrate against these anchors so scores are consistent across projects —
+greenfield/no debt: 85–92; maintained production codebase: 62–80; legacy system
+with known debt: 40–62. Do not score above 80 if there are 3+ Debt/Risk items,
+or above 90 if any Debt/Risk exists.
+
 Include a Testing score only when the authorized scope contains an existing test
 structure or test files. If no test folder or test files exist, omit Testing from
 the health overview and do not assign `0/10`; there is nothing to rate. Missing
@@ -190,10 +199,19 @@ Bug hierarchy: Critical bugs jump the queue and become Phase 1. Non-critical
 bugs attach to the phase for their area. Every bug appears in the plan exactly
 once, at the phase where it will be fixed.
 
-Keep the visible plan compact. Prefer 2–5 phases. Each phase must be actionable,
-safe to execute independently, and tied to a finding or architecture decision.
-Do not turn optional suggestions into phases unless they unlock the main
-refactor or the user explicitly asked for them.
+Keep the visible plan compact. Prefer 2–5 phases. Allow up to 8 when there are 5
+or more independent findings — each extra phase must map to a specific finding.
+Never add phases just to fill space. Each phase must be actionable, safe to
+execute independently, and tied to a finding or architecture decision. Do not
+turn optional suggestions into phases unless they unlock the main refactor or
+the user explicitly asked for them.
+
+Phase names must name the specific target, not the category. ✅ Extract voice
+helpers from main.ts ✅ Fix CliAgentOption duplication in tab.ts ❌ Improve
+maintainability ❌ Refactor large files.
+
+If a phase contains only documentation or comment changes (no code changes),
+place it last and mark it `(optional)` in the phase title.
 
 ### 12. Execution & authorization
 
@@ -409,7 +427,8 @@ Rules:
 * Mark new files with `(new)` and deleted files with `(delete)`.
 * Omit ordering explanations by default. Add `Why:` only when the order would
   otherwise be surprising.
-* Do not include more than 5 phases unless critical bugs require it.
+* Do not exceed 8 phases. Keep to 2–5 unless 5+ independent findings (or
+  critical bugs) require more — each extra phase must map to a specific finding.
 * Do not include optional suggestions unless they are part of the recommended
   refactor path.
 
