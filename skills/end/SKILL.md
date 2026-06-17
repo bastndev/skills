@@ -285,7 +285,7 @@ above it. Do not use bullets, code-reference headings, or `Problem` / `Impact` /
 
 🔴 Bugs
 
-  00. --- --- --- --- --- --- --- --- --- --- ---.
+  00. .--- --- --- --- --- --- -_- --- --- --- --- --- ---.
 
 🟡 Debt / Risks
 
@@ -300,8 +300,8 @@ above it. Do not use bullets, code-reference headings, or `Problem` / `Impact` /
 
 Rules:
 
-* Use two-digit numbering: `01.`, `02.`, `03.`.
-* If a category has no items, write exactly `00. --- --- ---.`
+* Use two-digit numbering: `01.`, `02.`, `03.`. Never single-digit (`1.`, `2.`).
+* If a category has no items, write exactly `00. .--- --- --- --- --- --- -_- --- --- --- --- --- ---.`
 * **🔴 Bugs** contains confirmed incorrect behavior only. Add `critical` or
   `non-critical` only when a real bug is listed.
 * **🟡 Debt / Risks** shows only the top 3–5 items, ordered by practical
@@ -424,8 +424,10 @@ If not, I'll start with Phase 1.
 🚀 Ready when you are.
 ```
 
-Do not repeat the readiness line. Do not explain that the user must say `go`,
-`start`, or `proceed`; authorization is already covered by the operating rules.
+Use this exact text — do not rephrase `I'll start with Phase 1.` to `proceed`,
+`begin`, or any other verb. Do not repeat the readiness line. Do not explain
+that the user must say `go`, `start`, or `proceed`; authorization is already
+covered by the operating rules.
 
 ### ✅ Per-Phase Report
 
