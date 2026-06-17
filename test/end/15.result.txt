@@ -1,0 +1,130 @@
+📊 [end] Health Overview — 72 / 100
+  
+  🔴 Bugs [0]    🟡 Debt/Risks [4]    🟢 Suggestions [2]
+  
+  🏗️ Architecture     8/10
+  🧩 Maintainability  6/10
+  ⚡ Performance       7/10
+  🔒 Security          8/10
+  📚 Documentation     4/10
+  
+  🔍 Project Understanding
+  
+  I already understand your project: VS Code extension with a two-phase
+  webview (launcher →
+  terminal), a PTY subprocess architecture, and message-passing across
+  two boundaries
+  (host↔webview and host↔pty-host). Authorized scope: src/extension.ts
+  (entry point)
+  and the full src/clihub/ tree it pulls in.
+  
+  Review Scope: CSS files, esbuild config, and autocorrect/translation
+  data files were
+  not traced line-by-line.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  ⚠️ Findings / Suggestions:
+  
+  🔴 Bugs
+  
+    0. --- --- --- --- --- --- --- --- --- --- ---.
+  
+  🟡 Debt / Risks
+  
+    1. getAgentSlug is duplicated verbatim between src/clihub/index.ts
+  and terminal.ts, with a silent behavioral difference: index.ts returns
+  '' for unknown agents while terminal.ts returns 'default' — divergence
+  will cause theming bugs when new agents are added.
+    2. _handleWorkspaceListFiles in main.ts declares const isDirectory =
+  false then never uses it, and the surrounding implementation is
+  noticeably more verbose than the pattern used by
+  _handleWorkspaceListSkills — dead variable and inconsistent style in a
+  hot path.
+    3. _handlePromptPrepare uses two as any casts to work around a
+  missing type guard on _extensionContext, bypassing static safety for a
+  code path that writes files to globalStorageUri.
+    4. CliHubViewProvider in main.ts is 500+ lines mixing webview
+  lifecycle, HTML generation, message dispatch, and five distinct
+  host-side feature handlers (translation, voice, spellcheck, prompt,
+  workspace) — single-responsibility violation that grows with every new
+  feature.
+  
+  🟢 Suggestions (Optional)
+  
+    1. launcherAgents in main.ts and cliAgents in agents.ts are two
+  parallel arrays that must stay in sync manually — merging them (or
+  deriving one from the other) would make adding a CLI agent a
+  single-file change.
+    2. The _getWorkspacePath() method always returns ~/projectName,
+  dropping the full path; callers expecting a real CWD would silently
+  get a cosmetic string — worth a clarifying comment or a renamed
+  function.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🏗️ Architecture
+  
+  Decision 2️⃣:
+  📐 Small architecture adjustments needed.
+  
+  Why: main.ts accumulates every host-side handler in one class;
+  extracting the message handlers into a thin coordinator file reduces
+  the cost of adding future features.
+  
+  Before:
+  
+  src/clihub/
+  ├── index.ts           # launcher webview (also contains getAgentSlug)
+  ├── main.ts            # CliHubViewProvider — 500+ lines, all handlers
+  inline
+  └── webview/
+      └── ui/panel-terminal/
+          └── terminal.ts  # (also contains getAgentSlug)
+  
+  After:
+  
+  src/clihub/
+  ├── index.ts
+  ├── main.ts            # CliHubViewProvider — lifecycle + message
+  routing only
+  ├── host-handlers.ts   # (new) extracted: translate, voice,
+  spellcheck, workspace, prompt
+  ├── webview/
+  │   └── ui/panel-terminal/
+  │       └── terminal.ts
+  └── webview/shared/
+      └── agent-slug.ts  # (new) shared getAgentSlug, imported by both
+  index.ts and terminal.ts
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🗺️ Proposed Plan
+  
+  Phase 1 — Extract shared getAgentSlug utility
+  Outcome: Single source of truth eliminates the '' vs 'default'
+  divergence and simplifies future agent additions.
+  Files: src/clihub/webview/shared/agent-slug.ts (new),
+  src/clihub/index.ts, src/clihub/webview/ui/panel-terminal/terminal.ts
+  Check: typecheck + lint
+  
+  Phase 2 — Fix as any casts and dead variable in main.ts
+  Outcome: _handlePromptPrepare is type-safe; dead isDirectory variable
+  removed; _handleWorkspaceListFiles aligned with the skills-handler
+  pattern.
+  Files: src/clihub/main.ts
+  Check: typecheck + lint
+  
+  Phase 3 — Extract host-side message handlers from CliHubViewProvider
+  Outcome: main.ts is reduced to lifecycle + routing; each feature
+  handler lives in host-handlers.ts, making the class easier to read and
+  extend.
+  Files: src/clihub/main.ts, src/clihub/host-handlers.ts (new)
+  Check: typecheck + lint
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  Any questions?
+  If not, I'll start the refactor.
+  
+  🚀 Ready when you are.
