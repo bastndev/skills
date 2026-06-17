@@ -416,7 +416,7 @@ End every analysis with:
 
 ```text
 Any questions?
-If not, I'll start the refactor.
+If not, I'll start with Phase 1.
 
 🚀 Ready when you are.
 ```
