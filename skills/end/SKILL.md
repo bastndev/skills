@@ -285,7 +285,7 @@ above it. Do not use bullets, code-reference headings, or `Problem` / `Impact` /
 
 🔴 Bugs
 
-  00. --- --- --- --- --- --- --- --- --- --- ---.
+  00. .--- --- --- --- --- --- -_- --- --- --- --- --- ---.
 
 🟡 Debt / Risks
 
@@ -301,7 +301,7 @@ above it. Do not use bullets, code-reference headings, or `Problem` / `Impact` /
 Rules:
 
 * Use two-digit numbering: `01.`, `02.`, `03.`. Never single-digit (`1.`, `2.`).
-* If a category has no items, write exactly `00. --- --- ---.`
+* If a category has no items, write exactly `00. .--- --- --- --- --- --- -_- --- --- --- --- --- ---.`
 * **🔴 Bugs** contains confirmed incorrect behavior only. Add `critical` or
   `non-critical` only when a real bug is listed.
 * **🟡 Debt / Risks** shows only the top 3–5 items, ordered by practical
