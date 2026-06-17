@@ -186,3 +186,16 @@ If not, I'll start the refactor.
 
 🚀 Ready when you are.
 
+
+  🔍 Project Understanding
+  
+  I already understand your project: a VS Code extension with a
+  two-phase webview — a fuzzy-search launcher (Phase 1) and an xterm.js
+  multi-session terminal hub (Phase 2). The extension host owns session
+  management, translation, spellcheck, and voice TTS; the PTY is
+  isolated in a child process. The main growth risk is main.ts (19 kB,
+  12 message types in one onDidReceiveMessage handler) and terminal.ts
+  (34 kB, single browser module).
+
+  Review Scope:  terminal.ts (34 kB), prompt.ts (49 kB) , CSS files, etc. 
+

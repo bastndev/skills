@@ -1,0 +1,163 @@
+
+  📊 [end] Health Overview — 78 / 100
+  
+  🔴 Bugs [0]    🟡 Debt/Risks [4]    🟢 Suggestions [3]
+  
+  🏗️ Architecture     8/10
+  🧩 Maintainability  7/10
+  ⚡ Performance       8/10
+  🔒 Security          7/10
+  📚 Documentation     6/10
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🎯 Review Scope
+  
+  Included:
+    01. Extension entry point and CliHubViewProvider (main.ts,
+  extension.ts).
+    02. Session lifecycle and PTY host subprocess (session-manager.ts,
+  pty-host.ts).
+    03. Launcher webview and agent registry (index.ts, agents.ts,
+  webview.ts).
+    04. Translation, voice TTS, spellcheck host modules.
+    05. Build config, package.json, tsconfig, eslint config.
+  
+  Not deeply reviewed:
+    01. terminal.ts (34 kB) — types and message routing reviewed; full
+  render logic not line-by-line.
+    02. prompt.ts (49 kB) — entry points and types reviewed; inner UI
+  logic not fully traced.
+    03. CSS files — structure noted, not audited for correctness.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🔍 Project Understanding
+  
+  I already understand your project: a VS Code extension with a
+  two-phase webview — a fuzzy-search launcher (Phase 1) and an xterm.js
+  multi-session terminal hub (Phase 2). The extension host owns session
+  management, translation, spellcheck, and voice TTS; the PTY is
+  isolated in a child process. The main growth risk is main.ts (19 kB,
+  12 message types in one onDidReceiveMessage handler) and terminal.ts
+  (34 kB, single browser module).
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  ⚠️ Findings / Suggestions:
+  
+  🔴 Bugs
+  
+    00. --- --- --- --- --- --- --- --- --- --- ---.
+  
+  🟡 Debt / Risks
+  
+    01. `main.ts` onDidReceiveMessage is a 12-branch if-chain; each
+  handler is a private method, but routing, auth, session wiring, voice,
+  translation, spellcheck, and workspace queries all live in one
+  400-line class with no clear ownership boundary.
+    02. `getAgentSlug` is duplicated verbatim in `index.ts` (launcher
+  webview) and `terminal.ts` (terminal webview) — both string-switch the
+  same 10 agents with identical logic.
+    03. `host-voice-tts.ts` uses module-level mutable globals
+  (`piperProcess`, `playerProcess`, `stoppedByUser`) — concurrent calls
+  or extension re-activation can leave stale process references and
+  silently suppress playback errors.
+    04. `_getWorkspacePath()` returns `~/projectName` by stripping only
+  the first workspace root; multi-root workspaces silently use the wrong
+  path, and the basename-only result is passed to the webview as an
+  unsanitized display string.
+  
+  🟢 Suggestions (Optional)
+  
+    01. Shared message-type constants: `cli.*`, `prompt.*`, `voice.*`,
+  `workspace.*` strings are scattered across host and both webviews with
+  no shared source of truth — a types file in
+  `src/clihub/webview/shared/` would prevent silent mismatches.
+    02. The `serializeJsonForHtmlScript` helper in `main.ts` and the
+  `escapeHtml` helper in `webview.ts` partially overlap; consolidating
+  HTML-injection utilities into one shared module would reduce drift.
+    03. `ARCHITECTURE.md` is empty — filling it in would reduce
+  onboarding cost for contributors and matches the documentation level
+  the code quality otherwise expects.
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🏗️ Architecture
+  
+  Decision 2️⃣:
+  Small architecture adjustments needed.
+  
+  Why: The architecture is sound and the boundary between
+  host/webview/pty-host is well-designed; the only friction is that
+  CliHubViewProvider mixes routing with feature logic, and a
+  slug-mapping function is duplicated across two separate build targets.
+  
+  Before:
+  
+  src/clihub/
+  ├── main.ts              # routing + voice + translate + spellcheck +
+  workspace + session wiring (all in one class)
+  ├── index.ts             # launcher webview — contains getAgentSlug()
+  └── webview/
+      └── ui/panel-terminal/
+          └── terminal.ts  # terminal webview — contains getAgentSlug()
+  (duplicate)
+  
+  After:
+  
+  src/clihub/
+  ├── main.ts              # routing only — delegates to focused
+  handlers
+  ├── host/
+  │   ├── message-router.ts   # extracted: onDidReceiveMessage dispatch
+  table
+  │   └── workspace-handler.ts # extracted: listFiles + listSkills
+  ├── index.ts             # launcher webview — imports getAgentSlug
+  from shared
+  └── webview/
+      ├── shared/
+      │   └── agent-slug.ts   # single getAgentSlug(), used by both
+  webview bundles
+      └── ui/panel-terminal/
+          └── terminal.ts     # imports from shared/agent-slug
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  🗺️ Proposed Plan
+  
+  Phase 1 — Extract getAgentSlug into shared module
+  Outcome: One authoritative slug function, no duplication across build
+  targets.
+  Files: `src/clihub/webview/shared/agent-slug.ts` (new),
+  `src/clihub/index.ts`,
+  `src/clihub/webview/ui/panel-terminal/terminal.ts`
+  Check: typecheck + lint
+  
+  Phase 2 — Split CliHubViewProvider message routing
+  Outcome: main.ts routes only; feature handlers move to focused modules
+  under src/clihub/host/.
+  Files: `src/clihub/host/message-router.ts` (new),
+  `src/clihub/host/workspace-handler.ts` (new), `src/clihub/main.ts`
+  Check: typecheck + lint
+  
+  Phase 3 — Encapsulate voice TTS state
+  Outcome: Module-level mutable globals replaced with a class;
+  concurrent speak calls and stale references are no longer possible.
+  Files:
+  `src/clihub/webview/core/tools-cli-core/modal-voice/host-voice-tts.ts`
+  Check: typecheck + lint
+  
+  Phase 4 — Document ARCHITECTURE.md
+  Outcome: Empty file filled with the build targets, message protocol,
+  and phase diagram already described in AGENTS.md — single
+  authoritative reference.
+  Files: `ARCHITECTURE.md`
+  Check: manual review
+  
+  ──────────────────────────────────────────────────────────────────────
+  
+  Any questions?
+  If not, I'll start the refactor.
+  
+  🚀 Ready when you are.

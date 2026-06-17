@@ -227,7 +227,8 @@ Stay within the authorized scope for all changes. **Exception:** if you notice a
 **Critical** security or data-loss issue outside scope, surface it report-only
 (as a finding) without adding a plan phase for it.
 
-"Out of Scope" lists areas that were **not** analyzed and why. Do not re-list
+`Project Understanding` includes a short `Review Scope:` line for areas that
+were not deeply reviewed. Keep limitations clear before findings. Do not re-list
 items there that you already reported as findings.
 
 ---
@@ -258,11 +259,17 @@ Keep this section short and useful to the maintainer. Start with:
 
 ```text
 I already understand your project: [brief refactor-relevant context].
+
+Review Scope: [areas not deeply reviewed, if any.]
 ```
 
-Max 3 lines. Mention only the authorized scope, key entry points, and constraints
-that justify the findings and plan. Do not explain the full product, pitch what
-it does, or restate obvious details the maintainer already knows.
+Max 4 lines total. The first sentence should mention only the authorized scope,
+key entry points, and constraints that justify the findings and plan. Add
+`Review Scope:` as one short line only when there are meaningful analysis-depth
+limits, such as very large files, CSS, tests, dependencies, generated output, or
+internals intentionally not traced line-by-line. Do not explain the full
+product, pitch what it does, or restate obvious details the maintainer already
+knows.
 
 ### Findings / Suggestions Block
 
@@ -402,17 +409,6 @@ Rules:
 * Do not include more than 5 phases unless critical bugs require it.
 * Do not include optional suggestions unless they are part of the recommended
   refactor path.
-
-
-### 🚫 Out of Scope
-
-What was **not** analyzed and why (areas, not already-reported findings):
-
-```text
-- `packages/legacy-api/` — unrelated to the requested scope.
-- Test suite creation — no existing test structure found.
-- Dependency upgrades — not authorized.
-```
 
 ### Closing Prompt
 
