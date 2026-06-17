@@ -197,9 +197,12 @@ refactor or the user explicitly asked for them.
 
 ### 12. Execution & authorization
 
-Refactor only on explicit authorization. Accepted tokens: `go`, `start`,
-`proceed`, `green light` (or a clear equivalent). The architecture direction is
-recommended by the analysis, never chosen by the user as A/B.
+Refactor only on explicit authorization. Accept any clear approval phrase, for
+example: `go`, `start`, `proceed`, `green light`, `come on`, `you can start`,
+`I approve`, `approved`, `do it`, `dale`, or a clear equivalent. Do not execute
+on ambiguous discussion such as `what do you think?`, `maybe`, or `explain
+first`. The architecture direction is recommended by the analysis, never chosen
+by the user as A/B.
 
 On authorization, execute **only the first pending phase** — never multiple
 phases in one response — then stop and report (per template) and wait for
@@ -473,8 +476,10 @@ known risks or debt remain.]
 * **"analyze my project"** → analyze structure, produce the phased plan, modify
   nothing.
 * **"refactor src/auth"** → analyze only the auth scope, build the plan, wait.
-* **"go"** → execute the first pending phase only, report, wait.
-* **"green light"** → execute the next pending phase only, report, stop.
+* **Approval after analysis** (`go`, `start`, `you can start`, `I approve`,
+  `dale`) → execute Phase 1 only, report, wait.
+* **Approval after a phase report** (`continue`, `next`, `go`, `green light`)
+  → execute the next pending phase only, report, wait.
 
 ## Philosophy
 
