@@ -473,7 +473,7 @@ known risks or debt remain.]
 * **"analyze my project"** → analyze structure, produce the phased plan, modify
   nothing.
 * **"refactor src/auth"** → analyze only the auth scope, build the plan, wait.
-* **"go"** → execute Phase 1 only, report, wait.
+* **"go"** → execute the first pending phase only, report, wait.
 * **"green light"** → execute the next pending phase only, report, stop.
 
 ## Philosophy
