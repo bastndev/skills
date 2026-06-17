@@ -190,6 +190,11 @@ Bug hierarchy: Critical bugs jump the queue and become Phase 1. Non-critical
 bugs attach to the phase for their area. Every bug appears in the plan exactly
 once, at the phase where it will be fixed.
 
+Keep the visible plan compact. Prefer 2–5 phases. Each phase must be actionable,
+safe to execute independently, and tied to a finding or architecture decision.
+Do not turn optional suggestions into phases unless they unlock the main
+refactor or the user explicitly asked for them.
+
 ### 12. Execution & authorization
 
 Refactor only on explicit authorization. Accepted tokens: `go`, `start`,
@@ -365,21 +370,39 @@ whole project. Mark moves or extractions with `# was ...` or `# extracted from
 
 ### 🗺️ Proposed Plan
 
-One block per phase, ordered by value for this project:
+Use this compact display format. Do not add long `Goal`, `Affected files`, or
+`Why now` paragraphs. The phase title explains the action; `Outcome` explains
+the value.
 
 ```text
-Phase N — [phase name]
+🗺️ Proposed Plan
 
-Goal: [what this phase improves]
+Phase 1 — [verb + short target]
+Outcome: [one concrete result.]
+Files: `path/file`, `path/file` (new)
+Check: [typecheck + lint | build | manual verification]
 
-Affected files: [count]
-- `path/file`
-- `path/file`
-
-Why now: [why this phase happens at this point]
-
-Validation: [build | typecheck | lint | test | manual verification]
+Phase 2 — [verb + short target]
+Outcome: [one concrete result.]
+Files: `path/file`, `path/file`
+Check: [typecheck + lint | build | manual verification]
 ```
+
+Rules:
+
+* Use `Phase N — ...` because execution happens one phase at a time.
+* Start phase names with a verb: Fix, Extract, Split, Consolidate, Move, Remove,
+  Harden, Document, or similar.
+* Keep each phase to 3 lines after the title: `Outcome`, `Files`, `Check`.
+* Use one-line `Files:` when there are 1–4 files. Use a short file list only
+  when more than 4 files are affected.
+* Mark new files with `(new)` and deleted files with `(delete)`.
+* Omit ordering explanations by default. Add `Why:` only when the order would
+  otherwise be surprising.
+* Do not include more than 5 phases unless critical bugs require it.
+* Do not include optional suggestions unless they are part of the recommended
+  refactor path.
+
 
 ### 🚫 Out of Scope
 
