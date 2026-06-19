@@ -4,7 +4,7 @@ description: Scaffold a new dual ESM/CJS TypeScript npm package with the proven,
 license: MIT
 metadata:
   author: bastndev
-  version: "2.0.0"
+  version: "1.0.0"
 ---
 
 # npm-package-starter
