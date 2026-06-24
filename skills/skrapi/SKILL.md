@@ -1,10 +1,6 @@
 ---
-name: skrapi
+name: architecture-analyzer
 description: Analyzes the architecture of any software project — web, mobile, browser extension, or npm package/library, in any JS/TS stack (Next.js, Astro, React Native, Expo, Lynx JS, Vite, etc.) or other languages if needed — and produces a folder of focused Markdown files covering architecture and packages/dependencies. Use whenever the user wants to understand or document an existing codebase; wants to study another project's structure for inspiration before applying ideas to their own (e.g. "estoy analizando este repo para aprender"); or asks which package handles something specific (dark/light mode, routing, state management, forms, i18n) and whether one exists. Trigger even without the word "architecture" — "ayúdame a entender este proyecto", "qué packages usa y para qué", "analiza la estructura de este repo" all qualify.
-license: MIT
-metadata:
-  author: bastndev
-  version: "1.0.0"
 ---
 
 # Architecture Analyzer
@@ -107,6 +103,9 @@ or near-duplicate files:
 - **`SKILLS.md`** — only if the project has a `.claude/skills/` or
   `.agents/skills/` folder. If neither exists, this is simply not part of the
   project — don't create the file and don't mention its absence elsewhere.
+- **`prompt.md`** — same condition as `recommendations.md`. Where that file
+  explains ideas for a developer (with code sketches), this one is for
+  someone who doesn't write code at all — see its own section below.
 
 Write every file in the language chosen in Step 0.
 
@@ -185,6 +184,35 @@ how to apply it — not just the abstract idea. Also call out anything that's
 *not* worth copying (over-engineering, or a decision that only makes sense at
 that project's scale/team size).
 
+### `prompt.md` (same condition as `recommendations.md`)
+
+`recommendations.md` is written for someone who's going to read code.
+`prompt.md` is for someone who isn't — it's meant to be copied straight into
+whatever AI coding agent they use on their own project (Claude Code, Cursor,
+etc.) so the agent does the work. Don't explain the ideas here; hand over
+ready-to-paste instructions instead.
+
+Write a short numbered list of self-contained prompts, each grounded in
+something *actually found* in this analysis (a real package name, a real
+skill name, a real pattern) rather than generic advice. Cover whichever of
+these genuinely apply — skip any that don't fit this project:
+
+1. **Replicate an architecture pattern** — adopting the same rendering
+   strategy, folder structure, or a specific notable pattern from
+   `architecture.md`.
+2. **Install/adapt a specific skill** — naming an actual skill from
+   `SKILLS.md`, if that file exists.
+3. **Install a specific package** — naming an actual package from
+   `packages.md` and what gap it fills (e.g. "this project has no dark mode
+   package — here's a prompt to add one").
+4. **General recommendation request** — a prompt that hands the person's own
+   agent the relevant findings and asks it to compare against their project
+   and suggest the highest-value next step.
+
+Each prompt should briefly state what was found here, then ask the agent to
+apply or adapt it to "my project" — written so the person can paste it
+as-is, without needing to explain anything themselves first.
+
 ### `SKILLS.md` (only if `.claude/skills/` or `.agents/skills/` exists)
 
 This file documents the custom skills available to AI tools in this repo —
@@ -243,18 +271,48 @@ Once the files are written, give a short closing message — not a recap of
 everything each file contains, since the user can just open the files for
 that. The summary's only job is to confirm what exists and where, fast.
 
-Use this shape (adapt the wording to the language chosen in Step 0):
+Use the template that matches the language chosen in Step 0 — don't just
+"adapt the wording" loosely, actually switch to the matching template below
+so an EN choice reliably produces an EN summary, not a translated-in-the-
+moment one:
 
+**🇪🇸 ES:**
 ```markdown
 He creado `<folder-name>/` con <N> archivos:
 
 1. `architecture.md` (<line count> líneas)
 2. `packages.md` (<line count> líneas)
-3. `SKILLS.md` (<line count> líneas)  <!-- only if it was created -->
+3. `SKILLS.md` (<line count> líneas)
+4. `prompt.md` (<line count> líneas)
 
 Archivos creados con éxito 🎉
 ```
 
-Just the file list with line counts and that closing line — no bullets
-underneath each file describing its sections, no restating the skill's own
-principles back to the user.
+**🇺🇸 EN:**
+```markdown
+I created `<folder-name>/` with <N> files:
+
+1. `architecture.md` (<line count> lines)
+2. `packages.md` (<line count> lines)
+3. `SKILLS.md` (<line count> lines)
+4. `prompt.md` (<line count> lines)
+
+Files created successfully 🎉
+```
+
+**🇨🇳 ZH:**
+```markdown
+我已创建 `<folder-name>/`，包含 <N> 个文件：
+
+1. `architecture.md`（<line count> 行）
+2. `packages.md`（<line count> 行）
+3. `SKILLS.md`（<line count> 行）
+4. `prompt.md`（<line count> 行）
+
+文件已成功创建 🎉
+```
+
+Only list files that were actually created this run — drop the line for any
+file that didn't apply (e.g. no `SKILLS.md` line if there's no skills
+folder). No bullets underneath each file describing its sections, no
+restating the skill's own principles back to the user.
