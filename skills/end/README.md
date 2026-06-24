@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/github/image/xyz/end.webp" width="150" />
+  <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/github/icons/end.webp" width="150" />
 </p>
 
 <h1 align="center">[End] / Refactor Project</h1>
