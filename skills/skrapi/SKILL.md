@@ -228,19 +228,23 @@ empty-state message -->
 found — or, if there are none, saying plainly that this project has no
 custom skills installed.>
 
+<br>
+
+⯈ **skill-example**
 ```
 npx skills add https://github.com/owner-example/repo-example --skill skill-example
 ```
 
 <br>
 
+⯈ **skill-example**
 ```
 skill-example
 ```
 
 <br>
-<!-- one fenced block per skill, each followed by its own `<br>` —
-including after the last block — see rules below for which form each
+<!-- one labeled+fenced pair per skill, each preceded by its own `<br>` —
+including before the first pair — see rules below for which form each
 block takes, ordering, and the empty-state message -->
 
 Rules for the **📦 Packages** blocks specifically:
@@ -267,13 +271,16 @@ Rules for the **📦 Packages** blocks specifically:
 
 Rules for the **🤖 Skills** blocks specifically:
 
-- One fenced code block per skill found — never combine multiple skills
+- One labeled fenced block per skill found — never combine multiple skills
   into a single block or a single multi-skill command, mirroring how
   Packages handles multiple packages.
-- Put a `<br>` on its own line after every skill block, including after
-  the last one — this is what creates visible separation between skills
-  when rendered. Don't add `<br>` anywhere else in this file (Architecture
-  and Packages blocks don't get one).
+- Each skill gets a `⯈ **<skill-name>**` line directly above its fenced
+  block (no blank line between the label and the block), using the
+  skill's real name.
+- Put a `<br>` on its own line before every labeled skill block, including
+  before the first one — this is what creates visible separation between
+  skills when rendered. Don't add `<br>` anywhere else in this file
+  (Architecture and Packages blocks don't get one).
 - For each skill, look for a `skills-lock.json` file at the project root.
   If it exists, check whether the skill's name is a key in its `skills`
   object.
@@ -287,13 +294,14 @@ Rules for the **🤖 Skills** blocks specifically:
     that skill's name: fall back to a block containing only the skill's
     name on its own line, exactly as it appears in `.claude/skills/` or
     `.agents/skills/` (e.g. `skrapi`) — nothing else, no invented URL, no
-    git-remote lookup, no guessed repo.
+    git-remote lookup, no guessed repo. The `⯈ **<skill-name>**` label
+    above it still applies the same way.
 - List every skill found this run (the same set documented in `SKILLS.md`,
   including `skrapi` itself when it's listed there), in the same order
   they appear on disk.
 - If no skills were found (no `SKILLS.md` this run), don't omit the
   section — instead write a single line in the fenced block, in English,
-  with no trailing `<br>`:
+  with no `⯈` label and no leading `<br>`:
   `>- This project doesn't have any skill installed 🚫`
   The 1-2 sentence explanation above the block should say the same thing
   in the language chosen in Step 0.
