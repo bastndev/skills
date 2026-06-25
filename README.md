@@ -30,29 +30,28 @@
   </a>
 </p>
 
-<br>
-
 ```
 npx skills add bastndev/skills
 ```
+
 <br>
 
 ## The Three Phases
 
 | Phase      | Purpose                              | Key Capabilities                                                                                                                                                                                   | Example Skills                  | Status |
 | ---------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------ |
-| **Start**  | Project initialization & scaffolding | Create production-ready folder structures, initialize frameworks, apply best-practice defaults and configs from commit #1.                                                                         | `start-package` *(more coming)* | ㅤㅤ✅ |
-| **Middle** | Understand, document & improve       | Analyze any codebase and document it into a portable folder of focused Markdown. Enhance UI/UX, harden security, boost performance, and clean logic during active development.                      | `skrapi`                        | ㅤㅤ✅ |
+| **Start**  | Project initialization & scaffolding | Create production-ready folder structures, initialize frameworks, apply best-practice defaults and configs from commit #1.                                                                         | `start-package` _(more coming)_ | ㅤㅤ✅ |
+| **Middle** | Understand, document & improve       | Analyze any codebase and document it into a portable folder of focused Markdown. Enhance UI/UX, harden security, boost performance, and clean logic during active development.                     | `skrapi`                        | ㅤㅤ✅ |
 | **End**    | Audit, diagnosis & safe refactoring  | Full architecture & quality analysis. Categorized findings with file-level evidence. Prioritized phased plan executed **only with explicit approval**. Behavior-preserving. Multi-runtime support. | `end`                           | ㅤㅤ✅ |
 
 ## Available Skills
 
 Listed in the natural order you'd reach for them — **Start** a project, understand it in the **Middle**, harden it at the **End**.
 
-| Skill                                                 | Description                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **[start-package](./skills/start-package/README.md)** | _Start_ — Scaffolds a publishable **dual ESM + CJS** TypeScript package with bundled type declarations, a zero-config `tsup` build, and TypeScript pinned to `5.x` so it builds cleanly in both CLI and editor. Generates `package.json`, `tsconfig.json`, tsup config, a smoke test, and `.vscode` settings, then installs, builds, and verifies.<br><br>→ [Full documentation](./skills/start-package/README.md)                                     |
-| **[skrapi](./skills/skrapi/README.md)**               | _Middle_ — Analyzes any codebase (web, mobile, extension, library, monorepo) and writes a fixed `SKRAPI/` folder of focused Markdown — architecture, dependencies, and paste-ready prompts. Every description is verified against real code, never guessed from a package name. Multilingual output (🇪🇸 ES · 🇺🇸 EN · 🇨🇳 ZH).<br><br>→ [Full documentation](./skills/skrapi/README.md)                                                                  |
+| Skill                                                 | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[start-package](./skills/start-package/README.md)** | _Start_ — Scaffolds a publishable **dual ESM + CJS** TypeScript package with bundled type declarations, a zero-config `tsup` build, and TypeScript pinned to `5.x` so it builds cleanly in both CLI and editor. Generates `package.json`, `tsconfig.json`, tsup config, a smoke test, and `.vscode` settings, then installs, builds, and verifies.<br><br>→ [Full documentation](./skills/start-package/README.md)                                                                            |
+| **[skrapi](./skills/skrapi/README.md)**               | _Middle_ — Analyzes any codebase (web, mobile, extension, library, monorepo) and writes a fixed `SKRAPI/` folder of focused Markdown — architecture, dependencies, and paste-ready prompts. Every description is verified against real code, never guessed from a package name. Multilingual output (🇪🇸 ES · 🇺🇸 EN · 🇨🇳 ZH).<br><br>→ [Full documentation](./skills/skrapi/README.md)                                                                                                         |
 | **[end](./skills/end/README.md)**                     | _End_ — Understands your project end-to-end. Delivers a clear diagnosis (confirmed bugs, risks, opportunities, technical debt) with concrete references, recommends the right architecture direction for _this_ codebase, and builds an ordered execution plan. Every change happens in an isolated, reviewable phase — it only proceeds when you say `go`, `start`, or `proceed`, and no files are touched during analysis.<br><br>→ [Full documentation & examples](./skills/end/README.md) |
 
 > **Note:** Each skill ships with its own detailed README. The root page gives the high-level overview; dive into `./skills/<skill>/README.md` for deep usage, report examples, and guarantees.
