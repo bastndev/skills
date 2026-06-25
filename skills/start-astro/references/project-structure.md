@@ -14,7 +14,7 @@ Final file tree after this skill runs (on top of the `minimal` template's `bun c
 │   ├── layouts/
 │   │   └── Layout.astro        ← from references/layout-header.md
 │   ├── styles/
-│   │   └── theme.css           ← from references/theme-toggle.md
+│   │   └── global.css          ← from references/theme-toggle.md
 │   └── pages/
 │       ├── index.astro         ← Home
 │       ├── work.astro          ← Work
@@ -30,29 +30,53 @@ Each page is intentionally minimal — just enough content to prove the Layout/H
 
 ## `src/pages/index.astro`
 
+The Home page is a **centered hero**: an ASCII-art logo rendered in a `<pre>`, with the welcome line directly beneath it. The logo string lives in the frontmatter so the markup stays clean — swap it for the project's own ASCII (e.g. generated at [patorjk.com/software/taag](https://patorjk.com/software/taag/) with the "ANSI Shadow" font) to rebrand. The `<pre>` is `aria-hidden` because the art is decorative; screen readers get the heading-less welcome text instead.
+
 ```astro
 ---
 import Layout from '../layouts/Layout.astro';
+
+// Decorative ASCII logo for the Home hero. Replace with your own art.
+// First line begins with a single leading space — keep it, it aligns the glyphs.
+const logo = ` ██████╗ ██╗  ██╗██████╗
+██╔════╝ ╚██╗██╔╝██╔══██╗
+██║  ███╗ ╚███╔╝ ██████╔╝
+██║   ██║ ██╔██╗ ██╔══██╗
+╚██████╔╝██╔╝ ██╗██████╔╝
+ ╚═════╝ ╚═╝  ╚═╝╚═════╝ `;
 ---
 
 <Layout title={`Home · {{PROJECT_NAME}}`} projectName="{{PROJECT_NAME}}">
-  <section class="page">
-    <h1>Home</h1>
-    <p>Welcome — this is the starting point of the site.</p>
+  <section class="hero">
+    <pre class="hero-logo" aria-hidden="true">{logo}</pre>
+    <p class="hero-text">Welcome — this is the starting point of the site.</p>
   </section>
 </Layout>
 
 <style>
-  .page {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 3rem 1.5rem;
+  .hero {
+    min-height: calc(100vh - 70px); /* viewport minus the header */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 1.5rem;
+    padding: 2rem 1.5rem;
   }
-  .page h1 {
-    color: var(--color-text);
+  .hero-logo {
+    margin: 0;
+    max-width: 100%;
+    color: var(--color-accent);
+    font-family: ui-monospace, 'Cascadia Code', 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
+    font-size: clamp(0.45rem, 2.2vw, 0.95rem);
+    line-height: 1.1;
+    white-space: pre;
   }
-  .page p {
+  .hero-text {
+    margin: 0;
     color: var(--color-text-muted);
+    font-size: 1.05rem;
   }
 </style>
 ```
@@ -151,7 +175,7 @@ bun install
 bun run build
 ```
 
-`bun run build` must exit 0. It type-checks the `.astro` files and confirms every page imports `Layout.astro` correctly, every nav link resolves to a real page, and `theme.css` has no syntax errors — catches the most common mistakes (typo'd import path, missing closing tag) before the user ever opens the dev server.
+`bun run build` must exit 0. It type-checks the `.astro` files and confirms every page imports `Layout.astro` correctly, every nav link resolves to a real page, and `global.css` has no syntax errors — catches the most common mistakes (typo'd import path, missing closing tag) before the user ever opens the dev server.
 
 ## Adding more pages later
 

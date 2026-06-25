@@ -1,6 +1,6 @@
 # Layout + Header
 
-Copy-paste ready. `Layout.astro` wraps every page, imports the theme CSS, the no-flash script, and Astro's native `<ClientRouter />` for smooth fade transitions between pages. `Header.astro` holds the nav (Home/Work/About/Contact) + the theme toggle button.
+Copy-paste ready. `Layout.astro` wraps every page, imports the global CSS, runs the no-flash theme script (which **re-applies on `astro:after-swap`** so the theme survives navigation), and pulls in Astro's native `<ClientRouter />` for smooth fade transitions between pages. `Header.astro` holds the nav (Home/Work/About/Contact) + the theme toggle button.
 
 ## `src/layouts/Layout.astro`
 
@@ -8,7 +8,7 @@ Copy-paste ready. `Layout.astro` wraps every page, imports the theme CSS, the no
 ---
 import { ClientRouter } from 'astro:transitions';
 import Header from '../components/Header.astro';
-import '../styles/theme.css';
+import '../styles/global.css';
 
 interface Props {
   title: string;
@@ -27,9 +27,16 @@ const { title, projectName } = Astro.props;
     <ClientRouter />
     <script is:inline>
       (function () {
-        const saved = localStorage.getItem('theme');
-        const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', theme);
+        function applyTheme() {
+          const saved = localStorage.getItem('theme');
+          const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        }
+        applyTheme();
+        // Re-apply after every View Transition swap (fires before paint).
+        // Without this, navigating between pages resets <html data-theme> to
+        // the server HTML (which has no theme) and the site flips back to light.
+        document.addEventListener('astro:after-swap', applyTheme);
       })();
     </script>
   </head>

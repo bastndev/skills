@@ -46,14 +46,14 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
    - If `create-astro` warns that the directory isn't empty (it may contain `.git`, an editor config, etc. — fine), proceed; only stop and ask if it refuses outright because of conflicting files.
 
 3. **Read the reference files** before writing any code — they contain the exact, ready-to-paste implementation:
-   - `references/theme-toggle.md` — the 15 CSS variables (light + dark), the toggle button, and the vanilla JS (handles `astro:page-load` so it survives View Transitions per the gotcha below).
+   - `references/theme-toggle.md` — the 15 CSS variables (light + dark), the toggle button, and the vanilla JS (rebinds the toggle on `astro:page-load` **and** re-applies the theme on `astro:after-swap`, so both survive View Transitions per the gotchas below).
    - `references/layout-header.md` — `Layout.astro` (imports `ClientRouter`, the theme script, global CSS) + `Header.astro` (nav with Home/Work/About/Contact + the toggle button).
    - `references/project-structure.md` — final file tree and what minimal content goes in each of the 4 pages.
 
 4. **Write the files** into the current folder exactly as given in the references — these are copy-paste ready, not something to regenerate from scratch:
    - `src/layouts/Layout.astro`
    - `src/components/Header.astro`
-   - `src/styles/theme.css`
+   - `src/styles/global.css`
    - `src/pages/index.astro` (Home)
    - `src/pages/work.astro`
    - `src/pages/about.astro`
@@ -75,8 +75,9 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
 - [ ] Project name was detected from the current folder's name — never asked the user, never invented a separate name
 - [ ] Used `minimal` template, not `basic` — no boilerplate to clean up
 - [ ] Theme toggle script runs on `astro:page-load`, not only on initial `DOMContentLoaded` — otherwise it breaks after the first View Transition (bundled module scripts only execute once; see `references/theme-toggle.md`)
-- [ ] Inline "no-flash" script in `<head>` reads the saved theme **before** first paint, so there's no light-flash on dark-mode reload
+- [ ] Inline "no-flash" script in `<head>` reads the saved theme **before** first paint (no light-flash on dark-mode reload) **and re-applies it on `astro:after-swap`** — without the after-swap re-apply, navigating between pages strips `<html data-theme>` (the incoming server HTML has none) and the site flips dark→light on every nav click
 - [ ] `<ClientRouter />` imported from `astro:transitions` and placed in `Layout.astro`'s `<head>`
 - [ ] All 4 pages (Home/Work/About/Contact) use the same `Layout.astro` + `Header.astro`
+- [ ] Home page (`index.astro`) is the centered ASCII-logo hero (`<pre aria-hidden>` + welcome line), not a plain `<h1>Home</h1>`
 - [ ] `bun install` and `bun run build` both pass before reporting done
 - [ ] Zero runtime dependencies added for the theme toggle (CSS vars + vanilla JS only — no package installed for this)

@@ -2,7 +2,7 @@
 
 Copy-paste ready. Vanilla CSS variables + vanilla JS, no package installed. Designed to keep working after Astro's `<ClientRouter />` View Transitions (see "Why `astro:page-load`" below).
 
-## `src/styles/theme.css`
+## `src/styles/global.css`
 
 15 variables, light values on `:root`, dark overrides on `[data-theme="dark"]`.
 
@@ -72,17 +72,27 @@ body {
 
 ## No-flash inline script (goes in `<head>`, before any CSS that depends on the theme)
 
-This is **inline**, not a `.js` file import — it must run synchronously before first paint, or the user sees a light flash before dark mode applies on reload.
+This is **inline**, not a `.js` file import — it must run synchronously before first paint, or the user sees a light flash before dark mode applies on reload. It also re-applies the theme on `astro:after-swap` so the choice survives View Transition navigation (see "Why `astro:after-swap`" below).
 
 ```html
 <script is:inline>
   (function () {
-    const saved = localStorage.getItem('theme');
-    const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    document.documentElement.setAttribute('data-theme', theme);
+    function applyTheme() {
+      const saved = localStorage.getItem('theme');
+      const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+    applyTheme();
+    document.addEventListener('astro:after-swap', applyTheme);
   })();
 </script>
 ```
+
+### Why `astro:after-swap`
+
+**The bug this fixes:** with `<ClientRouter />`, clicking a nav link (Home/Work/About/Contact) does an SPA-style swap. The incoming page's server HTML is `<html lang="en">` with **no** `data-theme` (the server can't know the user's choice — it only lives in `localStorage` + JS). During the swap Astro overwrites the `<html>` attributes to match that incoming HTML, so `data-theme` is stripped and the CSS falls back to the `:root` light values — i.e. **dark mode silently flips to light on every navigation.** The inline `<head>` script does *not* re-run to fix it, because Astro de-dupes identical head scripts across transitions.
+
+`astro:after-swap` fires immediately after the new DOM is in place but **before the browser paints**, so re-reading `localStorage` and re-setting `data-theme` there restores the theme with zero flash. The listener is attached to `document` (which persists across swaps), so registering it once is enough.
 
 ## Toggle button markup (goes inside `Header.astro`)
 
