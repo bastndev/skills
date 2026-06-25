@@ -50,7 +50,7 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
    - `references/theme-toggle.md` — the 15 CSS variables (light + dark), the toggle button, and the vanilla JS (rebinds the toggle on `astro:page-load` **and** re-applies the theme on `astro:after-swap`, so both survive View Transitions per the gotchas below).
    - `references/layout-header.md` — `Layout.astro` (imports `ClientRouter`, the theme script, global CSS) + `Header.astro` (logo + centered nav Home/Work/Contact + the toggle button; no underlines).
    - `references/project-structure.md` — final file tree, the shared `GXB.astro` (centered ASCII logo + per-page tagline), and the 3 pages (each just `<Layout><GXB text="…" /></Layout>`).
-   - `references/architecture.md` — the doc to copy into the project root as `ARCHITECTURE.md` (verbatim, substituting `{{PROJECT_NAME}}`). `project-structure.md` also holds the `.prettierignore` to write.
+   - `references/architecture.md` — the `Architecture.md` doc to copy into the project root (verbatim, substituting `{{PROJECT_NAME}}`).
 
 4. **Write the files** into the current folder exactly as given in the references — these are copy-paste ready, not something to regenerate from scratch:
    - `src/layouts/Layout.astro`
@@ -60,8 +60,7 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
    - `src/pages/index.astro` (Home)
    - `src/pages/work.astro`
    - `src/pages/contact.astro`
-   - `ARCHITECTURE.md` (project root, **uppercase** — copy `references/architecture.md` verbatim, substituting `{{PROJECT_NAME}}`)
-   - `.prettierignore` (project root — from `references/project-structure.md`)
+   - `Architecture.md` (project root — copy `references/architecture.md` verbatim, substituting `{{PROJECT_NAME}}`)
 
    **Leave `public/` alone.** Do **not** create, replace, or delete anything in `public/` — `bun create astro` already ships `favicon.svg` and `favicon.ico` (the Astro defaults). The header logo only *references* `favicon.svg` read-only (via a CSS mask); never overwrite the favicon with a custom logo and never delete the `.ico`.
 
@@ -89,8 +88,7 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
        ├── index.astro            ← Home
        ├── work.astro             ← Work
        └── contact.astro          ← Contact
-   ARCHITECTURE.md                ← project architecture overview
-   .prettierignore                ← skips dist/.astro/public from formatting
+   Architecture.md                ← project architecture overview
 
    What's included:
    - Astro 7.0 with minimal template (no boilerplate)
@@ -116,6 +114,6 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
 - [ ] All 3 pages (Home/Work/Contact) use the same `Layout.astro` + `Header.astro`
 - [ ] Every page renders the shared `GXB.astro` (centered ASCII logo + a per-page tagline); the ASCII art lives in **one** file (`GXB.astro`), not duplicated into each page
 - [ ] `public/favicon.svg` and `public/favicon.ico` are the **untouched Astro defaults** — the skill never overwrites the favicon with a custom logo and never deletes the `.ico` (the header logo only references `favicon.svg` read-only)
-- [ ] `ARCHITECTURE.md` (uppercase) and `.prettierignore` written to the project root
+- [ ] `Architecture.md` written to the project root from `references/architecture.md`
 - [ ] `bun install` and `bun run build` both pass before reporting done
 - [ ] Zero runtime dependencies added for the theme toggle (CSS vars + vanilla JS only — no package installed for this)
