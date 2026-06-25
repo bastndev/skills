@@ -8,54 +8,64 @@ Copy-paste ready. Vanilla CSS variables + vanilla JS, no package installed. Desi
 
 ```css
 :root {
-  /* surface */
-  --color-bg: #ffffff;
-  --color-bg-elevated: #f5f5f7;
-  --color-border: #e2e2e6;
+  /* backgrounds */
+  --color-bg: #fafaf8;
+  --color-bg-elevated: #ffffff;
+  --color-bg-subtle: #f4f3ef;
+
+  /* borders */
+  --color-border: #e7e5df;
 
   /* text */
-  --color-text: #1a1a1e;
-  --color-text-muted: #5c5c66;
+  --color-text: #161616;
+  --color-text-muted: #6b6b6b;
 
-  /* brand / accent */
-  --color-accent: #6d4aff;
-  --color-accent-hover: #5a3ce0;
+  /* premium accent */
+  --color-accent: #2d2d2d;
+  --color-accent-hover: #111111;
   --color-on-accent: #ffffff;
 
-  /* nav */
-  --color-nav-bg: #ffffff;
-  --color-nav-text: #1a1a1e;
-  --color-nav-text-active: #6d4aff;
+  /* navigation */
+  --color-nav-bg: rgba(250, 250, 248, 0.8);
+  --color-nav-text: #4a4a4a;
+  --color-nav-text-active: #111111;
 
-  /* feedback / misc */
-  --color-shadow: rgba(0, 0, 0, 0.08);
-  --color-focus-ring: #6d4aff;
-  --color-link: #6d4aff;
-  --color-link-hover: #5a3ce0;
+  /* effects */
+  --color-shadow: rgba(0, 0, 0, 0.04);
+  --color-focus-ring: rgba(0, 0, 0, 0.12);
 
-  --transition-theme: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  --color-link: #222222;
+  --color-link-hover: #000000;
+
+  --transition-theme:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease;
 }
 
-[data-theme='dark'] {
-  --color-bg: #14151a;
-  --color-bg-elevated: #1c1d24;
-  --color-border: #2c2d36;
+[data-theme="dark"] {
+  --color-bg: #111111;
+  --color-bg-elevated: #171717;
+  --color-bg-subtle: #1f1f1f;
 
-  --color-text: #f0f0f3;
-  --color-text-muted: #a3a3ad;
+  --color-border: #2a2a2a;
 
-  --color-accent: #8f73ff;
-  --color-accent-hover: #a690ff;
-  --color-on-accent: #14151a;
+  --color-text: #f5f5f5;
+  --color-text-muted: #9b9b9b;
 
-  --color-nav-bg: #1c1d24;
-  --color-nav-text: #f0f0f3;
-  --color-nav-text-active: #8f73ff;
+  --color-accent: #f5f5f5;
+  --color-accent-hover: #ffffff;
+  --color-on-accent: #111111;
 
-  --color-shadow: rgba(0, 0, 0, 0.4);
-  --color-focus-ring: #8f73ff;
-  --color-link: #8f73ff;
-  --color-link-hover: #a690ff;
+  --color-nav-bg: rgba(17, 17, 17, 0.8);
+  --color-nav-text: #b0b0b0;
+  --color-nav-text-active: #ffffff;
+
+  --color-shadow: rgba(0, 0, 0, 0.35);
+  --color-focus-ring: rgba(255, 255, 255, 0.12);
+
+  --color-link: #ffffff;
+  --color-link-hover: #d9d9d9;
 }
 
 * {
