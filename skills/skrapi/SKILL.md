@@ -67,39 +67,39 @@ default to generic boilerplate observations.
 | A browser extension (has `manifest.json`)              | `references/extension.md` |
 | An npm package/library/CLI meant to be consumed by other code | `references/library.md` |
 | A monorepo with several of the above                  | Read each relevant reference file for the corresponding package/app inside |
-| Something outside JS/TS entirely (Python, Go, Swift native, etc.) | No reference file needed — apply the same general structure below using your own judgment, and say so plainly in `architecture.md` so the user knows this is best-effort outside the skill's main focus |
+| Something outside JS/TS entirely (Python, Go, Swift native, etc.) | No reference file needed — apply the same general structure below using your own judgment, and say so plainly in `ARCHITECTURE.md` so the user knows this is best-effort outside the skill's main focus |
 
 ## Step 3 — Decide on the output folder
 
-Create **one folder** holding everything this run produces. Don't scatter the
-`.md` files loose next to the code.
+Create **one folder named `SKRAPI`** holding everything this run produces.
+Don't scatter the files loose next to the code, and don't rename this folder
+per project — `SKRAPI` is this skill's fixed, recognizable folder name, the
+same way a tool might always create a `.github/` or `.vscode/` folder.
 
-- If the user already named a target location (e.g. `~/analices/`), create the
-  project's folder inside it.
-- Otherwise, default to creating the folder at the root of the analyzed
-  project, named `<project-slug>-architecture`, where `project-slug` comes
-  from the `name` field in `package.json` (falling back to the repo/folder
-  name if that's missing or generic like `"app"`).
-- For a monorepo, nest one subfolder per app/package you analyzed instead of
-  mixing everything into shared files.
+- If the user already named a target location (e.g. `~/analices/`), create
+  `SKRAPI/` inside it.
+- Otherwise, default to creating `SKRAPI/` at the root of the analyzed
+  project.
+- For a monorepo, nest one subfolder per app/package you analyzed inside
+  `SKRAPI/` instead of mixing everything into shared files.
 
 ## Step 4 — Write the files
 
 Always produce these two:
 
-- **`architecture.md`**
-- **`packages.md`**
+- **`ARCHITECTURE.md`**
+- **`PACKAGES.md`**
 
 Add these only when they earn their place — don't pad the folder with empty
 or near-duplicate files:
 
-- **`state-management.md`** — split this out only if state management is
+- **`STATE-MANAGEMENT.md`** — split this out only if state management is
   non-trivial (multiple stores, cross-island/cross-screen state, a notable
-  custom solution) — otherwise a paragraph inside `architecture.md` is enough.
-- **`styling.md`** — split out only if the styling approach is layered or
+  custom solution) — otherwise a paragraph inside `ARCHITECTURE.md` is enough.
+- **`STYLING.md`** — split out only if the styling approach is layered or
   unusual (e.g. a custom design-token system, multiple competing approaches
-  found in the same repo) — otherwise covered briefly in `architecture.md`.
-- **`recommendations.md`** — only when the user has signaled they're studying
+  found in the same repo) — otherwise covered briefly in `ARCHITECTURE.md`.
+- **`RECOMMENDATIONS.md`** — only when the user has signaled they're studying
   this project to bring ideas back to *their own* project. If you don't
   already know their stack from the conversation, ask before writing this
   file — a recommendation is only useful when it's a concrete comparison
@@ -110,7 +110,7 @@ or near-duplicate files:
 
 Write every file in the language chosen in Step 0.
 
-### `architecture.md`
+### `ARCHITECTURE.md`
 
 Use this shape:
 
@@ -152,7 +152,7 @@ Decisions that look like trade-offs, technical debt, or wouldn't generalize
 well to a smaller project — flagged plainly, not just praise.
 ```
 
-### `packages.md`
+### `PACKAGES.md`
 
 Split into `dependencies` and `devDependencies`. For each: version, and a
 one-line description of what it does **in this project specifically** (verify
@@ -177,7 +177,7 @@ of CSS, manually, or not at all):
 Skip any item that's clearly inapplicable to the project type (e.g. dark mode
 for a build-tool CLI) rather than forcing an entry.
 
-### `recommendations.md` (only when applicable)
+### `RECOMMENDATIONS.md` (only when applicable)
 
 For each idea worth borrowing: what it is, where to see it in this project,
 why it'd help the user's own project specifically, and a short code sketch of
@@ -233,7 +233,7 @@ Only add one of these sections if that folder actually exists.
 ## Step 5 — Be honest about scale
 
 For a huge codebase, completeness is the wrong goal. Say clearly in
-`architecture.md` which folders/areas you focused on and which you
+`ARCHITECTURE.md` which folders/areas you focused on and which you
 deliberately skipped, so the user knows the docs are a map, not a full
 transcript.
 
@@ -246,10 +246,10 @@ that. The summary's only job is to confirm what exists and where, fast.
 Use this shape (adapt the wording to the language chosen in Step 0):
 
 ```markdown
-He creado `<folder-name>/` con <N> archivos:
+He creado `SKRAPI/` con <N> archivos:
 
-1. `architecture.md` (<line count> líneas)
-2. `packages.md` (<line count> líneas)
+1. `ARCHITECTURE.md` (<line count> líneas)
+2. `PACKAGES.md` (<line count> líneas)
 3. `SKILLS.md` (<line count> líneas)  <!-- only if it was created -->
 
 Archivos creados con éxito 🎉
