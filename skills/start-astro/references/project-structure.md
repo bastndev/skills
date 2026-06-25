@@ -1,11 +1,13 @@
 # Project structure & pages
 
-`{{DIR}}` and `{{PROJECT_NAME}}` come from the user (see SKILL.md step 1 — never invented). Every page passes `{{PROJECT_NAME}}` to `Layout.astro` twice: once inside the `title` string (for the browser tab) and once as the `projectName` prop (which `Layout.astro` forwards to `Header.astro` for the brand link). Substitute the real value everywhere `{{PROJECT_NAME}}` appears below — both occurrences on each page.
+`{{PROJECT_NAME}}` is detected automatically from the current folder's name — the user already created and named it before invoking this skill (e.g. a folder called `TEST1` means `{{PROJECT_NAME}} = TEST1`, preserving its exact casing). Never ask the user for a name; never invent one. The skill scaffolds and writes files **into the current directory**, not into a newly-created sibling folder.
 
-Final file tree after this skill runs (on top of the `minimal` template's `bun create astro` output):
+Every page passes `{{PROJECT_NAME}}` to `Layout.astro` twice: once inside the `title` string (for the browser tab) and once as the `projectName` prop (which `Layout.astro` forwards to `Header.astro` for the brand link). Substitute the real value everywhere `{{PROJECT_NAME}}` appears below — both occurrences on each page.
+
+Final file tree after this skill runs (on top of the `minimal` template's `bun create astro` output), written directly into the current folder:
 
 ```
-{{DIR}}/
+{{PROJECT_NAME}}/                 ← the user's existing folder (e.g. TEST1) — already created, never renamed
 ├── src/
 │   ├── components/
 │   │   └── Header.astro        ← from references/layout-header.md
@@ -142,7 +144,7 @@ import Layout from '../layouts/Layout.astro';
 </style>
 ```
 
-## Verification commands (run from `{{DIR}}`)
+## Verification commands (run from the project root — no `cd` needed, already there)
 
 ```bash
 bun install

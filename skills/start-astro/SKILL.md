@@ -29,33 +29,28 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
 
 1. **Gather inputs:**
 
-   - `PROJECT_NAME` / `DIR` — **always let the user choose.** Look for a name already given in the same message that triggered the skill, in any of these forms (English or Spanish, case-insensitive):
-     - `name project is: X`, `project name: X`, `project name is X`
-     - `nombre del proyecto: X`, `el proyecto se llama X`, `llamalo X`, `nombre: X`
-     - A bare folder-looking token the user clearly intends as the name (e.g. "crea **new-proyect-01**", "scaffold **portfolio-site**")
-
-     If a name is found this way, use it directly as both `DIR` (target folder) and `PROJECT_NAME` (used in page titles) — **do not ask**, just confirm briefly in your reply (e.g. "Creando el proyecto **new-proyect-01**...").
-
-     If no name appears anywhere in the request, **ask the user** what they want to call it before scaffolding anything — e.g. "¿Cómo quieres llamar al proyecto? (este nombre se usa como carpeta y en el título de las páginas)". Don't invent a placeholder name and don't default to something like `my-astro-app` silently — the folder name is the one thing this skill never assumes.
-
+   - `PROJECT_NAME` — **the user already created and named their folder before invoking this skill.** Detect it automatically from the current working directory (`pwd` / the basename of the folder Claude is operating in) and use it as-is — **never ask the user to name the project, and never request a name in chat.** The folder's existing name (e.g. `TEST1`) is the project name, exactly as the user typed it (preserve its original casing — don't lowercase/slugify it).
+   - `DIR` — always `.` (the current directory). This skill scaffolds **into** the folder the user is already standing in; it does not create a new sibling folder and does not rename anything.
    - `PAGES` — default `Home, Work, About, Contact` (the standard set this skill ships). Only deviate if the user explicitly asks for different sections.
 
-2. **Scaffold via the official CLI** — run it non-interactively with flags so it doesn't hang waiting on prompts:
+2. **Scaffold via the official CLI, into the current folder** — the user already made and is standing inside their project folder (e.g. `TEST1`), so this always targets `.`, never a new named folder:
    ```bash
-   bun create astro@latest {{DIR}} -- --template minimal --no-install --no-git --skip-houston
+   bun create astro@latest . -- --template minimal --no-install --no-git --skip-houston
    ```
+   - `.` → scaffold into the current directory; this skill never creates a new folder or renames the existing one.
    - `--template minimal` → the empty template (see rationale above).
    - `--no-install` → this skill controls the install step explicitly (next step), keeps output readable.
    - `--no-git` → don't assume the user wants a fresh git repo; skip unless asked.
    - `--skip-houston` → skip the mascot/animation prompt, keep it non-interactive.
-   - If any flag is rejected by the installed `create-astro` version, fall back to running it without flags and answer the interactive prompts yourself with the values above (`dir` → `{{DIR}}`, `template` → minimal/empty, decline TypeScript strictness prompts with the default, decline git init, decline install).
+   - If any flag is rejected by the installed `create-astro` version, fall back to running it without flags and answer the interactive prompts yourself: `dir` → `.` (current folder), `template` → minimal/empty, decline TypeScript strictness prompts with the default, decline git init, decline install.
+   - If `create-astro` warns that the directory isn't empty (it may contain `.git`, an editor config, etc. — fine), proceed; only stop and ask if it refuses outright because of conflicting files.
 
 3. **Read the reference files** before writing any code — they contain the exact, ready-to-paste implementation:
    - `references/theme-toggle.md` — the 15 CSS variables (light + dark), the toggle button, and the vanilla JS (handles `astro:page-load` so it survives View Transitions per the gotcha below).
    - `references/layout-header.md` — `Layout.astro` (imports `ClientRouter`, the theme script, global CSS) + `Header.astro` (nav with Home/Work/About/Contact + the toggle button).
    - `references/project-structure.md` — final file tree and what minimal content goes in each of the 4 pages.
 
-4. **Write the files** into `{{DIR}}` exactly as given in the references — these are copy-paste ready, not something to regenerate from scratch:
+4. **Write the files** into the current folder exactly as given in the references — these are copy-paste ready, not something to regenerate from scratch:
    - `src/layouts/Layout.astro`
    - `src/components/Header.astro`
    - `src/styles/theme.css`
@@ -64,9 +59,8 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
    - `src/pages/about.astro`
    - `src/pages/contact.astro`
 
-5. **Install + verify:**
+5. **Install + verify** (already in the project folder, no `cd` needed):
    ```bash
-   cd {{DIR}}
    bun install
    bun run build      # must exit 0 — catches broken imports/typos before the user ever opens the editor
    ```
@@ -78,7 +72,7 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
 
 ## Gotchas checklist (verify before declaring done)
 
-- [ ] Project name came from the user's message or was explicitly asked — never silently defaulted/invented
+- [ ] Project name was detected from the current folder's name — never asked the user, never invented a separate name
 - [ ] Used `minimal` template, not `basic` — no boilerplate to clean up
 - [ ] Theme toggle script runs on `astro:page-load`, not only on initial `DOMContentLoaded` — otherwise it breaks after the first View Transition (bundled module scripts only execute once; see `references/theme-toggle.md`)
 - [ ] Inline "no-flash" script in `<head>` reads the saved theme **before** first paint, so there's no light-flash on dark-mode reload
