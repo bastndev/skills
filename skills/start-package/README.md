@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bastndev/skills/refs/heads/main/public/github/icons/start-logo/start-package.webp" width="150" />
+  <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/github/icons/start-logo/start-package.webp" width="150" />
 </p>
 
 <h1 align="center">[Start] / npm-package-starter</h1>

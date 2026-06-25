@@ -42,13 +42,21 @@ npx skills add bastndev/skills --skill end
 - No dependencies added without permission
 - Uncommitted work is never overwritten
 
-## Finding Format
+## What You Get
 
 ```
-src/api/handler.ts:processRequest — missing input validation on userId
-  → can lead to unauthorized data access
-  → add schema validation [severity: critical → phase 1]
+📊 [end] Health Overview — 74 / 100
+
+🔴 Bugs 1    🟡 Debt/Risks 3    🟢 Suggestions 2
+
+🏗️ Architecture     7/10
+🧩 Maintainability  6/10
+⚡ Performance       8/10
+🔒 Security          5/10
+📚 Documentation     7/10
 ```
+
+A scored overview, findings sorted into Bugs / Debt / Suggestions, one architecture decision, and a phased plan — executed one phase at a time on your `go`.
 
 ---
 

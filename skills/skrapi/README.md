@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/github/icons/start.webp" width="150" />
+  <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/github/icons/middle.webp" width="150" />
 </p>
 
-<h1 align="center">[Architecture Analyzer] / Documentation Generator</h1>
+<h1 align="center">[Skrapi] / Architecture Analyzer</h1>
 
 <p align="center">
-  <strong>Architecture Analyzer</strong> — The codebase documentation skill
+  <strong>Skrapi</strong> — The codebase documentation skill
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@
 
 ---
 
-Analyzes any software project's architecture and produces a folder of focused Markdown files covering architecture and packages/dependencies. Web, mobile, browser extension, npm package, monorepo — any JS/TS stack or other languages if needed.
+Analyzes any project — web, mobile, browser extension, npm package, or monorepo, in any JS/TS stack — and writes a fixed `SKRAPI/` folder of focused Markdown: how it's built, what it depends on, and paste-ready prompts to rebuild the same patterns. Every description is verified against real code, never guessed from a package name.
 
 <p align="center">
   <a href="https://skills.sh/bastndev/skills">
@@ -25,31 +25,31 @@ Analyzes any software project's architecture and produces a folder of focused Ma
 ## Install
 
 ```bash
-npx skills add bastndev/skills --skill architecture-analyzer
+npx skills add bastndev/skills --skill skrapi
 ```
 
 ## How It Works
 
-1. **Inspect** — Reads package.json, config files, directory tree. Detects the stack before writing anything.
-2. **Classify** — Picks the matching reference guide (web, mobile, extension, library) for project-specific analysis.
-3. **Generate** — Writes `architecture.md` and `packages.md` with real findings from the codebase, not generic observations.
-4. **Complete** — Optional `recommendations.md` and `SKILLS.md` only when they earn their place.
+1. **Pick a language** — Asks once: 🇪🇸 ES · 🇺🇸 EN · 🇨🇳 ZH. No answer → defaults to EN.
+2. **Inspect** — Reads `package.json`, config files, and the directory tree to detect the real stack before writing anything.
+3. **Classify** — Loads the matching reference guide (web, mobile, extension, library) so analysis fits the project type, not generic boilerplate.
+4. **Generate** — Writes `ARCHITECTURE.md`, `PACKAGES.md`, and `PROMPT.md`, each grounded in actual findings from the code.
 
 ## Guarantees
 
-- Never describes dependencies from their name alone — confirms actual usage
-- No padding files — only generates what the project justifies
-- Supports ES, EN, ZH output languages
-- Skips node_modules, build output, and lockfiles automatically
+- Confirms every dependency by its real usage — never from the name alone
+- Fixed, recognizable `SKRAPI/` folder — never scattered loose next to your code
+- No padding files — extras like `SKILLS.md` appear only when the project earns them
+- Skips `node_modules`, build output, and lockfiles automatically
 
 ## Output Structure
 
 ```
-<project-slug>-architecture/
-├── architecture.md     — Stack, structure, routing, data flow, Mermaid diagrams
-├── packages.md         — Dependencies with project-specific descriptions
-├── recommendations.md  — Actionable patterns to borrow (only when applicable)
-└── SKILLS.md           — Custom AI skills found in the repo (only if they exist)
+SKRAPI/
+├── ARCHITECTURE.md  — Stack, structure, rendering, data flow, Mermaid diagram
+├── PACKAGES.md      — Each dependency's real role + a "common needs" checklist
+├── PROMPT.md        — Paste-ready prompts to rebuild the architecture & packages
+└── SKILLS.md        — Custom AI skills in the repo (only when others exist)
 ```
 
 ---
