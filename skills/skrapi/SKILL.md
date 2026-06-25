@@ -49,7 +49,10 @@ Useful signals to check, roughly in this order:
 - `tsconfig.json` (path aliases often reveal the intended module structure)
 - AI-tooling signals: a `.claude/` folder (commands/skills/agents for Claude
   Code), an `.agents/` folder, or root files like `CLAUDE.md`/`AGENTS.md` —
-  see Step 4's `SKILLS.md` for what to do with these
+  see Step 4's `SKILLS.md` for what to do with these. Also check for a
+  `skills-lock.json` at the project root — when present, it maps installed
+  skill names to their real source repos, used later in `PROMPT.md`'s
+  Skills section.
 - The top 2 levels of the directory tree, ignoring `node_modules`, build output,
   and lockfiles
 
@@ -185,7 +188,7 @@ Always create this one, written last since it pulls from `ARCHITECTURE.md`,
 independent from whether the `SKILLS.md` *file* itself gets created (that
 file stays conditional, per Step 4 above). When `SKILLS.md` wasn't created
 this run, the Skills section here still appears, just with the no-skills
-message instead of a real skill prompt — see rules below.
+message instead of real skill install commands — see rules below.
 
 ```markdown
 # Prompts — <project name>
@@ -219,19 +222,26 @@ npm i package-example
 <package-name>` line — see rules below for source, ordering, and the
 empty-state message -->
 
-## 🧠 Skills
+## 🤖 Skills
 
 <1-2 sentences, in the language chosen in Step 0, naming the skill(s)
 found — or, if there are none, saying plainly that this project has no
 custom skills installed.>
 
 ```
-<a single self-contained prompt, always in English, naming the actual
-skill(s) found and asking the reader's own agent to set up whichever one(s)
-fit their project — or, if there are no skills, the no-skills message in
-English instead (see rules below)>
+npx skills add https://github.com/owner-example/repo-example --skill skill-example
 ```
+
+<br>
+
 ```
+skill-example
+```
+
+<br>
+<!-- one fenced block per skill, each followed by its own `<br>` —
+including after the last block — see rules below for which form each
+block takes, ordering, and the empty-state message -->
 
 Rules for the **📦 Packages** blocks specifically:
 
@@ -255,13 +265,35 @@ Rules for the **📦 Packages** blocks specifically:
   blocks entirely and write a single line instead:
   `>- This project doesn't have any package installed 🚫`
 
-Rules for the **🧠 Skills** block:
+Rules for the **🤖 Skills** blocks specifically:
 
-- If at least one skill was found (i.e. `SKILLS.md` was created this run),
-  keep the original behavior: a single fenced prompt in English naming the
-  actual skill(s) and asking the reader's agent to set them up.
+- One fenced code block per skill found — never combine multiple skills
+  into a single block or a single multi-skill command, mirroring how
+  Packages handles multiple packages.
+- Put a `<br>` on its own line after every skill block, including after
+  the last one — this is what creates visible separation between skills
+  when rendered. Don't add `<br>` anywhere else in this file (Architecture
+  and Packages blocks don't get one).
+- For each skill, look for a `skills-lock.json` file at the project root.
+  If it exists, check whether the skill's name is a key in its `skills`
+  object.
+  - If the skill is found there: read its `source` field (an
+    `owner/repo` string) and write
+    `npx skills add https://github.com/<source> --skill <skill-name>`,
+    using the real values from the lock file (not the placeholders shown
+    above). The `https://github.com/` prefix is always used here,
+    regardless of `sourceType`.
+  - If `skills-lock.json` doesn't exist, or exists but has no entry for
+    that skill's name: fall back to a block containing only the skill's
+    name on its own line, exactly as it appears in `.claude/skills/` or
+    `.agents/skills/` (e.g. `skrapi`) — nothing else, no invented URL, no
+    git-remote lookup, no guessed repo.
+- List every skill found this run (the same set documented in `SKILLS.md`,
+  including `skrapi` itself when it's listed there), in the same order
+  they appear on disk.
 - If no skills were found (no `SKILLS.md` this run), don't omit the
-  section — instead write a single line in the fenced block, in English:
+  section — instead write a single line in the fenced block, in English,
+  with no trailing `<br>`:
   `>- This project doesn't have any skill installed 🚫`
   The 1-2 sentence explanation above the block should say the same thing
   in the language chosen in Step 0.
@@ -274,9 +306,9 @@ explanation around each block is what stays in the user's chosen language,
 not the contents of the block itself.
 
 Keep all blocks paste-ready as-is and don't blend them: the Architecture
-and Skills blocks are text meant for an AI agent to read, each Packages
-block is a literal terminal command — no commentary inside any fenced
-block.
+block is text meant for an AI agent to read; each Packages and each
+Skills block is a literal command or bare name to copy-paste — no
+commentary inside any fenced block.
 
 ### `SKILLS.md` (only if there's at least one skill besides `skrapi` itself)
 
