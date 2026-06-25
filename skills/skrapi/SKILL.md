@@ -99,11 +99,6 @@ or near-duplicate files:
 - **`STYLING.md`** — split out only if the styling approach is layered or
   unusual (e.g. a custom design-token system, multiple competing approaches
   found in the same repo) — otherwise covered briefly in `ARCHITECTURE.md`.
-- **`RECOMMENDATIONS.md`** — only when the user has signaled they're studying
-  this project to bring ideas back to *their own* project. If you don't
-  already know their stack from the conversation, ask before writing this
-  file — a recommendation is only useful when it's a concrete comparison
-  against something real, not generic advice.
 - **`SKILLS.md`** — only if the project has a `.claude/skills/` or
   `.agents/skills/` folder **and** it contains at least one skill besides
   `skrapi` itself. If `skrapi` is the only skill found there, skip this file
@@ -180,14 +175,6 @@ of CSS, manually, or not at all):
 
 Skip any item that's clearly inapplicable to the project type (e.g. dark mode
 for a build-tool CLI) rather than forcing an entry.
-
-### `RECOMMENDATIONS.md` (only when applicable)
-
-For each idea worth borrowing: what it is, where to see it in this project,
-why it'd help the user's own project specifically, and a short code sketch of
-how to apply it — not just the abstract idea. Also call out anything that's
-*not* worth copying (over-engineering, or a decision that only makes sense at
-that project's scale/team size).
 
 ### `SKILLS.md` (only if there's at least one skill besides `skrapi` itself)
 
