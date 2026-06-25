@@ -85,10 +85,11 @@ same way a tool might always create a `.github/` or `.vscode/` folder.
 
 ## Step 4 — Write the files
 
-Always produce these two:
+Always produce these three:
 
 - **`ARCHITECTURE.md`**
 - **`PACKAGES.md`**
+- **`PROMPT.md`** — write this one last, since it pulls from the other two.
 
 Add these only when they earn their place — don't pad the folder with empty
 or near-duplicate files:
@@ -176,6 +177,107 @@ of CSS, manually, or not at all):
 Skip any item that's clearly inapplicable to the project type (e.g. dark mode
 for a build-tool CLI) rather than forcing an entry.
 
+### `PROMPT.md`
+
+Always create this one, written last since it pulls from `ARCHITECTURE.md`,
+`PACKAGES.md`, and — when it exists — `SKILLS.md`. All three sections
+(Architecture, Packages, Skills) always appear in `PROMPT.md` — this is
+independent from whether the `SKILLS.md` *file* itself gets created (that
+file stays conditional, per Step 4 above). When `SKILLS.md` wasn't created
+this run, the Skills section here still appears, just with the no-skills
+message instead of a real skill prompt — see rules below.
+
+```markdown
+# Prompts — <project name>
+
+## 🏗️ Architecture
+
+<1-2 sentences, in the language chosen in Step 0: name the actual pattern
+found — DDD, hexagonal, clean architecture, islands architecture, etc. If
+the project rolled its own approach instead of a named one, describe it
+plainly rather than forcing it into a label that doesn't fit.>
+
+```
+<a single self-contained prompt asking the reader's own AI agent to
+implement this same pattern in their project, grounded in the real
+structure/decisions from ARCHITECTURE.md — always written in English, no
+matter what language the rest of this file is in>
+```
+
+## 📦 Packages
+
+<1-2 sentences, in the language chosen in Step 0, on what these packages
+are for, drawn from PACKAGES.md.>
+
+```
+npm i package-example
+```
+```
+npm i package-example
+```
+<!-- one fenced block per package, each containing exactly one `npm i
+<package-name>` line — see rules below for source, ordering, and the
+empty-state message -->
+
+## 🧠 Skills
+
+<1-2 sentences, in the language chosen in Step 0, naming the skill(s)
+found — or, if there are none, saying plainly that this project has no
+custom skills installed.>
+
+```
+<a single self-contained prompt, always in English, naming the actual
+skill(s) found and asking the reader's own agent to set up whichever one(s)
+fit their project — or, if there are no skills, the no-skills message in
+English instead (see rules below)>
+```
+```
+
+Rules for the **📦 Packages** blocks specifically:
+
+- One fenced code block per package — never combine multiple packages into
+  a single block or a single multi-package command. Each block contains
+  exactly one line: `npm i <package-name>`, using the package's real name
+  from `package.json` (not the placeholder `package-example` shown above).
+- Source and list **every** package found in `dependencies`, in the order
+  they appear in `package.json` — not a curated highlight subset. Include
+  a dependency here even if `PACKAGES.md` noted its usage wasn't clearly
+  detected in the code; being listed in `dependencies` is enough.
+- Always use plain `npm i <package-name>` — never `npm i -D`, even when
+  falling back to `devDependencies` below. The installer/manager shown is
+  always `npm`, regardless of which package manager the project actually
+  uses (pnpm/yarn/bun/etc.) — this block is a copy-paste reference, not a
+  literal command for this specific project's tooling.
+- Only fall back to listing `devDependencies` (same one-block-per-package,
+  same plain `npm i <package-name>` format, no `-D`) when `dependencies` is
+  completely empty.
+- If both `dependencies` and `devDependencies` are empty, skip the fenced
+  blocks entirely and write a single line instead:
+  `>- This project doesn't have any package installed 🚫`
+
+Rules for the **🧠 Skills** block:
+
+- If at least one skill was found (i.e. `SKILLS.md` was created this run),
+  keep the original behavior: a single fenced prompt in English naming the
+  actual skill(s) and asking the reader's agent to set them up.
+- If no skills were found (no `SKILLS.md` this run), don't omit the
+  section — instead write a single line in the fenced block, in English:
+  `>- This project doesn't have any skill installed 🚫`
+  The 1-2 sentence explanation above the block should say the same thing
+  in the language chosen in Step 0.
+
+Rule that applies to **all fenced prompt blocks** (Architecture, Packages,
+and Skills): the text *inside* the triple backticks is always written in
+English, regardless of the language chosen in Step 0 — including both the
+real install commands and either empty-state message. The 1-2 sentence
+explanation around each block is what stays in the user's chosen language,
+not the contents of the block itself.
+
+Keep all blocks paste-ready as-is and don't blend them: the Architecture
+and Skills blocks are text meant for an AI agent to read, each Packages
+block is a literal terminal command — no commentary inside any fenced
+block.
+
 ### `SKILLS.md` (only if there's at least one skill besides `skrapi` itself)
 
 This file documents the custom skills available to AI tools in this repo —
@@ -248,7 +350,8 @@ He creado `SKRAPI/` con <N> archivos:
 
 1. `ARCHITECTURE.md` (<line count> líneas)
 2. `PACKAGES.md` (<line count> líneas)
-3. `SKILLS.md` (<line count> líneas)  <!-- only if it was created -->
+3. `PROMPT.md` (<line count> líneas)
+4. `SKILLS.md` (<line count> líneas)  <!-- only if it was created -->
 
 Archivos creados con éxito 🎉
 ```
