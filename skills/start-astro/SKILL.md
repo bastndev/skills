@@ -1,6 +1,6 @@
 ---
 name: start-astro
-description: Scaffold a new Astro project (minimal template) with a ready-to-use Basic architecture — header navigation (Home/Work/About/Contact), light/dark theme toggle (zero deps, CSS vars + vanilla JS), and native Astro View Transitions for smooth page-to-page fades. Use when starting, creating, or bootstrapping a new Astro site/project/"proyecto astro" from scratch, or when the user wants a base/starter with theme switching and a header already wired up. Generates the project via `bun create astro@latest` with the minimal/empty template, then writes the layout, header, theme CSS/script, and all four pages, installs, and verifies the dev build.
+description: Scaffold a new Astro project (minimal template) with a ready-to-use Basic architecture — header navigation (Home/Work/Contact) with a logo + centered nav, light/dark theme toggle (zero deps, CSS vars + vanilla JS), and native Astro View Transitions for smooth page-to-page fades. Use when starting, creating, or bootstrapping a new Astro site/project/"proyecto astro" from scratch, or when the user wants a base/starter with theme switching and a header already wired up. Generates the project via `bun create astro@latest` with the minimal/empty template, then writes the layout, header, global theme CSS/script, and all three pages, installs, and verifies the dev build.
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
@@ -56,7 +56,6 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
    - `src/styles/global.css`
    - `src/pages/index.astro` (Home)
    - `src/pages/work.astro`
-   - `src/pages/about.astro`
    - `src/pages/contact.astro`
 
 5. **Install + verify** (already in the project folder, no `cd` needed):
@@ -77,7 +76,7 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
 - [ ] Theme toggle script runs on `astro:page-load`, not only on initial `DOMContentLoaded` — otherwise it breaks after the first View Transition (bundled module scripts only execute once; see `references/theme-toggle.md`)
 - [ ] Inline "no-flash" script in `<head>` reads the saved theme **before** first paint (no light-flash on dark-mode reload) **and re-applies it on `astro:after-swap`** — without the after-swap re-apply, navigating between pages strips `<html data-theme>` (the incoming server HTML has none) and the site flips dark→light on every nav click
 - [ ] `<ClientRouter />` imported from `astro:transitions` and placed in `Layout.astro`'s `<head>`
-- [ ] All 4 pages (Home/Work/About/Contact) use the same `Layout.astro` + `Header.astro`
+- [ ] All 3 pages (Home/Work/Contact) use the same `Layout.astro` + `Header.astro`
 - [ ] Home page (`index.astro`) is the centered ASCII-logo hero (`<pre aria-hidden>` + welcome line), not a plain `<h1>Home</h1>`
 - [ ] `bun install` and `bun run build` both pass before reporting done
 - [ ] Zero runtime dependencies added for the theme toggle (CSS vars + vanilla JS only — no package installed for this)

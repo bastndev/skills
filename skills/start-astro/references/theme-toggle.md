@@ -76,7 +76,20 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* <main> fills the height left below the header. Full-height pages (the centered
+   Home hero) then size to exactly that space via flex:1 instead of a hard-coded
+   `100vh - header` guess — which is what caused a scrollbar on Home only. Short
+   pages (Work/Contact) just leave empty space below their content. */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 ```
 
@@ -121,7 +134,7 @@ This is **inline**, not a `.js` file import — it must run synchronously before
   #theme-toggle {
     background: none;
     border: 1px solid var(--color-border);
-    border-radius: 999px;
+    border-radius: 10px; /* square with generously rounded corners (not a circle) */
     width: 36px;
     height: 36px;
     display: grid;

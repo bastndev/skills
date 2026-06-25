@@ -18,7 +18,6 @@ Final file tree after this skill runs (on top of the `minimal` template's `bun c
 │   └── pages/
 │       ├── index.astro         ← Home
 │       ├── work.astro          ← Work
-│       ├── about.astro         ← About
 │       └── contact.astro       ← Contact
 ├── public/                     ← created by `bun create astro` (favicon etc.)
 ├── astro.config.mjs            ← created by `bun create astro`, leave as-is
@@ -55,7 +54,8 @@ const logo = ` ██████╗ ██╗  ██╗██████╗
 
 <style>
   .hero {
-    min-height: calc(100vh - 70px); /* viewport minus the header */
+    flex: 1; /* fill <main> (see global.css) so the hero centers without a
+                hard-coded height — that guess was overflowing into a scrollbar */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -97,38 +97,11 @@ import Layout from '../layouts/Layout.astro';
 
 <style>
   .page {
-    max-width: 960px;
+    width: 100%;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 3rem 1.5rem;
-  }
-  .page h1 {
-    color: var(--color-text);
-  }
-  .page p {
-    color: var(--color-text-muted);
-  }
-</style>
-```
-
-## `src/pages/about.astro`
-
-```astro
----
-import Layout from '../layouts/Layout.astro';
----
-
-<Layout title={`About · {{PROJECT_NAME}}`} projectName="{{PROJECT_NAME}}">
-  <section class="page">
-    <h1>About</h1>
-    <p>A short bio or company description goes here.</p>
-  </section>
-</Layout>
-
-<style>
-  .page {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 3rem 1.5rem;
+    box-sizing: border-box;
   }
   .page h1 {
     color: var(--color-text);
@@ -155,9 +128,11 @@ import Layout from '../layouts/Layout.astro';
 
 <style>
   .page {
-    max-width: 960px;
+    width: 100%;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 3rem 1.5rem;
+    box-sizing: border-box;
   }
   .page h1 {
     color: var(--color-text);
@@ -179,8 +154,8 @@ bun run build
 
 ## Adding more pages later
 
-To add a 5th page, the pattern is always:
-1. Create `src/pages/{name}.astro` following the same shape as the 4 above.
+To add another page, the pattern is always:
+1. Create `src/pages/{name}.astro` following the same shape as the pages above.
 2. Add `{ href: '/{name}', label: '{Label}' }` to the `navItems` array in `src/components/Header.astro`.
 
 No other file needs to change — the active-link highlighting and the theme toggle work automatically because they live in `Header.astro`/`Layout.astro`, which every page already imports.

@@ -1,6 +1,6 @@
 # Layout + Header
 
-Copy-paste ready. `Layout.astro` wraps every page, imports the global CSS, runs the no-flash theme script (which **re-applies on `astro:after-swap`** so the theme survives navigation), and pulls in Astro's native `<ClientRouter />` for smooth fade transitions between pages. `Header.astro` holds the nav (Home/Work/About/Contact) + the theme toggle button.
+Copy-paste ready. `Layout.astro` wraps every page, imports the global CSS, runs the no-flash theme script (which **re-applies on `astro:after-swap`** so the theme survives navigation), and pulls in Astro's native `<ClientRouter />` for smooth fade transitions between pages. `Header.astro` is a three-zone bar: the logo + project name on the left, the centered nav (Home/Work/Contact), and the theme toggle on the right.
 
 ## `src/layouts/Layout.astro`
 
@@ -64,7 +64,6 @@ const { projectName } = Astro.props;
 const navItems = [
   { href: '/', label: 'Home' },
   { href: '/work', label: 'Work' },
-  { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -73,7 +72,10 @@ const currentPath = Astro.url.pathname;
 
 <header class="site-header">
   <nav class="nav">
-    <a href="/" class="brand">{projectName}</a>
+    <a href="/" class="brand">
+      <span class="brand-logo" aria-hidden="true"></span>
+      <span class="brand-name">{projectName}</span>
+    </a>
 
     <ul class="nav-links">
       {navItems.map((item) => (
@@ -106,22 +108,44 @@ const currentPath = Astro.url.pathname;
     border-bottom: 1px solid var(--color-border);
   }
   .nav {
-    max-width: 960px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 1rem 1.5rem;
-    display: flex;
+    /* three zones: brand (left) · nav (true-centered) · toggle (right).
+       1fr/auto/1fr keeps the nav centered on the page no matter how wide the
+       brand or toggle are. */
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 1.5rem;
   }
   .brand {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
     font-weight: 700;
     color: var(--color-nav-text);
     text-decoration: none;
-    margin-right: auto;
+  }
+  .brand:hover {
+    color: var(--color-nav-text-active);
+  }
+  /* Reuses /public/favicon.svg as a mask, then paints it with the brand's
+     currentColor — so the logo follows the in-app theme toggle (not just the
+     OS color scheme the raw SVG reacts to). Swap the favicon to rebrand. */
+  .brand-logo {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    background-color: currentColor;
+    -webkit-mask: url(/favicon.svg) center / contain no-repeat;
+    mask: url(/favicon.svg) center / contain no-repeat;
   }
   .nav-links {
+    justify-self: center;
     display: flex;
-    gap: 1.25rem;
+    gap: 1.5rem;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -142,16 +166,16 @@ const currentPath = Astro.url.pathname;
   }
 
   #theme-toggle {
+    justify-self: end;
     background: none;
     border: 1px solid var(--color-border);
-    border-radius: 999px;
+    border-radius: 10px; /* square with generously rounded corners (not a circle) */
     width: 36px;
     height: 36px;
     display: grid;
     place-items: center;
     cursor: pointer;
     color: var(--color-nav-text);
-    flex-shrink: 0;
   }
   #theme-toggle:focus-visible {
     outline: 2px solid var(--color-focus-ring);
@@ -187,4 +211,5 @@ const currentPath = Astro.url.pathname;
 
 - `currentPath === item.href` highlights the active section in the nav. Works correctly with View Transitions because `Astro.url.pathname` is re-evaluated server-side on every navigation (Astro re-renders the component, it isn't a client-side SPA route guess).
 - `class:list` is Astro's built-in conditional-class helper — no extra package needed.
+- The brand mark reuses `public/favicon.svg` via a CSS `mask`, painted with `currentColor`, so it tracks the in-app theme toggle and there's a single logo file to swap. The minimal template ships the Astro logo there by default — drop your own SVG at `public/favicon.svg` to rebrand both the favicon and the header logo at once. (Because `mask` uses only the shape, any fill/colors inside the SVG are ignored — it renders as a single-color silhouette.)
 - `projectName` flows from `Layout.astro`'s `title`/`projectName` props down into `Header.astro` — both ultimately come from `{{PROJECT_NAME}}` (detected automatically from the current folder's name; see `project-structure.md`). No hardcoded site name and no reliance on `Astro.site` (which is `undefined` unless `site` is explicitly set in `astro.config.mjs`).
