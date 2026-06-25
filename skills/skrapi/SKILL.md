@@ -209,18 +209,23 @@ matter what language the rest of this file is in>
 
 ## 📦 Packages
 
-<1-2 sentences, in the language chosen in Step 0, on what these packages
-are for, drawn from PACKAGES.md.>
+<1-2 sentences, in the language chosen in Step 0: name the project's main
+framework, the detected package manager, how many dependencies it has,
+and call out any that PACKAGES.md flagged as not actually used in the
+code — don't just describe what the packages are for in the abstract.>
 
 ```
 npm i package-example
 ```
+
+<br>
+
 ```
 npm i package-example
 ```
-<!-- one fenced block per package, each containing exactly one `npm i
-<package-name>` line — see rules below for source, ordering, and the
-empty-state message -->
+<!-- one fenced block per package; `<br>` goes BETWEEN blocks only, never
+before the first one or after the last one — see rules below for which
+install verb to use, source, ordering, and the empty-state message -->
 
 ## 🤖 Skills
 
@@ -251,19 +256,31 @@ Rules for the **📦 Packages** blocks specifically:
 
 - One fenced code block per package — never combine multiple packages into
   a single block or a single multi-package command. Each block contains
-  exactly one line: `npm i <package-name>`, using the package's real name
-  from `package.json` (not the placeholder `package-example` shown above).
+  exactly one line: the install command for the detected package manager
+  plus the package's real name from `package.json` (not the placeholder
+  `package-example` shown above).
+- Put a `<br>` on its own line **between** consecutive package blocks
+  only — never before the first block, never after the last one. This is
+  what creates visible separation between packages when rendered, without
+  adding stray whitespace at either end of the section. Don't add `<br>`
+  anywhere else in this file (Architecture blocks don't get one).
+- Detect which package manager the project actually uses by checking for
+  its lockfile at the project root: `bun.lockb` or `bun.lock` → Bun,
+  `yarn.lock` → Yarn, `pnpm-lock.yaml` → pnpm, `package-lock.json` → npm.
+  Use that manager's real install verb for every package block in this
+  project: `bun add <package-name>`, `yarn add <package-name>`,
+  `pnpm add <package-name>`, or `npm i <package-name>`. All package blocks
+  for a given project use the same detected manager — never mix verbs
+  within one `PROMPT.md`.
+- If no lockfile is found, default to `npm i <package-name>`.
+- Never add a dev-install flag (`-D`/`--save-dev`/`-d`) to any of these
+  commands, even when falling back to `devDependencies` below.
 - Source and list **every** package found in `dependencies`, in the order
   they appear in `package.json` — not a curated highlight subset. Include
   a dependency here even if `PACKAGES.md` noted its usage wasn't clearly
   detected in the code; being listed in `dependencies` is enough.
-- Always use plain `npm i <package-name>` — never `npm i -D`, even when
-  falling back to `devDependencies` below. The installer/manager shown is
-  always `npm`, regardless of which package manager the project actually
-  uses (pnpm/yarn/bun/etc.) — this block is a copy-paste reference, not a
-  literal command for this specific project's tooling.
 - Only fall back to listing `devDependencies` (same one-block-per-package,
-  same plain `npm i <package-name>` format, no `-D`) when `dependencies` is
+  same plain install-verb format, no dev flag) when `dependencies` is
   completely empty.
 - If both `dependencies` and `devDependencies` are empty, skip the fenced
   blocks entirely and write a single line instead:
