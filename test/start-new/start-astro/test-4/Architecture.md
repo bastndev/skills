@@ -1,4 +1,4 @@
-# Architecture — {{PROJECT_NAME}}
+# Architecture — test-5
 
 A minimal Astro starter: one shared layout, a header with a logo + centered nav, a
 reusable hero, a zero-dependency light/dark theme, and native View Transitions.
@@ -14,7 +14,7 @@ src/
 ├── components/
 │   ├── Header.astro      — logo (a CSS mask of /public/favicon.svg) + centered
 │   │                       nav (Home / Work / Contact) + the light/dark toggle.
-│   └── GXB.astro         — centered ASCII logo + a per-page tagline (`text` prop).
+│   └── Hero.astro        — centered ASCII logo + a per-page tagline (`text` prop).
 │                           The ASCII art lives here and nowhere else.
 ├── styles/
 │   └── global.css        — design tokens as CSS variables (light on :root, dark
@@ -23,7 +23,7 @@ src/
     ├── index.astro       — Home
     ├── work.astro        — Work
     └── contact.astro     — Contact
-                            each page = <Layout><GXB text="…" /></Layout>
+                            each page = <Layout><Hero text="…" /></Layout>
 
 public/
 ├── favicon.svg           — default Astro favicon (also reused as the header logo)
@@ -57,11 +57,11 @@ public/
    ```astro
    ---
    import Layout from '../layouts/Layout.astro';
-   import GXB from '../components/GXB.astro';
+   import Hero from '../components/Hero.astro';
    ---
 
-   <Layout title={`<Name> · {{PROJECT_NAME}}`} projectName="{{PROJECT_NAME}}">
-     <GXB text="<Name> — a short description." />
+   <Layout title={`<Name> · test-5`} projectName="test-5">
+     <Hero text="<Name> — a short description." />
    </Layout>
    ```
 

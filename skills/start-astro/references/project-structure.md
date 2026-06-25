@@ -11,7 +11,7 @@ Final file tree after this skill runs (on top of the `minimal` template's `bun c
 ├── src/
 │   ├── components/
 │   │   ├── Header.astro        ← from references/layout-header.md
-│   │   └── Hero.astro          ← from this file (shared ASCII logo + per-page tagline)
+│   │   └── GXB.astro           ← from this file (shared ASCII logo + per-page tagline)
 │   ├── layouts/
 │   │   └── Layout.astro        ← from references/layout-header.md
 │   ├── styles/
@@ -29,9 +29,9 @@ Final file tree after this skill runs (on top of the `minimal` template's `bun c
 └── tsconfig.json               ← created by `bun create astro`, leave as-is
 ```
 
-Each page is intentionally minimal: it wraps `Layout` and drops in the shared `Hero`, passing one line of text. The ASCII logo lives **only** in `Hero.astro`, so every page shows the same centered hero and the only thing that changes per page is the tagline. The user fills in real content afterward.
+Each page is intentionally minimal: it wraps `Layout` and drops in the shared `GXB` component, passing one line of text. The ASCII logo lives **only** in `GXB.astro`, so every page shows the same centered hero and the only thing that changes per page is the tagline. The user fills in real content afterward.
 
-## `src/components/Hero.astro`
+## `src/components/GXB.astro`
 
 The hero shown on **every** page: the ASCII-art logo + a per-page tagline (the `text` prop). The art lives here and nowhere else — edit the `logo` constant to change it, or delete this one component to drop the hero from the whole site. The `<pre>` is `aria-hidden` because the art is decorative; screen readers get the tagline. Swap the art for your own (e.g. generated at [patorjk.com/software/taag](https://patorjk.com/software/taag/) with the "ANSI Shadow" font).
 
@@ -93,11 +93,11 @@ const logo = ` ██████╗ ██╗  ██╗██████╗
 ```astro
 ---
 import Layout from '../layouts/Layout.astro';
-import Hero from '../components/Hero.astro';
+import GXB from '../components/GXB.astro';
 ---
 
 <Layout title={`Home · {{PROJECT_NAME}}`} projectName="{{PROJECT_NAME}}">
-  <Hero text="Welcome — the starting point of your new Astro project." />
+  <GXB text="Welcome — the starting point of your new Astro project." />
 </Layout>
 ```
 
@@ -106,11 +106,11 @@ import Hero from '../components/Hero.astro';
 ```astro
 ---
 import Layout from '../layouts/Layout.astro';
-import Hero from '../components/Hero.astro';
+import GXB from '../components/GXB.astro';
 ---
 
 <Layout title={`Work · {{PROJECT_NAME}}`} projectName="{{PROJECT_NAME}}">
-  <Hero text="Work — a place to showcase your projects." />
+  <GXB text="Work — a place to showcase your projects." />
 </Layout>
 ```
 
@@ -119,11 +119,11 @@ import Hero from '../components/Hero.astro';
 ```astro
 ---
 import Layout from '../layouts/Layout.astro';
-import Hero from '../components/Hero.astro';
+import GXB from '../components/GXB.astro';
 ---
 
 <Layout title={`Contact · {{PROJECT_NAME}}`} projectName="{{PROJECT_NAME}}">
-  <Hero text="Contact — get in touch or drop your details here." />
+  <GXB text="Contact — get in touch or drop your details here." />
 </Layout>
 ```
 
@@ -139,7 +139,7 @@ bun run build
 ## Adding more pages later
 
 To add another page, the pattern is always:
-1. Create `src/pages/{name}.astro` following the same shape as the pages above — import `Layout` + `Hero`, then `<Hero text="{Label} — short description." />`.
+1. Create `src/pages/{name}.astro` following the same shape as the pages above — import `Layout` + `GXB`, then `<GXB text="{Label} — short description." />`.
 2. Add `{ href: '/{name}', label: '{Label}' }` to the `navItems` array in `src/components/Header.astro`.
 
-No other file needs to change — the hero/ASCII art, active-link highlighting, and theme toggle all live in `Hero.astro`/`Header.astro`/`Layout.astro`, which every page already imports.
+No other file needs to change — the hero/ASCII art, active-link highlighting, and theme toggle all live in `GXB.astro`/`Header.astro`/`Layout.astro`, which every page already imports.

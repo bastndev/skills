@@ -38,6 +38,7 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
    bun create astro@latest . -- --template minimal --no-install --no-git --skip-houston
    ```
    - `.` → scaffold into the current directory; this skill never creates a new folder or renames the existing one.
+   - **Never create a separate, temporary, or differently-named project folder** (e.g. `test-project1`, `astro-scaffold`, a `/tmp` copy, a sibling dir) to scaffold or "test" in and then move/delete. There is exactly **one** project and it is the current folder. Run every command — scaffold, install, build — directly here. (If you've seen a folder briefly appear and vanish, that's this anti-pattern; do not do it.)
    - `--template minimal` → the empty template (see rationale above).
    - `--no-install` → this skill controls the install step explicitly (next step), keeps output readable.
    - `--no-git` → don't assume the user wants a fresh git repo; skip unless asked.
@@ -48,13 +49,13 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
 3. **Read the reference files** before writing any code — they contain the exact, ready-to-paste implementation:
    - `references/theme-toggle.md` — the 15 CSS variables (light + dark), the toggle button, and the vanilla JS (rebinds the toggle on `astro:page-load` **and** re-applies the theme on `astro:after-swap`, so both survive View Transitions per the gotchas below).
    - `references/layout-header.md` — `Layout.astro` (imports `ClientRouter`, the theme script, global CSS) + `Header.astro` (logo + centered nav Home/Work/Contact + the toggle button; no underlines).
-   - `references/project-structure.md` — final file tree, the shared `Hero.astro` (centered ASCII logo + per-page tagline), and the 3 pages (each just `<Layout><Hero text="…" /></Layout>`).
+   - `references/project-structure.md` — final file tree, the shared `GXB.astro` (centered ASCII logo + per-page tagline), and the 3 pages (each just `<Layout><GXB text="…" /></Layout>`).
    - `references/architecture.md` — the `Architecture.md` doc to copy into the project root (verbatim, substituting `{{PROJECT_NAME}}`).
 
 4. **Write the files** into the current folder exactly as given in the references — these are copy-paste ready, not something to regenerate from scratch:
    - `src/layouts/Layout.astro`
    - `src/components/Header.astro`
-   - `src/components/Hero.astro`
+   - `src/components/GXB.astro`
    - `src/styles/global.css`
    - `src/pages/index.astro` (Home)
    - `src/pages/work.astro`
@@ -68,7 +69,7 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
    bun install
    bun run build      # must exit 0 — catches broken imports/typos before the user ever opens the editor
    ```
-   Do not report success until `bun run build` passes. If it fails, read the error, fix the file, rebuild — don't hand back a broken project.
+   Do not report success until `bun run build` passes. If it fails, read the error, fix the file, rebuild — don't hand back a broken project. **Verify in place** — build *this* project; never spin up a separate throwaway project to test against.
 
 6. **Do not run `bun run dev`** in the background unless the user asks to preview it — this skill's job is to hand back a ready project, not to occupy a long-running terminal.
 
@@ -81,7 +82,7 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
    ├── layouts/Layout.astro       ← wraps every page, ClientRouter + no-flash theme
    ├── components/
    │   ├── Header.astro           ← logo + centered nav (Home/Work/Contact) + theme toggle
-   │   └── Hero.astro             ← centered ASCII logo + per-page tagline
+   │   └── GXB.astro              ← centered ASCII logo + per-page tagline
    ├── styles/global.css          ← CSS variables (light + dark themes)
    └── pages/
        ├── index.astro            ← Home
@@ -111,7 +112,7 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
 - [ ] Inline "no-flash" script in `<head>` reads the saved theme **before** first paint (no light-flash on dark-mode reload) **and re-applies it on `astro:after-swap`** — without the after-swap re-apply, navigating between pages strips `<html data-theme>` (the incoming server HTML has none) and the site flips dark→light on every nav click
 - [ ] `<ClientRouter />` imported from `astro:transitions` and placed in `Layout.astro`'s `<head>`
 - [ ] All 3 pages (Home/Work/Contact) use the same `Layout.astro` + `Header.astro`
-- [ ] Every page renders the shared `Hero.astro` (centered ASCII logo + a per-page tagline); the ASCII art lives in **one** file (`Hero.astro`), not duplicated into each page
+- [ ] Every page renders the shared `GXB.astro` (centered ASCII logo + a per-page tagline); the ASCII art lives in **one** file (`GXB.astro`), not duplicated into each page
 - [ ] `public/favicon.svg` and `public/favicon.ico` are the **untouched Astro defaults** — the skill never overwrites the favicon with a custom logo and never deletes the `.ico` (the header logo only references `favicon.svg` read-only)
 - [ ] `Architecture.md` written to the project root from `references/architecture.md`
 - [ ] `bun install` and `bun run build` both pass before reporting done
