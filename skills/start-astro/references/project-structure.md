@@ -23,7 +23,8 @@ Final file tree after this skill runs (on top of the `minimal` template's `bun c
 ├── public/                     ← bun create astro defaults — DO NOT touch
 │   ├── favicon.svg             ← leave untouched (also reused, read-only, as the header logo)
 │   └── favicon.ico             ← leave untouched (never delete)
-├── Architecture.md             ← from references/architecture.md
+├── ARCHITECTURE.md             ← from references/architecture.md
+├── .prettierignore             ← from this file
 ├── astro.config.mjs            ← created by `bun create astro`, leave as-is
 ├── package.json                ← created by `bun create astro`, leave as-is
 └── tsconfig.json               ← created by `bun create astro`, leave as-is
@@ -125,6 +126,22 @@ import GXB from '../components/GXB.astro';
 <Layout title={`Contact · {{PROJECT_NAME}}`} projectName="{{PROJECT_NAME}}">
   <GXB text="Contact — get in touch or drop your details here." />
 </Layout>
+```
+
+## `.prettierignore`
+
+Written to the project root so Prettier (editor-on-save or CLI) skips generated output and, importantly, **never reformats the default favicon** or anything else in `public/`.
+
+```
+# Build output & generated files
+dist/
+.astro/
+
+# Lockfile
+bun.lock
+
+# Static assets — keep public/ (incl. the default Astro favicon) untouched
+public/
 ```
 
 ## Verification commands (run from the project root — no `cd` needed, already there)
