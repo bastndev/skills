@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/logo.webp" width="180" />
 </p>
 
-<h1 align="center">Start / Middle / [End]</h1>
+<h1 align="center">[Start] / Middle / [End]</h1>
 
 <p align="center">
   <a href="https://github.com/bastndev/skills/blob/main/public/docs/README_ES.md">Español 🇪🇸</a> |
