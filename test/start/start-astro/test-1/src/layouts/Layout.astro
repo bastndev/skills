@@ -1,0 +1,35 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Header from '../components/Header.astro';
+import '../styles/theme.css';
+
+interface Props {
+  title: string;
+  projectName: string;
+}
+
+const { title, projectName } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <ClientRouter />
+    <script is:inline>
+      (function () {
+        const saved = localStorage.getItem('theme');
+        const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+  </head>
+  <body>
+    <Header projectName={projectName} />
+    <main transition:animate="fade">
+      <slot />
+    </main>
+  </body>
+</html>

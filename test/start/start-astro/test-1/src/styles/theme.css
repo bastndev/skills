@@ -1,0 +1,61 @@
+:root {
+  /* surface */
+  --color-bg: #ffffff;
+  --color-bg-elevated: #f5f5f7;
+  --color-border: #e2e2e6;
+
+  /* text */
+  --color-text: #1a1a1e;
+  --color-text-muted: #5c5c66;
+
+  /* brand / accent */
+  --color-accent: #6d4aff;
+  --color-accent-hover: #5a3ce0;
+  --color-on-accent: #ffffff;
+
+  /* nav */
+  --color-nav-bg: #ffffff;
+  --color-nav-text: #1a1a1e;
+  --color-nav-text-active: #6d4aff;
+
+  /* feedback / misc */
+  --color-shadow: rgba(0, 0, 0, 0.08);
+  --color-focus-ring: #6d4aff;
+  --color-link: #6d4aff;
+  --color-link-hover: #5a3ce0;
+
+  --transition-theme: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+[data-theme='dark'] {
+  --color-bg: #14151a;
+  --color-bg-elevated: #1c1d24;
+  --color-border: #2c2d36;
+
+  --color-text: #f0f0f3;
+  --color-text-muted: #a3a3ad;
+
+  --color-accent: #8f73ff;
+  --color-accent-hover: #a690ff;
+  --color-on-accent: #14151a;
+
+  --color-nav-bg: #1c1d24;
+  --color-nav-text: #f0f0f3;
+  --color-nav-text-active: #8f73ff;
+
+  --color-shadow: rgba(0, 0, 0, 0.4);
+  --color-focus-ring: #8f73ff;
+  --color-link: #8f73ff;
+  --color-link-hover: #a690ff;
+}
+
+* {
+  transition: var(--transition-theme);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}

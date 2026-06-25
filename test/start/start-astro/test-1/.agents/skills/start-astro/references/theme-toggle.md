@@ -1,0 +1,157 @@
+# Theme toggle — light/dark, zero dependencies
+
+Copy-paste ready. Vanilla CSS variables + vanilla JS, no package installed. Designed to keep working after Astro's `<ClientRouter />` View Transitions (see "Why `astro:page-load`" below).
+
+## `src/styles/theme.css`
+
+15 variables, light values on `:root`, dark overrides on `[data-theme="dark"]`.
+
+```css
+:root {
+  /* surface */
+  --color-bg: #ffffff;
+  --color-bg-elevated: #f5f5f7;
+  --color-border: #e2e2e6;
+
+  /* text */
+  --color-text: #1a1a1e;
+  --color-text-muted: #5c5c66;
+
+  /* brand / accent */
+  --color-accent: #6d4aff;
+  --color-accent-hover: #5a3ce0;
+  --color-on-accent: #ffffff;
+
+  /* nav */
+  --color-nav-bg: #ffffff;
+  --color-nav-text: #1a1a1e;
+  --color-nav-text-active: #6d4aff;
+
+  /* feedback / misc */
+  --color-shadow: rgba(0, 0, 0, 0.08);
+  --color-focus-ring: #6d4aff;
+  --color-link: #6d4aff;
+  --color-link-hover: #5a3ce0;
+
+  --transition-theme: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+[data-theme='dark'] {
+  --color-bg: #14151a;
+  --color-bg-elevated: #1c1d24;
+  --color-border: #2c2d36;
+
+  --color-text: #f0f0f3;
+  --color-text-muted: #a3a3ad;
+
+  --color-accent: #8f73ff;
+  --color-accent-hover: #a690ff;
+  --color-on-accent: #14151a;
+
+  --color-nav-bg: #1c1d24;
+  --color-nav-text: #f0f0f3;
+  --color-nav-text-active: #8f73ff;
+
+  --color-shadow: rgba(0, 0, 0, 0.4);
+  --color-focus-ring: #8f73ff;
+  --color-link: #8f73ff;
+  --color-link-hover: #a690ff;
+}
+
+* {
+  transition: var(--transition-theme);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+```
+
+## No-flash inline script (goes in `<head>`, before any CSS that depends on the theme)
+
+This is **inline**, not a `.js` file import — it must run synchronously before first paint, or the user sees a light flash before dark mode applies on reload.
+
+```html
+<script is:inline>
+  (function () {
+    const saved = localStorage.getItem('theme');
+    const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+```
+
+## Toggle button markup (goes inside `Header.astro`)
+
+```html
+<button id="theme-toggle" type="button" aria-label="Toggle light and dark theme">
+  <svg id="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+  </svg>
+  <svg id="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+</button>
+
+<style>
+  #theme-toggle {
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    color: var(--color-nav-text);
+  }
+  #theme-toggle:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+  #icon-sun,
+  #icon-moon {
+    grid-area: 1 / 1;
+  }
+  /* show sun when in dark mode (click to go light), moon when in light mode */
+  #icon-sun { display: none; }
+  #icon-moon { display: block; }
+  [data-theme='dark'] #icon-sun { display: block; }
+  [data-theme='dark'] #icon-moon { display: none; }
+</style>
+```
+
+## Toggle script — handles View Transitions correctly
+
+```html
+<script is:inline>
+  function initThemeToggle() {
+    const btn = document.getElementById('theme-toggle');
+    if (!btn || btn.dataset.bound) return; // avoid double-binding on re-init
+    btn.dataset.bound = 'true';
+
+    btn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    });
+  }
+
+  initThemeToggle();
+  document.addEventListener('astro:page-load', initThemeToggle);
+</script>
+```
+
+### Why `astro:page-load`
+
+`<ClientRouter />` (Astro's View Transitions) turns multi-page navigation into SPA-like swaps. Per Astro's docs: bundled module scripts only run once and are ignored on subsequent transitions, but the page DOM (including `#theme-toggle`) is swapped in fresh on every navigation. Without re-binding the click handler on `astro:page-load`, the button goes dead after the very first navigation between Home/Work/About/Contact. The `data-bound` guard prevents attaching the listener twice on the very first load (since `initThemeToggle()` already runs immediately, and `astro:page-load` also fires on initial load).
+
+## Usage notes
+
+- All page content should use the CSS variables (`var(--color-text)`, etc.) instead of hardcoded colors, so it automatically respects whichever theme is active.
+- This is intentionally framework-free so it's trivial to extract later into a standalone Astro integration/package (per the user's plan to ship this as its own light/dark package for Astro).
