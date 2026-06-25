@@ -1,5 +1,7 @@
 # Project structure & pages
 
+`{{DIR}}` and `{{PROJECT_NAME}}` come from the user (see SKILL.md step 1 — never invented). Every page passes `{{PROJECT_NAME}}` to `Layout.astro` twice: once inside the `title` string (for the browser tab) and once as the `projectName` prop (which `Layout.astro` forwards to `Header.astro` for the brand link). Substitute the real value everywhere `{{PROJECT_NAME}}` appears below — both occurrences on each page.
+
 Final file tree after this skill runs (on top of the `minimal` template's `bun create astro` output):
 
 ```
@@ -31,7 +33,7 @@ Each page is intentionally minimal — just enough content to prove the Layout/H
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Home">
+<Layout title={`Home · {{PROJECT_NAME}}`} projectName="{{PROJECT_NAME}}">
   <section class="page">
     <h1>Home</h1>
     <p>Welcome — this is the starting point of the site.</p>
@@ -60,7 +62,7 @@ import Layout from '../layouts/Layout.astro';
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Work">
+<Layout title={`Work · {{PROJECT_NAME}}`} projectName="{{PROJECT_NAME}}">
   <section class="page">
     <h1>Work</h1>
     <p>A place to showcase projects.</p>
@@ -89,7 +91,7 @@ import Layout from '../layouts/Layout.astro';
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="About">
+<Layout title={`About · {{PROJECT_NAME}}`} projectName="{{PROJECT_NAME}}">
   <section class="page">
     <h1>About</h1>
     <p>A short bio or company description goes here.</p>
@@ -118,7 +120,7 @@ import Layout from '../layouts/Layout.astro';
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Contact">
+<Layout title={`Contact · {{PROJECT_NAME}}`} projectName="{{PROJECT_NAME}}">
   <section class="page">
     <h1>Contact</h1>
     <p>Get in touch — add a form or contact details here.</p>

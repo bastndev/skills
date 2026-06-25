@@ -27,9 +27,17 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
 
 ## Procedure
 
-1. **Gather inputs** (ask only if not obvious; otherwise use the defaults):
-   - `DIR` — target folder name (the prompt `bun create astro` asks for). Default `.` (current directory) if the user is already inside an empty folder they made for this; otherwise ask once.
-   - `PROJECT_NAME` — used in `package.json` / page titles. Default: the folder name.
+1. **Gather inputs:**
+
+   - `PROJECT_NAME` / `DIR` — **always let the user choose.** Look for a name already given in the same message that triggered the skill, in any of these forms (English or Spanish, case-insensitive):
+     - `name project is: X`, `project name: X`, `project name is X`
+     - `nombre del proyecto: X`, `el proyecto se llama X`, `llamalo X`, `nombre: X`
+     - A bare folder-looking token the user clearly intends as the name (e.g. "crea **new-proyect-01**", "scaffold **portfolio-site**")
+
+     If a name is found this way, use it directly as both `DIR` (target folder) and `PROJECT_NAME` (used in page titles) — **do not ask**, just confirm briefly in your reply (e.g. "Creando el proyecto **new-proyect-01**...").
+
+     If no name appears anywhere in the request, **ask the user** what they want to call it before scaffolding anything — e.g. "¿Cómo quieres llamar al proyecto? (este nombre se usa como carpeta y en el título de las páginas)". Don't invent a placeholder name and don't default to something like `my-astro-app` silently — the folder name is the one thing this skill never assumes.
+
    - `PAGES` — default `Home, Work, About, Contact` (the standard set this skill ships). Only deviate if the user explicitly asks for different sections.
 
 2. **Scaffold via the official CLI** — run it non-interactively with flags so it doesn't hang waiting on prompts:
@@ -70,6 +78,7 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
 
 ## Gotchas checklist (verify before declaring done)
 
+- [ ] Project name came from the user's message or was explicitly asked — never silently defaulted/invented
 - [ ] Used `minimal` template, not `basic` — no boilerplate to clean up
 - [ ] Theme toggle script runs on `astro:page-load`, not only on initial `DOMContentLoaded` — otherwise it breaks after the first View Transition (bundled module scripts only execute once; see `references/theme-toggle.md`)
 - [ ] Inline "no-flash" script in `<head>` reads the saved theme **before** first paint, so there's no light-flash on dark-mode reload

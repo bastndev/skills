@@ -12,9 +12,10 @@ import '../styles/theme.css';
 
 interface Props {
   title: string;
+  projectName: string;
 }
 
-const { title } = Astro.props;
+const { title, projectName } = Astro.props;
 ---
 
 <!doctype html>
@@ -33,7 +34,7 @@ const { title } = Astro.props;
     </script>
   </head>
   <body>
-    <Header />
+    <Header projectName={projectName} />
     <main transition:animate="fade">
       <slot />
     </main>
@@ -47,6 +48,12 @@ const { title } = Astro.props;
 
 ```astro
 ---
+interface Props {
+  projectName: string;
+}
+
+const { projectName } = Astro.props;
+
 const navItems = [
   { href: '/', label: 'Home' },
   { href: '/work', label: 'Work' },
@@ -59,7 +66,7 @@ const currentPath = Astro.url.pathname;
 
 <header class="site-header">
   <nav class="nav">
-    <a href="/" class="brand">{Astro.site?.hostname ?? 'Astro Site'}</a>
+    <a href="/" class="brand">{projectName}</a>
 
     <ul class="nav-links">
       {navItems.map((item) => (
@@ -173,4 +180,4 @@ const currentPath = Astro.url.pathname;
 
 - `currentPath === item.href` highlights the active section in the nav. Works correctly with View Transitions because `Astro.url.pathname` is re-evaluated server-side on every navigation (Astro re-renders the component, it isn't a client-side SPA route guess).
 - `class:list` is Astro's built-in conditional-class helper — no extra package needed.
-- If the user later wants the brand name to be a literal site name instead of `Astro.site?.hostname`, just hardcode the string — `Astro.site` is `undefined` unless `site` is set in `astro.config.mjs`, so confirm with the user or default to a plain string like the project name to avoid an empty brand link.
+- `projectName` flows from `Layout.astro`'s `title`/`projectName` props down into `Header.astro` — both ultimately come from `{{PROJECT_NAME}}` (the name the user chose; see `project-structure.md`). No hardcoded site name and no reliance on `Astro.site` (which is `undefined` unless `site` is explicitly set in `astro.config.mjs`).
