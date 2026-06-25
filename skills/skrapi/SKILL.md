@@ -49,7 +49,10 @@ Useful signals to check, roughly in this order:
 - `tsconfig.json` (path aliases often reveal the intended module structure)
 - AI-tooling signals: a `.claude/` folder (commands/skills/agents for Claude
   Code), an `.agents/` folder, or root files like `CLAUDE.md`/`AGENTS.md` —
-  see Step 4's `SKILLS.md` for what to do with these
+  see Step 4's `SKILLS.md` for what to do with these. Also check for a
+  `skills-lock.json` at the project root — when present, it maps installed
+  skill names to their real source repos, used later in `PROMPT.md`'s
+  Skills section.
 - The top 2 levels of the directory tree, ignoring `node_modules`, build output,
   and lockfiles
 
@@ -85,10 +88,11 @@ same way a tool might always create a `.github/` or `.vscode/` folder.
 
 ## Step 4 — Write the files
 
-Always produce these two:
+Always produce these three:
 
 - **`ARCHITECTURE.md`**
 - **`PACKAGES.md`**
+- **`PROMPT.md`** — write this one last, since it pulls from the other two.
 
 Add these only when they earn their place — don't pad the folder with empty
 or near-duplicate files:
@@ -99,11 +103,6 @@ or near-duplicate files:
 - **`STYLING.md`** — split out only if the styling approach is layered or
   unusual (e.g. a custom design-token system, multiple competing approaches
   found in the same repo) — otherwise covered briefly in `ARCHITECTURE.md`.
-- **`RECOMMENDATIONS.md`** — only when the user has signaled they're studying
-  this project to bring ideas back to *their own* project. If you don't
-  already know their stack from the conversation, ask before writing this
-  file — a recommendation is only useful when it's a concrete comparison
-  against something real, not generic advice.
 - **`SKILLS.md`** — only if the project has a `.claude/skills/` or
   `.agents/skills/` folder **and** it contains at least one skill besides
   `skrapi` itself. If `skrapi` is the only skill found there, skip this file
@@ -181,13 +180,160 @@ of CSS, manually, or not at all):
 Skip any item that's clearly inapplicable to the project type (e.g. dark mode
 for a build-tool CLI) rather than forcing an entry.
 
-### `RECOMMENDATIONS.md` (only when applicable)
+### `PROMPT.md`
 
-For each idea worth borrowing: what it is, where to see it in this project,
-why it'd help the user's own project specifically, and a short code sketch of
-how to apply it — not just the abstract idea. Also call out anything that's
-*not* worth copying (over-engineering, or a decision that only makes sense at
-that project's scale/team size).
+Always create this one, written last since it pulls from `ARCHITECTURE.md`,
+`PACKAGES.md`, and — when it exists — `SKILLS.md`. All three sections
+(Architecture, Packages, Skills) always appear in `PROMPT.md` — this is
+independent from whether the `SKILLS.md` *file* itself gets created (that
+file stays conditional, per Step 4 above). When `SKILLS.md` wasn't created
+this run, the Skills section here still appears, just with the no-skills
+message instead of real skill install commands — see rules below.
+
+```markdown
+# Prompts — <project name>
+
+## 🏗️ Architecture
+
+<1-2 sentences, in the language chosen in Step 0: name the actual pattern
+found — DDD, hexagonal, clean architecture, islands architecture, etc. If
+the project rolled its own approach instead of a named one, describe it
+plainly rather than forcing it into a label that doesn't fit.>
+
+```
+<a single self-contained prompt asking the reader's own AI agent to
+implement this same pattern in their project, grounded in the real
+structure/decisions from ARCHITECTURE.md — always written in English, no
+matter what language the rest of this file is in>
+```
+
+## 📦 Packages
+
+<1-2 sentences, in the language chosen in Step 0: name the project's main
+framework, the detected package manager, how many dependencies it has,
+and call out any that PACKAGES.md flagged as not actually used in the
+code — don't just describe what the packages are for in the abstract.>
+
+```
+npm i package-example
+```
+
+<br>
+
+```
+npm i package-example
+```
+<!-- one fenced block per package; `<br>` goes BETWEEN blocks only, never
+before the first one or after the last one — see rules below for which
+install verb to use, source, ordering, and the empty-state message -->
+
+## 🤖 Skills
+
+<1-2 sentences, in the language chosen in Step 0, naming the skill(s)
+found — or, if there are none, saying plainly that this project has no
+custom skills installed.>
+
+<br>
+
+⯈ **skill-example**
+```
+npx skills add https://github.com/owner-example/repo-example --skill skill-example
+```
+
+<br>
+
+⯈ **skill-example**
+```
+skill-example
+```
+
+<br>
+<!-- one labeled+fenced pair per skill, each preceded by its own `<br>` —
+including before the first pair — see rules below for which form each
+block takes, ordering, and the empty-state message -->
+
+Rules for the **📦 Packages** blocks specifically:
+
+- One fenced code block per package — never combine multiple packages into
+  a single block or a single multi-package command. Each block contains
+  exactly one line: the install command for the detected package manager
+  plus the package's real name from `package.json` (not the placeholder
+  `package-example` shown above).
+- Put a `<br>` on its own line **between** consecutive package blocks
+  only — never before the first block, never after the last one. This is
+  what creates visible separation between packages when rendered, without
+  adding stray whitespace at either end of the section. Don't add `<br>`
+  anywhere else in this file (Architecture blocks don't get one).
+- Detect which package manager the project actually uses by checking for
+  its lockfile at the project root: `bun.lockb` or `bun.lock` → Bun,
+  `yarn.lock` → Yarn, `pnpm-lock.yaml` → pnpm, `package-lock.json` → npm.
+  Use that manager's real install verb for every package block in this
+  project: `bun add <package-name>`, `yarn add <package-name>`,
+  `pnpm add <package-name>`, or `npm i <package-name>`. All package blocks
+  for a given project use the same detected manager — never mix verbs
+  within one `PROMPT.md`.
+- If no lockfile is found, default to `npm i <package-name>`.
+- Never add a dev-install flag (`-D`/`--save-dev`/`-d`) to any of these
+  commands, even when falling back to `devDependencies` below.
+- Source and list **every** package found in `dependencies`, in the order
+  they appear in `package.json` — not a curated highlight subset. Include
+  a dependency here even if `PACKAGES.md` noted its usage wasn't clearly
+  detected in the code; being listed in `dependencies` is enough.
+- Only fall back to listing `devDependencies` (same one-block-per-package,
+  same plain install-verb format, no dev flag) when `dependencies` is
+  completely empty.
+- If both `dependencies` and `devDependencies` are empty, skip the fenced
+  blocks entirely and write a single line instead:
+  `>- This project doesn't have any package installed 🚫`
+
+Rules for the **🤖 Skills** blocks specifically:
+
+- One labeled fenced block per skill found — never combine multiple skills
+  into a single block or a single multi-skill command, mirroring how
+  Packages handles multiple packages.
+- Each skill gets a `⯈ **<skill-name>**` line directly above its fenced
+  block (no blank line between the label and the block), using the
+  skill's real name.
+- Put a `<br>` on its own line before every labeled skill block, including
+  before the first one — this is what creates visible separation between
+  skills when rendered. Don't add `<br>` anywhere else in this file
+  (Architecture and Packages blocks don't get one).
+- For each skill, look for a `skills-lock.json` file at the project root.
+  If it exists, check whether the skill's name is a key in its `skills`
+  object.
+  - If the skill is found there: read its `source` field (an
+    `owner/repo` string) and write
+    `npx skills add https://github.com/<source> --skill <skill-name>`,
+    using the real values from the lock file (not the placeholders shown
+    above). The `https://github.com/` prefix is always used here,
+    regardless of `sourceType`.
+  - If `skills-lock.json` doesn't exist, or exists but has no entry for
+    that skill's name: fall back to a block containing only the skill's
+    name on its own line, exactly as it appears in `.claude/skills/` or
+    `.agents/skills/` (e.g. `skrapi`) — nothing else, no invented URL, no
+    git-remote lookup, no guessed repo. The `⯈ **<skill-name>**` label
+    above it still applies the same way.
+- List every skill found this run (the same set documented in `SKILLS.md`,
+  including `skrapi` itself when it's listed there), in the same order
+  they appear on disk.
+- If no skills were found (no `SKILLS.md` this run), don't omit the
+  section — instead write a single line in the fenced block, in English,
+  with no `⯈` label and no leading `<br>`:
+  `>- This project doesn't have any skill installed 🚫`
+  The 1-2 sentence explanation above the block should say the same thing
+  in the language chosen in Step 0.
+
+Rule that applies to **all fenced prompt blocks** (Architecture, Packages,
+and Skills): the text *inside* the triple backticks is always written in
+English, regardless of the language chosen in Step 0 — including both the
+real install commands and either empty-state message. The 1-2 sentence
+explanation around each block is what stays in the user's chosen language,
+not the contents of the block itself.
+
+Keep all blocks paste-ready as-is and don't blend them: the Architecture
+block is text meant for an AI agent to read; each Packages and each
+Skills block is a literal command or bare name to copy-paste — no
+commentary inside any fenced block.
 
 ### `SKILLS.md` (only if there's at least one skill besides `skrapi` itself)
 
@@ -254,16 +400,46 @@ Once the files are written, give a short closing message — not a recap of
 everything each file contains, since the user can just open the files for
 that. The summary's only job is to confirm what exists and where, fast.
 
-Use this shape (adapt the wording to the language chosen in Step 0):
+Write this message entirely in the language chosen in Step 0 — including
+the intro line and the closing line, not just the surrounding prose. Use
+the matching shape below for whichever language was chosen (translate
+naturally rather than transliterating word-for-word if none of these
+exact wordings fit the conversation's tone):
 
+**If ES was chosen:**
 ```markdown
 He creado `SKRAPI/` con <N> archivos:
 
 1. `ARCHITECTURE.md` (<line count> líneas)
 2. `PACKAGES.md` (<line count> líneas)
-3. `SKILLS.md` (<line count> líneas)  <!-- only if it was created -->
+3. `PROMPT.md` (<line count> líneas)
+4. `SKILLS.md` (<line count> líneas)  <!-- only if it was created -->
 
 Archivos creados con éxito 🎉
+```
+
+**If EN was chosen:**
+```markdown
+I've created `SKRAPI/` with <N> files:
+
+1. `ARCHITECTURE.md` (<line count> lines)
+2. `PACKAGES.md` (<line count> lines)
+3. `PROMPT.md` (<line count> lines)
+4. `SKILLS.md` (<line count> lines)  <!-- only if it was created -->
+
+Files created successfully 🎉
+```
+
+**If ZH was chosen:**
+```markdown
+我已创建 `SKRAPI/`，共 <N> 个文件：
+
+1. `ARCHITECTURE.md`（<line count> 行）
+2. `PACKAGES.md`（<line count> 行）
+3. `PROMPT.md`（<line count> 行）
+4. `SKILLS.md`（<line count> 行）  <!-- only if it was created -->
+
+文件创建成功 🎉
 ```
 
 Just the file list with line counts and that closing line — no bullets
