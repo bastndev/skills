@@ -14,7 +14,7 @@
 
 ---
 
-Scaffolds a new Astro project using the `minimal` template, overlaid with a clean, ready-to-use architecture. It sets up a layout, a header with a logo and centered navigation, three standard pages, a light/dark theme toggle, and native Astro View Transitions right out of the box.
+Scaffolds a new Astro project using the `minimal` template, overlaid with a clean, ready-to-use architecture. It sets up a layout, header navigation, four standard pages, light/dark theme toggle, and native Astro View Transitions right out of the box.
 
 <p align="center">
   <a href="https://skills.sh/bastndev/skills">
@@ -32,7 +32,7 @@ npx skills add bastndev/skills --skill start-astro
 
 - **Minimal Base** — Uses the empty `minimal` Astro template to avoid boilerplate cleanup.
 - **Pre-configured Layout** — Includes `Layout.astro` and `Header.astro` shared across all pages.
-- **Standard Pages** — Generates `Home`, `Work`, and `Contact` routes immediately.
+- **Standard Pages** — Generates `Home`, `Work`, `About`, and `Contact` routes immediately.
 - **Theme Toggle** — Zero-dependency light/dark mode switch built with CSS variables and vanilla JS.
 - **View Transitions** — Native smooth page-to-page fades using Astro's `<ClientRouter />`.
 

@@ -1,0 +1,84 @@
+:root {
+  /* backgrounds */
+  --color-bg: #fafaf8;
+  --color-bg-elevated: #ffffff;
+  --color-bg-subtle: #f4f3ef;
+
+  /* borders */
+  --color-border: #e7e5df;
+
+  /* text */
+  --color-text: #161616;
+  --color-text-muted: #6b6b6b;
+
+  /* premium accent */
+  --color-accent: #2d2d2d;
+  --color-accent-hover: #111111;
+  --color-on-accent: #ffffff;
+
+  /* navigation */
+  --color-nav-bg: rgba(250, 250, 248, 0.8);
+  --color-nav-text: #4a4a4a;
+  --color-nav-text-active: #111111;
+
+  /* effects */
+  --color-shadow: rgba(0, 0, 0, 0.04);
+  --color-focus-ring: rgba(0, 0, 0, 0.12);
+
+  --color-link: #222222;
+  --color-link-hover: #000000;
+
+  --transition-theme:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+[data-theme="dark"] {
+  --color-bg: #111111;
+  --color-bg-elevated: #171717;
+  --color-bg-subtle: #1f1f1f;
+
+  --color-border: #2a2a2a;
+
+  --color-text: #f5f5f5;
+  --color-text-muted: #9b9b9b;
+
+  --color-accent: #f5f5f5;
+  --color-accent-hover: #ffffff;
+  --color-on-accent: #111111;
+
+  --color-nav-bg: rgba(17, 17, 17, 0.8);
+  --color-nav-text: #b0b0b0;
+  --color-nav-text-active: #ffffff;
+
+  --color-shadow: rgba(0, 0, 0, 0.35);
+  --color-focus-ring: rgba(255, 255, 255, 0.12);
+
+  --color-link: #ffffff;
+  --color-link-hover: #d9d9d9;
+}
+
+* {
+  transition: var(--transition-theme);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* <main> fills the height left below the header. Full-height pages (the centered
+   Home hero) then size to exactly that space via flex:1 instead of a hard-coded
+   `100vh - header` guess — which is what caused a scrollbar on Home only. Short
+   pages (Work/Contact) just leave empty space below their content. */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}

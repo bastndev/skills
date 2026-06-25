@@ -1,0 +1,46 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Decorative ASCII logo for the Home hero. Replace with your own art.
+// First line begins with a single leading space — keep it, it aligns the glyphs.
+const logo = ` ██████╗ ██╗  ██╗██████╗
+██╔════╝ ╚██╗██╔╝██╔══██╗
+██║  ███╗ ╚███╔╝ ██████╔╝
+██║   ██║ ██╔██╗ ██╔══██╗
+╚██████╔╝██╔╝ ██╗██████╔╝
+ ╚═════╝ ╚═╝  ╚═╝╚═════╝ `;
+---
+
+<Layout title={`Home · test-3`} projectName="test-3">
+  <section class="hero">
+    <pre class="hero-logo" aria-hidden="true">{logo}</pre>
+    <p class="hero-text">Welcome — this is the starting point of the site.</p>
+  </section>
+</Layout>
+
+<style>
+  .hero {
+    min-height: calc(100vh - 70px); /* viewport minus the header */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 1.5rem;
+    padding: 2rem 1.5rem;
+  }
+  .hero-logo {
+    margin: 0;
+    max-width: 100%;
+    color: var(--color-accent);
+    font-family: ui-monospace, 'Cascadia Code', 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
+    font-size: clamp(0.45rem, 2.2vw, 0.95rem);
+    line-height: 1.1;
+    white-space: pre;
+  }
+  .hero-text {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 1.05rem;
+  }
+</style>
