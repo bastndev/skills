@@ -40,18 +40,18 @@ npx skills add bastndev/skills
 
 | Phase      | Purpose                              | Key Capabilities                                                                                                                                                                                   | Example Skills                  | Status |
 | ---------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------ |
-| **Start**  | Project initialization & scaffolding | Create production-ready folder structures, initialize frameworks, apply best-practice defaults and configs from commit #1.                                                                         | `start-package` _(more coming)_ | ㅤㅤ✅ |
-| **Middle** | Understand, document & improve       | Analyze any codebase and document it into a portable folder of focused Markdown. Enhance UI/UX, harden security, boost performance, and clean logic during active development.                     | `skrapi`                        | ㅤㅤ✅ |
+| **Start**  | Begin a project — scaffold new, or learn from an existing one | Create production-ready structures and configs from commit #1. Or analyze an existing codebase's architecture & packages and document it, so you can reuse what works in your own project.          | `start-package`, `skrapi`       | ㅤㅤ✅ |
+| **Middle** | Continuous improvement & polish      | Enhance UI/UX, harden security, boost performance, clean logic, and eliminate dead code during active development.                                                                                 | Targeted enhancers (TBD)        | Planned |
 | **End**    | Audit, diagnosis & safe refactoring  | Full architecture & quality analysis. Categorized findings with file-level evidence. Prioritized phased plan executed **only with explicit approval**. Behavior-preserving. Multi-runtime support. | `end`                           | ㅤㅤ✅ |
 
 ## Available Skills
 
-Listed in the natural order you'd reach for them — **Start** a project, understand it in the **Middle**, harden it at the **End**.
+Listed in the natural order you'd reach for them — **Start** something new (or study an existing codebase for inspiration), refine it in the **Middle**, and harden it at the **End**.
 
 | Skill                                                 | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **[start-package](./skills/start-package/README.md)** | _Start_ — Scaffolds a publishable **dual ESM + CJS** TypeScript package with bundled type declarations, a zero-config `tsup` build, and TypeScript pinned to `5.x` so it builds cleanly in both CLI and editor. Generates `package.json`, `tsconfig.json`, tsup config, a smoke test, and `.vscode` settings, then installs, builds, and verifies.<br><br>→ [Full documentation](./skills/start-package/README.md)                                                                            |
-| **[skrapi](./skills/skrapi/README.md)**               | _Middle_ — Analyzes any codebase (web, mobile, extension, library, monorepo) and writes a fixed `SKRAPI/` folder of focused Markdown — architecture, dependencies, and paste-ready prompts. Every description is verified against real code, never guessed from a package name. Multilingual output (🇪🇸 ES · 🇺🇸 EN · 🇨🇳 ZH).<br><br>→ [Full documentation](./skills/skrapi/README.md)                                                                                                         |
+| **[skrapi](./skills/skrapi/README.md)**               | _Start_ — Point it at a project you admire and it maps how that codebase is built into a fixed `SKRAPI/` folder of focused Markdown — architecture, dependencies, and paste-ready prompts — so you can borrow the patterns that fit your own project before you start. Works on any stack (web, mobile, extension, library, monorepo); every description is verified against real code, never guessed from a package name. Multilingual output (🇪🇸 ES · 🇺🇸 EN · 🇨🇳 ZH).<br><br>→ [Full documentation](./skills/skrapi/README.md)                                                                  |
 | **[end](./skills/end/README.md)**                     | _End_ — Understands your project end-to-end. Delivers a clear diagnosis (confirmed bugs, risks, opportunities, technical debt) with concrete references, recommends the right architecture direction for _this_ codebase, and builds an ordered execution plan. Every change happens in an isolated, reviewable phase — it only proceeds when you say `go`, `start`, or `proceed`, and no files are touched during analysis.<br><br>→ [Full documentation & examples](./skills/end/README.md) |
 
 > **Note:** Each skill ships with its own detailed README. The root page gives the high-level overview; dive into `./skills/<skill>/README.md` for deep usage, report examples, and guarantees.
@@ -62,7 +62,7 @@ Every skill installs the same way — pick the one you need:
 
 ```bash
 npx skills add bastndev/skills --skill start-package   # Start  — scaffold a TS npm package
-npx skills add bastndev/skills --skill skrapi          # Middle — analyze & document a codebase
+npx skills add bastndev/skills --skill skrapi          # Start  — study & document any codebase
 npx skills add bastndev/skills --skill end             # End    — audit & safely refactor
 ```
 
@@ -83,8 +83,8 @@ The full internal specification lives in [skills/end/SKILL.md](./skills/end/SKIL
 
 ## Roadmap
 
-- **Start** — `start-package` ships today; more `start-*` scaffolders (frameworks & stacks) are on the way.
-- **Middle** — `skrapi` ships today; focused, on-demand improvers (performance, security, UX, dead-code removal) are planned.
+- **Start** — `start-package` (scaffold) and `skrapi` (study an existing codebase) ship today; more `start-*` scaffolders are on the way.
+- **Middle** — focused, on-demand improvers (performance, security, UX, dead-code removal) are planned.
 - **End** — `end` ships today; more runtimes, additional specialized refactoring modes, and utilities are planned.
 
 Each skill ships with its own dedicated documentation (like the current [End – Refactor Project](./skills/end/README.md)).
