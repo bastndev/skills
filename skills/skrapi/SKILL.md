@@ -105,8 +105,12 @@ or near-duplicate files:
   file — a recommendation is only useful when it's a concrete comparison
   against something real, not generic advice.
 - **`SKILLS.md`** — only if the project has a `.claude/skills/` or
-  `.agents/skills/` folder. If neither exists, this is simply not part of the
-  project — don't create the file and don't mention its absence elsewhere.
+  `.agents/skills/` folder **and** it contains at least one skill besides
+  `skrapi` itself. If `skrapi` is the only skill found there, skip this file
+  entirely — a file whose only content is "this project has skrapi" isn't
+  useful information, since the user already knows that. If there's at least
+  one other skill alongside it, create the file normally and include `skrapi`
+  in the list too, like any other skill found.
 
 Write every file in the language chosen in Step 0.
 
@@ -185,12 +189,19 @@ how to apply it — not just the abstract idea. Also call out anything that's
 *not* worth copying (over-engineering, or a decision that only makes sense at
 that project's scale/team size).
 
-### `SKILLS.md` (only if `.claude/skills/` or `.agents/skills/` exists)
+### `SKILLS.md` (only if there's at least one skill besides `skrapi` itself)
 
 This file documents the custom skills available to AI tools in this repo —
 nothing else. Don't summarize the root `AGENTS.md`/`CLAUDE.md` instruction
 files anywhere in it; those are standing instructions for AI agents, not
 something this file is for.
+
+If `skrapi` is the only skill present in `.claude/skills/` or
+`.agents/skills/`, don't create this file at all — skip it silently, same as
+when no skills folder exists. Once there's at least one other skill, create
+the file and include `skrapi` in the list along with the rest — it's fine to
+describe what `skrapi` itself does at that point, the same way any other
+skill entry gets described.
 
 Keep it to exactly the list below — no overview paragraph before it, and
 nothing after it. No "skills not used yet" section, no "how skills work"
