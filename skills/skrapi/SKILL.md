@@ -400,8 +400,13 @@ Once the files are written, give a short closing message — not a recap of
 everything each file contains, since the user can just open the files for
 that. The summary's only job is to confirm what exists and where, fast.
 
-Use this shape (adapt the wording to the language chosen in Step 0):
+Write this message entirely in the language chosen in Step 0 — including
+the intro line and the closing line, not just the surrounding prose. Use
+the matching shape below for whichever language was chosen (translate
+naturally rather than transliterating word-for-word if none of these
+exact wordings fit the conversation's tone):
 
+**If ES was chosen:**
 ```markdown
 He creado `SKRAPI/` con <N> archivos:
 
@@ -411,6 +416,30 @@ He creado `SKRAPI/` con <N> archivos:
 4. `SKILLS.md` (<line count> líneas)  <!-- only if it was created -->
 
 Archivos creados con éxito 🎉
+```
+
+**If EN was chosen:**
+```markdown
+I've created `SKRAPI/` with <N> files:
+
+1. `ARCHITECTURE.md` (<line count> lines)
+2. `PACKAGES.md` (<line count> lines)
+3. `PROMPT.md` (<line count> lines)
+4. `SKILLS.md` (<line count> lines)  <!-- only if it was created -->
+
+Files created successfully 🎉
+```
+
+**If ZH was chosen:**
+```markdown
+我已创建 `SKRAPI/`，共 <N> 个文件：
+
+1. `ARCHITECTURE.md`（<line count> 行）
+2. `PACKAGES.md`（<line count> 行）
+3. `PROMPT.md`（<line count> 行）
+4. `SKILLS.md`（<line count> 行）  <!-- only if it was created -->
+
+文件创建成功 🎉
 ```
 
 Just the file list with line counts and that closing line — no bullets
