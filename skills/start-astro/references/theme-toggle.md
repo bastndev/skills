@@ -113,7 +113,7 @@ This is **inline**, not a `.js` file import — it must run synchronously before
 
 ### Why `astro:after-swap`
 
-**The bug this fixes:** with `<ClientRouter />`, clicking a nav link (Home/Work/About/Contact) does an SPA-style swap. The incoming page's server HTML is `<html lang="en">` with **no** `data-theme` (the server can't know the user's choice — it only lives in `localStorage` + JS). During the swap Astro overwrites the `<html>` attributes to match that incoming HTML, so `data-theme` is stripped and the CSS falls back to the `:root` light values — i.e. **dark mode silently flips to light on every navigation.** The inline `<head>` script does *not* re-run to fix it, because Astro de-dupes identical head scripts across transitions.
+**The bug this fixes:** with `<ClientRouter />`, clicking a nav link (Home/Work/Contact) does an SPA-style swap. The incoming page's server HTML is `<html lang="en">` with **no** `data-theme` (the server can't know the user's choice — it only lives in `localStorage` + JS). During the swap Astro overwrites the `<html>` attributes to match that incoming HTML, so `data-theme` is stripped and the CSS falls back to the `:root` light values — i.e. **dark mode silently flips to light on every navigation.** The inline `<head>` script does *not* re-run to fix it, because Astro de-dupes identical head scripts across transitions.
 
 `astro:after-swap` fires immediately after the new DOM is in place but **before the browser paints**, so re-reading `localStorage` and re-setting `data-theme` there restores the theme with zero flash. The listener is attached to `document` (which persists across swaps), so registering it once is enough.
 
@@ -182,7 +182,7 @@ This is **inline**, not a `.js` file import — it must run synchronously before
 
 ### Why `astro:page-load`
 
-`<ClientRouter />` (Astro's View Transitions) turns multi-page navigation into SPA-like swaps. Per Astro's docs: bundled module scripts only run once and are ignored on subsequent transitions, but the page DOM (including `#theme-toggle`) is swapped in fresh on every navigation. Without re-binding the click handler on `astro:page-load`, the button goes dead after the very first navigation between Home/Work/About/Contact. The `data-bound` guard prevents attaching the listener twice on the very first load (since `initThemeToggle()` already runs immediately, and `astro:page-load` also fires on initial load).
+`<ClientRouter />` (Astro's View Transitions) turns multi-page navigation into SPA-like swaps. Per Astro's docs: bundled module scripts only run once and are ignored on subsequent transitions, but the page DOM (including `#theme-toggle`) is swapped in fresh on every navigation. Without re-binding the click handler on `astro:page-load`, the button goes dead after the very first navigation between Home/Work/Contact. The `data-bound` guard prevents attaching the listener twice on the very first load (since `initThemeToggle()` already runs immediately, and `astro:page-load` also fires on initial load).
 
 ## Usage notes
 

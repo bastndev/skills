@@ -67,7 +67,10 @@ const navItems = [
   { href: '/contact', label: 'Contact' },
 ];
 
-const currentPath = Astro.url.pathname;
+// Normalise trailing slashes so the active link matches in both `bun run dev`
+// (path is `/work`) and the static build/preview (path is `/work/`).
+const stripSlash = (p) => (p !== '/' && p.endsWith('/') ? p.slice(0, -1) : p);
+const currentPath = stripSlash(Astro.url.pathname);
 ---
 
 <header class="site-header">
@@ -105,7 +108,6 @@ const currentPath = Astro.url.pathname;
 <style>
   .site-header {
     background: var(--color-nav-bg);
-    border-bottom: 1px solid var(--color-border);
   }
   .nav {
     max-width: 1200px;
@@ -131,9 +133,9 @@ const currentPath = Astro.url.pathname;
   .brand:hover {
     color: var(--color-nav-text-active);
   }
-  /* Reuses /public/favicon.svg as a mask, then paints it with the brand's
-     currentColor — so the logo follows the in-app theme toggle (not just the
-     OS color scheme the raw SVG reacts to). Swap the favicon to rebrand. */
+  /* Reuses /public/favicon.svg (read-only) as a mask, then paints it with the
+     brand's currentColor — so the logo follows the in-app theme toggle. This
+     only *references* the file; the scaffold never modifies or replaces it. */
   .brand-logo {
     width: 26px;
     height: 26px;
@@ -150,17 +152,15 @@ const currentPath = Astro.url.pathname;
     margin: 0;
     padding: 0;
   }
+  /* No underlines/lines: links sit muted-gray and brighten to white (or near-black
+     in light mode) when active or hovered. The active state is colour-only. */
   .nav-link {
     color: var(--color-nav-text);
     text-decoration: none;
     font-size: 0.95rem;
     padding: 0.25rem 0;
-    border-bottom: 2px solid transparent;
   }
-  .nav-link.active {
-    color: var(--color-nav-text-active);
-    border-bottom-color: var(--color-nav-text-active);
-  }
+  .nav-link.active,
   .nav-link:hover {
     color: var(--color-nav-text-active);
   }
@@ -209,7 +209,7 @@ const currentPath = Astro.url.pathname;
 
 ## Notes
 
-- `currentPath === item.href` highlights the active section in the nav. Works correctly with View Transitions because `Astro.url.pathname` is re-evaluated server-side on every navigation (Astro re-renders the component, it isn't a client-side SPA route guess).
+- `currentPath === item.href` highlights the active section in the nav. `Astro.url.pathname` is re-evaluated server-side on every navigation (Astro re-renders the component, it isn't a client-side SPA route guess), and `stripSlash` normalises trailing slashes so the match holds in both `dev` (`/work`) and the static build (`/work/`) — otherwise non-home links never highlight in production.
 - `class:list` is Astro's built-in conditional-class helper — no extra package needed.
-- The brand mark reuses `public/favicon.svg` via a CSS `mask`, painted with `currentColor`, so it tracks the in-app theme toggle and there's a single logo file to swap. The minimal template ships the Astro logo there by default — drop your own SVG at `public/favicon.svg` to rebrand both the favicon and the header logo at once. (Because `mask` uses only the shape, any fill/colors inside the SVG are ignored — it renders as a single-color silhouette.)
+- The brand mark reuses `public/favicon.svg` via a CSS `mask`, painted with `currentColor`, so it tracks the in-app theme toggle. **This is read-only — the scaffold must leave `public/favicon.svg` and `public/favicon.ico` exactly as `bun create astro` ships them (the Astro default), and must not delete the `.ico`.** If the user later wants to rebrand, they can swap `public/favicon.svg` themselves and both the favicon and the header logo update at once. (Because `mask` uses only the shape, any fill/colors inside the SVG are ignored — it renders as a single-color silhouette.)
 - `projectName` flows from `Layout.astro`'s `title`/`projectName` props down into `Header.astro` — both ultimately come from `{{PROJECT_NAME}}` (detected automatically from the current folder's name; see `project-structure.md`). No hardcoded site name and no reliance on `Astro.site` (which is `undefined` unless `site` is explicitly set in `astro.config.mjs`).
