@@ -31,7 +31,7 @@
 </p>
 
 ```
-npx skills add https://github.com/bastndev/skills --skill end
+npx skills add bastndev/skills
 ```
 
 ## The Three Phases
