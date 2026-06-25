@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/github/icons/architecture.webp" width="150" />
+  <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/github/icons/start.webp" width="150" />
 </p>
 
 <h1 align="center">[Architecture Analyzer] / Documentation Generator</h1>
