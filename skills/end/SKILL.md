@@ -1,7 +1,7 @@
 ---
 name: end
 description: "Audits, reviews, and refactors project architecture, code quality, structure, organization, and technical debt. Use for code review, architecture review, project audits, maintainability improvements, structural cleanup, scalability improvements, and refactoring existing codebases."
-license: MIT
+license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
   version: "2.0.0"

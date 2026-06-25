@@ -1,7 +1,7 @@
 ---
 name: skrapi
 description: Analyzes the architecture of any software project — web, mobile, browser extension, or npm package/library, in any JS/TS stack (Next.js, Astro, React Native, Expo, Lynx JS, Vite, etc.) or other languages if needed — and produces a folder of focused Markdown files covering architecture and packages/dependencies. Use whenever the user wants to understand or document an existing codebase; wants to study another project's structure for inspiration before applying ideas to their own (e.g. "estoy analizando este repo para aprender"); or asks which package handles something specific (dark/light mode, routing, state management, forms, i18n) and whether one exists. Trigger even without the word "architecture" — "ayúdame a entender este proyecto", "qué packages usa y para qué", "analiza la estructura de este repo" all qualify.
-license: MIT
+license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
   version: "1.0.0"

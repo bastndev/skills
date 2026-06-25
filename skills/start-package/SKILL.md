@@ -1,7 +1,7 @@
 ---
 name: start-package
 description: Scaffold a new dual ESM/CJS TypeScript npm package with the proven, known-good toolchain — zero-config build, bundled types, and TypeScript pinned to 5.x. Use when starting, creating, or bootstrapping a new npm package, library, or "packete" from scratch. Generates package.json, tsconfig.json, tsup config, a smoke test, .gitignore and .vscode settings, then installs, builds and verifies.
-license: MIT
+license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
   version: "1.0.0"

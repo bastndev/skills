@@ -180,4 +180,4 @@ const currentPath = Astro.url.pathname;
 
 - `currentPath === item.href` highlights the active section in the nav. Works correctly with View Transitions because `Astro.url.pathname` is re-evaluated server-side on every navigation (Astro re-renders the component, it isn't a client-side SPA route guess).
 - `class:list` is Astro's built-in conditional-class helper — no extra package needed.
-- `projectName` flows from `Layout.astro`'s `title`/`projectName` props down into `Header.astro` — both ultimately come from `{{PROJECT_NAME}}` (the name the user chose; see `project-structure.md`). No hardcoded site name and no reliance on `Astro.site` (which is `undefined` unless `site` is explicitly set in `astro.config.mjs`).
+- `projectName` flows from `Layout.astro`'s `title`/`projectName` props down into `Header.astro` — both ultimately come from `{{PROJECT_NAME}}` (detected automatically from the current folder's name; see `project-structure.md`). No hardcoded site name and no reliance on `Astro.site` (which is `undefined` unless `site` is explicitly set in `astro.config.mjs`).
