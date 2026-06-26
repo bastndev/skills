@@ -1,6 +1,4 @@
-# Architecture — {{PROJECT_NAME}}
-
-> Copy this file to the project root as `ARCHITECTURE.md`, substituting `{{PROJECT_NAME}}` (the title on the first line and the tree root below). Everything else is verbatim.
+# Architecture — test-8
 
 A simple but scalable Astro base. It starts as light as a portfolio, yet every
 folder a growing project needs is already here — so you never restructure, you
@@ -11,7 +9,7 @@ left open.
 ## File map
 
 ```
-{{PROJECT_NAME}}/
+test-8/
 │
 ├── public/                   # Served AS-IS at the site root — no processing
 │   ├── favicon.svg           #   also reused, read-only, as the header logo
@@ -40,10 +38,8 @@ left open.
 │   │
 │   ├── pages/                # File-based routing
 │   │   ├── index.astro       #   Home
-│   │   ├── work/
-│   │   │   └── index.astro   #   Work → /work (folder per route, room to grow)
-│   │   ├── contact/
-│   │   │   └── index.astro   #   Contact → /contact
+│   │   ├── work.astro        #   Work
+│   │   ├── contact.astro     #   Contact
 │   │   ├── 404.astro         #   themed not-found, links home via ROUTES
 │   │   └── api/
 │   │       └── hello.ts      #   example endpoint → GET /api/hello

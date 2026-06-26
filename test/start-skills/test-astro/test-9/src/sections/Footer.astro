@@ -1,0 +1,14 @@
+---
+// Minimal site footer: the project name + the current year. Shown on every page
+// via Layout.astro. The name comes from SITE so it follows the single source of
+// truth (rename once in consts.ts). Its styles live in global.css (a
+// render-blocking, global stylesheet) instead of a scoped <style> here — so the
+// centered line is applied before first paint and never flashes left-aligned.
+import { SITE } from '@/consts';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <p class="footer-line">{SITE.name} © {year}</p>
+</footer>

@@ -30,9 +30,11 @@ Final file tree after this skill runs (on top of the `minimal` template's `bun c
 │   ├── content/.gitkeep            ← from this file
 │   ├── pages/
 │   │   ├── index.astro             ← Home (this file)
-│   │   ├── work/index.astro        ← Work → /work (this file)
-│   │   ├── contact/index.astro     ← Contact → /contact (this file)
 │   │   ├── 404.astro               ← this file
+│   │   ├── work/
+│   │   │   └── index.astro         ← Work (this file)
+│   │   ├── contact/
+│   │   │   └── index.astro         ← Contact (this file)
 │   │   └── api/
 │   │       └── hello.ts            ← from references/config-data-backend.md
 │   ├── lib/utils.ts                ← from references/config-data-backend.md
@@ -50,8 +52,6 @@ Final file tree after this skill runs (on top of the `minimal` template's `bun c
 ```
 
 Each page is intentionally minimal: it wraps `Layout` and drops in the shared `GXB` hero with a one-line tagline. The ASCII art lives **only** in `GXB.astro`.
-
-**Work and Contact each live in their own folder as `index.astro`** (`src/pages/work/index.astro` → `/work`, `src/pages/contact/index.astro` → `/contact`). Astro maps a folder's `index.astro` to the folder's path, so the URLs stay `/work` and `/contact` and `ROUTES` is unchanged — but each route now owns a folder it can grow into (sub-pages, co-located page-only parts) without a later move. Home and 404 stay flat at the `pages/` root.
 
 ## `src/components/GXB.astro` (write byte-for-byte — do not edit the art)
 
@@ -125,6 +125,10 @@ import GXB from '@/components/GXB.astro';
 
 ## `src/pages/work/index.astro`
 
+Using a folder (`work/index.astro`) instead of a flat `work.astro` keeps any future
+sub-routes (e.g. `work/[slug].astro`) co-located without restructuring. The URL
+`/work` is identical either way.
+
 ```astro
 ---
 import Layout from '@/layouts/Layout.astro';
@@ -137,6 +141,8 @@ import GXB from '@/components/GXB.astro';
 ```
 
 ## `src/pages/contact/index.astro`
+
+Same folder convention as `work/` above.
 
 ```astro
 ---
@@ -311,7 +317,11 @@ Write a `.gitkeep` to each of these three folders. Content is a single comment l
 
 ## Adding more pages later
 
-1. Create `src/pages/{name}/index.astro` (a folder per route, mirroring Work/Contact) — import `Layout` + `GXB`, then `<GXB text="…" />`. Pass only a page title: `<Layout title="{Name}">`. (A flat `src/pages/{name}.astro` resolves to the same `/{name}` URL if you don't need the folder yet.)
+1. Create `src/pages/{name}/index.astro` — import `Layout` + `GXB`, then `<GXB text="…" />`. Pass only a page title: `<Layout title="{Name}">`.
 2. Add `{ href: '/{name}', label: '{Name}' }` to the `ROUTES` array in `src/consts.ts`.
 
 The nav (Header), the 404 link, the title, and the theme all follow automatically — no other file changes.
+
+> **Why `{name}/index.astro` and not `{name}.astro`?** A folder lets you add
+> `{name}/[slug].astro` (or any sub-route) later without renaming the parent.
+> Both produce the same URL — choose the folder form from the start.

@@ -1,4 +1,4 @@
-# Architecture — {{PROJECT_NAME}}
+# Architecture — test-9
 
 > Copy this file to the project root as `ARCHITECTURE.md`, substituting `{{PROJECT_NAME}}` (the title on the first line and the tree root below). Everything else is verbatim.
 
@@ -11,7 +11,7 @@ left open.
 ## File map
 
 ```
-{{PROJECT_NAME}}/
+test-9/
 │
 ├── public/                   # Served AS-IS at the site root — no processing
 │   ├── favicon.svg           #   also reused, read-only, as the header logo
@@ -39,12 +39,15 @@ left open.
 │   │                         #   per collection (blog/, projects/…)
 │   │
 │   ├── pages/                # File-based routing
-│   │   ├── index.astro       #   Home
-│   │   ├── work/
-│   │   │   └── index.astro   #   Work → /work (folder per route, room to grow)
-│   │   ├── contact/
-│   │   │   └── index.astro   #   Contact → /contact
+│   │   ├── index.astro       #   / → Home
 │   │   ├── 404.astro         #   themed not-found, links home via ROUTES
+│   │   │
+│   │   ├── work/
+│   │   │   └── index.astro   #   /work
+│   │   │
+│   │   ├── contact/
+│   │   │   └── index.astro   #   /contact
+│   │   │
 │   │   └── api/
 │   │       └── hello.ts      #   example endpoint → GET /api/hello
 │   │
@@ -194,8 +197,12 @@ Until then, don't add the adapter — it's config you don't need yet.
 ## Recipes
 
 **Add a page**
-1. Create `src/pages/<name>.astro` (wrap `Layout`, drop in your content).
+1. Create `src/pages/<name>/index.astro` (wrap `Layout`, drop in your content).
 2. Add `{ href: '/<name>', label: '<Name>' }` to `ROUTES` in `consts.ts`.
+
+> Using a folder (`<name>/index.astro`) instead of a flat `<name>.astro` keeps
+> future sub-routes (e.g. `<name>/[slug].astro`) co-located without any
+> restructuring. Both produce the identical URL.
 
 **Add a collection (e.g. projects)**
 1. Define the `projects` schema in `src/content.config.ts`.
