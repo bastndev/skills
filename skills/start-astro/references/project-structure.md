@@ -47,7 +47,6 @@ Final file tree after this skill runs (on top of the `minimal` template's `bun c
 ├── ARCHITECTURE.md                 ← from references/architecture.md
 ├── README.md                       ← from this file (overwrite the scaffold default)
 ├── .prettierignore                 ← from this file
-├── .npmrc                          ← from this file (npm peer-deps fix; inert under bun)
 ├── astro.config.mjs                ← created by bun create astro, leave as-is
 ├── package.json                    ← created by bun create astro (+ bun add @lucide/astro)
 └── tsconfig.json                   ← OVERWRITE — from references/config-data-backend.md
@@ -220,8 +219,6 @@ import GXB from '@/components/GXB.astro';
 
 A full-screen not-found page: a monospace **typing animation** ("404, page not found.") with a blinking cursor, plus a themed back button. It passes `hideNavAndFooter={true}` so the Header and Footer are hidden (see `references/layout-header.md`), and links home from the `ROUTES` registry (never hard-code `/`). The title stays **name-free** (`title="404"`) so `Layout` composes `404 · <SITE.name>`.
 
-**The message is server-rendered** inside `.typing-text`, so it's present for crawlers and with JavaScript disabled; the script clears and re-types it only as a progressive enhancement, and skips the animation entirely under `prefers-reduced-motion` (leaving the static text). The cursor is `aria-hidden` (decorative), and because the text is real DOM, screen readers announce it.
-
 ```astro
 ---
 import Layout from '@/layouts/Layout.astro';
@@ -234,7 +231,7 @@ const home = ROUTES[0];
 
 <Layout title="404" hideNavAndFooter={true}>
   <section class="not-found">
-    <p class="typed"><span class="typing-text">404, page not found.</span><span class="cursor" aria-hidden="true"></span></p>
+    <p class="typed"><span class="typing-text"></span><span class="cursor"></span></p>
     <BackButton404 href={home.href} text={home.label} />
   </section>
 </Layout>
@@ -276,22 +273,16 @@ const home = ROUTES[0];
 </style>
 
 <script>
+  const TEXT = '404, page not found.';
   const SPEED_MS = 100;
 
   function initTyping() {
     const el = document.querySelector('.typing-text');
-    if (!el || el.dataset.typed) return; // guard the initial double-run + later re-runs
-    const full = el.textContent ?? ''; // message is server-rendered (so it's there with JS off)
-    el.dataset.typed = 'true';
-
-    // Honour reduced-motion: keep the already-visible text, skip the animation.
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-    el.textContent = '';
+    if (!el || el.textContent) return; // already typed (guards View-Transition re-runs)
     let i = 0;
     (function type() {
-      if (i < full.length) {
-        el.textContent += full.charAt(i++);
+      if (i < TEXT.length) {
+        el.textContent += TEXT.charAt(i++);
         setTimeout(type, SPEED_MS);
       }
     })();
@@ -361,8 +352,6 @@ Transitions, Content Collections wired up, and an open backend door.
 - 🧭 **Connected routes** — the nav and the 404 page both read one `ROUTES` registry in `src/consts.ts`.
 - 🎨 **Icons** — [`@lucide/astro`](https://lucide.dev) for line icons; custom/brand SVGs in `src/assets/icons/`.
 - 📦 **Content Collections** ready (`src/content.config.ts`).
-- 🔎 **SEO ready** — canonical + Open Graph/Twitter tags composed from one `SITE` config (per-page `description`/`image` overrides).
-- ♿ **Accessible** — skip-to-content link, `aria-current`, visible focus rings, and `prefers-reduced-motion` support.
 - 🏷️ **`@/` path alias** → `src/` (no `../../` chains).
 - 🧱 **Scalable structure** — `components/`, `sections/`, `lib/`, `types/`, `content/`, `pages/api/`.
 
@@ -396,8 +385,6 @@ All commands are run from the project root:
 | `bun run build`   | Build the production site to `./dist/`       |
 | `bun run preview` | Preview the production build locally         |
 
-> Using **npm** (or pnpm/yarn)? Swap `bun` for your manager: `npm install`, `npm run dev`, `npm run build`.
-
 ## Getting started
 
 1. Set your name, description, and URL in `src/consts.ts` (`SITE`).
@@ -419,23 +406,11 @@ Skips generated output and keeps `public/` (incl. the default favicon) untouched
 dist/
 .astro/
 
-# Lockfiles
+# Lockfile
 bun.lock
-package-lock.json
 
 # Static assets — keep public/ (incl. the default Astro favicon) untouched
 public/
-```
-
-## `.npmrc` (project root)
-
-Makes the project install with **npm** as cleanly as with bun. `@lucide/astro` hasn't yet widened its `peerDependencies` to include Astro 7, so npm — which, unlike bun, treats a peer-range mismatch as a hard `ERESOLVE` error — would otherwise refuse `npm install`, both for the initial setup *and* for anyone who later clones the repo. `legacy-peer-deps=true` restores the install. It's inert under bun, so it ships unconditionally. Safe to delete once `@lucide/astro` lists Astro 7 as a peer.
-
-```
-# @lucide/astro hasn't widened its peer range to Astro 7 yet, so npm (unlike bun)
-# hard-errors on install. This keeps `npm install` working — for setup and for
-# anyone who clones the project. Safe to remove once @lucide/astro lists Astro 7.
-legacy-peer-deps=true
 ```
 
 ## `public/fonts/README.md`
