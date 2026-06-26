@@ -51,9 +51,9 @@ src/
     │   └── icons/            #   custom inline SVGs (e.g. social/) imported as components
     │
     ├── components/           # Reusable pieces shared across pages
-    │   ├── ui/               #   small primitives (Button, Badge, Card…)
+    │   ├── ui/               #   small primitives — ui/buttons/BackButton404.astro
     │   ├── Header.astro      #   logo + centered nav (from ROUTES) + theme toggle
-    │   └── GXB.astro         #   ASCII hero (one source for the art)
+    │   └── GXB.astro         #   ASCII hero + social-links row (one source for the art)
     │
     ├── sections/             # Page-level blocks (Hero, Footer, FeatureGrid…)
     │   └── Footer.astro      #   minimal footer (brand + year)
@@ -71,7 +71,7 @@ src/
     │   │   └── index.astro   #   Work → /work (folder per route, room to grow)
     │   ├── contact/
     │   │   └── index.astro   #   Contact → /contact
-    │   ├── 404.astro         #   themed not-found, links home via ROUTES
+    │   ├── 404.astro         #   typing-animation 404, hides nav/footer, links home
     │   └── api/
     │       └── hello.ts      #   example endpoint → GET /api/hello
     │
@@ -90,7 +90,7 @@ src/
 ARCHITECTURE.md · README.md · tsconfig.json (@/ alias)
 ```
 
-A fully working site with a zero-dependency light/dark toggle, native View Transitions, `@/` path aliases, Content Collections ready, and an open backend door (`lib/` + `pages/api/`).
+A fully working site with a zero-dependency light/dark toggle, native View Transitions, a hero social-links row, an animated full-screen 404, a gradient footer, `@/` path aliases, Content Collections ready, and an open backend door (`lib/` + `pages/api/`).
 
 ---
 

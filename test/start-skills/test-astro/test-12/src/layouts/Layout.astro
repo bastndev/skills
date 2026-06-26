@@ -1,0 +1,51 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Header from '@/components/Header.astro';
+import Footer from '@/sections/Footer.astro';
+import { SITE } from '@/consts';
+import '@/styles/global.css';
+
+interface Props {
+  /** Page name, e.g. "Home". Composed into `<name> · <SITE.name>`. Omit for the bare site name. */
+  title?: string;
+  /** Brand text in the header. Defaults to the site name from consts.ts. */
+  projectName?: string;
+  /** Hide the header and footer. Useful for 404 or full-screen splash pages. */
+  hideNavAndFooter?: boolean;
+}
+
+const { title, projectName = SITE.name, hideNavAndFooter = false } = Astro.props;
+const fullTitle = title ? `${title} · ${SITE.name}` : SITE.name;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={SITE.description} />
+    <title>{fullTitle}</title>
+    <ClientRouter />
+    <script is:inline>
+      (function () {
+        function applyTheme() {
+          const saved = localStorage.getItem('theme');
+          const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        }
+        applyTheme();
+        // Re-apply after every View Transition swap (fires before paint).
+        // Without this, navigating between pages resets <html data-theme> to
+        // the server HTML (which has no theme) and the site flips back to light.
+        document.addEventListener('astro:after-swap', applyTheme);
+      })();
+    </script>
+  </head>
+  <body>
+    {!hideNavAndFooter && <Header projectName={projectName} />}
+    <main transition:animate="fade">
+      <slot />
+    </main>
+    {!hideNavAndFooter && <Footer />}
+  </body>
+</html>

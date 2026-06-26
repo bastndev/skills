@@ -17,12 +17,15 @@ Final file tree after this skill runs (on top of the `minimal` template's `bun c
 │   ├── assets/
 │   │   ├── images/.gitkeep         ← from this file
 │   │   └── icons/
-│   │       ├── social/*.svg        ← 11 brand icons, from references/icons.md
+│   │       ├── social/*.svg        ← 7 brand icons (x, github, linkedin, …), from references/icons.md
 │   │       └── theme/{sun,moon}.svg ← toggle icons, from references/icons.md
 │   ├── components/
-│   │   ├── ui/.gitkeep             ← from this file
+│   │   ├── ui/
+│   │   │   ├── .gitkeep            ← from this file
+│   │   │   └── buttons/
+│   │   │       └── BackButton404.astro ← from this file (used by 404.astro)
 │   │   ├── Header.astro            ← from references/layout-header.md
-│   │   └── GXB.astro               ← from this file (byte-for-byte)
+│   │   └── GXB.astro               ← from this file (ASCII art byte-for-byte + social row)
 │   ├── sections/
 │   │   └── Footer.astro            ← from references/layout-header.md
 │   ├── layouts/
@@ -32,7 +35,7 @@ Final file tree after this skill runs (on top of the `minimal` template's `bun c
 │   │   ├── index.astro             ← Home (this file)
 │   │   ├── work/index.astro        ← Work → /work (this file)
 │   │   ├── contact/index.astro     ← Contact → /contact (this file)
-│   │   ├── 404.astro               ← this file
+│   │   ├── 404.astro               ← typing animation + BackButton404, hides nav/footer (this file)
 │   │   └── api/
 │   │       └── hello.ts            ← from references/config-data-backend.md
 │   ├── lib/utils.ts                ← from references/config-data-backend.md
@@ -53,17 +56,41 @@ Each page is intentionally minimal: it wraps `Layout` and drops in the shared `G
 
 **Work and Contact each live in their own folder as `index.astro`** (`src/pages/work/index.astro` → `/work`, `src/pages/contact/index.astro` → `/contact`). Astro maps a folder's `index.astro` to the folder's path, so the URLs stay `/work` and `/contact` and `ROUTES` is unchanged — but each route now owns a folder it can grow into (sub-pages, co-located page-only parts) without a later move. Home and 404 stay flat at the `pages/` root.
 
-## `src/components/GXB.astro` (write byte-for-byte — do not edit the art)
+## `src/components/GXB.astro` (ASCII art byte-for-byte — edit the social handles)
 
-The hero shown on **every** page: the ASCII-art logo + a per-page tagline (the `text` prop). The art lives here and nowhere else. The `<pre>` is `aria-hidden` because the art is decorative; screen readers get the tagline. (To rebrand later, edit the `logo` constant — e.g. generate new art at [patorjk.com/software/taag](https://patorjk.com/software/taag/) with the "ANSI Shadow" font.)
+The hero shown on **every** page: the ASCII-art logo + a per-page tagline (the `text` prop) + a row of social links. The art lives here and nowhere else; the `<pre>` is `aria-hidden` because the art is decorative, so screen readers get the tagline. The social icons are imported with `?raw` and injected with `set:html` so they inherit `currentColor` and follow the theme. (To rebrand later, edit the `logo` constant — e.g. generate new art at [patorjk.com/software/taag](https://patorjk.com/software/taag/) with the "ANSI Shadow" font.)
+
+**Write the ASCII art byte-for-byte.** The `socials` array ships with default handles — **edit each `href` to your own** (or trim the list). These links are *not* derived from `{{PROJECT_NAME}}`; this array is the single place a project's social links live.
 
 ```astro
 ---
+import xIcon from "@/assets/icons/social/x.svg?raw";
+import githubIcon from "@/assets/icons/social/github.svg?raw";
+import linkedinIcon from "@/assets/icons/social/linkedin.svg?raw";
+import instagramIcon from "@/assets/icons/social/instagram.svg?raw";
+import youtubeIcon from "@/assets/icons/social/youtube.svg?raw";
+import tiktokIcon from "@/assets/icons/social/tiktok.svg?raw";
+import facebookIcon from "@/assets/icons/social/facebook.svg?raw";
+
 interface Props {
   text: string;
 }
 
 const { text } = Astro.props;
+
+// Social links shown under the hero tagline on every page. This array is the ONE
+// place a project's socials live — edit each href to your own handle (or trim the
+// list). Icons are imported ?raw and injected with set:html so they inherit
+// currentColor and follow the theme.
+const socials = [
+  { href: "https://x.com/intent/follow?screen_name=gohitx", icon: xIcon, label: "X (Twitter)" },
+  { href: "https://github.com/gohitx", icon: githubIcon, label: "GitHub" },
+  { href: "https://linkedin.com/in/gohitx", icon: linkedinIcon, label: "LinkedIn" },
+  { href: "https://instagram.com/gohitx", icon: instagramIcon, label: "Instagram" },
+  { href: "https://www.youtube.com/@gohitx?sub_confirmation=1", icon: youtubeIcon, label: "YouTube" },
+  { href: "https://tiktok.com/@gohitx", icon: tiktokIcon, label: "TikTok" },
+  { href: "https://facebook.com/gohitx", icon: facebookIcon, label: "Facebook" },
+];
 
 // ASCII-art logo — the single source for the art used on every page. Edit or
 // delete it here to change/remove it site-wide. The first line starts with a
@@ -79,6 +106,19 @@ const logo = ` ██████╗ ██╗  ██╗██████╗
 <section class="hero">
   <pre class="hero-logo" aria-hidden="true">{logo}</pre>
   <p class="hero-text">{text}</p>
+  <div class="hero-socials">
+    {
+      socials.map((social) => (
+        <a
+          href={social.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={social.label}
+          set:html={social.icon}
+        />
+      ))
+    }
+  </div>
 </section>
 
 <style>
@@ -106,6 +146,32 @@ const logo = ` ██████╗ ██╗  ██╗██████╗
     margin: 0;
     color: var(--color-text-muted);
     font-size: 1.05rem;
+  }
+  .hero-socials {
+    display: flex;
+    gap: 2rem;
+    margin-top: 0.5rem;
+    align-items: center;
+    justify-content: center;
+  }
+  .hero-socials a {
+    color: var(--color-text-muted);
+    transition:
+      color 0.2s ease,
+      transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+  }
+  .hero-socials a:hover {
+    color: var(--color-text);
+    transform: translateY(-2px);
+  }
+  .hero-socials a :global(svg) {
+    width: 100%;
+    height: 100%;
   }
 </style>
 ```
@@ -151,37 +217,120 @@ import GXB from '@/components/GXB.astro';
 
 ## `src/pages/404.astro`
 
-Reuses `GXB` (never duplicate the art) and links home from the `ROUTES` registry.
+A full-screen not-found page: a monospace **typing animation** ("404, page not found.") with a blinking cursor, plus a themed back button. It passes `hideNavAndFooter={true}` so the Header and Footer are hidden (see `references/layout-header.md`), and links home from the `ROUTES` registry (never hard-code `/`). The title stays **name-free** (`title="404"`) so `Layout` composes `404 · <SITE.name>`.
 
 ```astro
 ---
 import Layout from '@/layouts/Layout.astro';
-import GXB from '@/components/GXB.astro';
+import BackButton404 from '@/components/ui/buttons/BackButton404.astro';
 import { ROUTES } from '@/consts';
 
 // Link home from the routes registry — never hard-code "/" here.
 const home = ROUTES[0];
 ---
 
-<Layout title="404">
-  <GXB text="404 — this page wandered off." />
-  <p class="back">
-    <a href={home.href}>← Back to {home.label}</a>
-  </p>
+<Layout title="404" hideNavAndFooter={true}>
+  <section class="not-found">
+    <p class="typed"><span class="typing-text"></span><span class="cursor"></span></p>
+    <BackButton404 href={home.href} text={home.label} />
+  </section>
 </Layout>
 
 <style>
-  .back {
+  /* Full-screen centered: <main> is flex:1 (global.css) and the header/footer are
+     hidden on this page, so .not-found fills the viewport. */
+  .not-found {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    margin: 0 0 3rem;
+    gap: 1.5rem;
+    padding: 2rem 1.5rem;
   }
-  .back a {
-    color: var(--color-link);
+  .typed {
+    margin: 0;
+    font-family: ui-monospace, 'Cascadia Code', 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
+    font-size: 1.25rem;
+    color: var(--color-text);
+  }
+  /* Blinking terminal cursor — a deliberate orange accent kept the same in both
+     themes (like the footer line), not a theme variable. */
+  .cursor {
+    display: inline-block;
+    width: 10px;
+    height: 1.15em;
+    margin-left: 2px;
+    background-color: #f84f00;
+    vertical-align: text-bottom;
+    animation: blink 0.7s infinite;
+  }
+  @keyframes blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+</style>
+
+<script>
+  const TEXT = '404, page not found.';
+  const SPEED_MS = 100;
+
+  function initTyping() {
+    const el = document.querySelector('.typing-text');
+    if (!el || el.textContent) return; // already typed (guards View-Transition re-runs)
+    let i = 0;
+    (function type() {
+      if (i < TEXT.length) {
+        el.textContent += TEXT.charAt(i++);
+        setTimeout(type, SPEED_MS);
+      }
+    })();
+  }
+
+  // Run on first load and after every View-Transition navigation, mirroring the
+  // theme-toggle pattern in Header.astro.
+  initTyping();
+  document.addEventListener('astro:page-load', initTyping);
+</script>
+```
+
+## `src/components/ui/buttons/BackButton404.astro`
+
+The themed "← Home" button used by `404.astro` — the first real `ui/` primitive, living under `ui/buttons/`. Accent-filled, rounded, lifts on hover. Reusable for any "go back" link (`href` + `text` props).
+
+```astro
+---
+interface Props {
+  href: string;
+  text: string;
+}
+
+const { href, text } = Astro.props;
+---
+
+<a href={href} class="back-btn">
+  ← {text}
+</a>
+
+<style>
+  .back-btn {
+    display: inline-block;
+    margin-top: 1.5rem;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.95rem;
+    color: var(--color-on-accent);
+    background-color: var(--color-accent);
     text-decoration: none;
-    font-size: 1rem;
+    border-radius: 15px;
+    transition:
+      background-color 0.2s ease,
+      transform 0.2s ease;
+    font-family: inherit;
   }
-  .back a:hover {
-    color: var(--color-link-hover);
+  .back-btn:hover {
+    background-color: var(--color-accent-hover);
+    transform: translateY(-2px);
   }
 </style>
 ```
