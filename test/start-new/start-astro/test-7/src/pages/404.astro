@@ -1,0 +1,30 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import GXB from '@/components/GXB.astro';
+import { ROUTES } from '@/consts';
+
+// Link home from the routes registry — never hard-code "/" here.
+const home = ROUTES[0];
+---
+
+<Layout title="404">
+  <GXB text="404 — this page wandered off." />
+  <p class="back">
+    <a href={home.href}>← Back to {home.label}</a>
+  </p>
+</Layout>
+
+<style>
+  .back {
+    text-align: center;
+    margin: 0 0 3rem;
+  }
+  .back a {
+    color: var(--color-link);
+    text-decoration: none;
+    font-size: 1rem;
+  }
+  .back a:hover {
+    color: var(--color-link-hover);
+  }
+</style>

@@ -1,6 +1,4 @@
-# Architecture — {{PROJECT_NAME}}
-
-> Copy this file to the project root as `ARCHITECTURE.md`, substituting `{{PROJECT_NAME}}` (the title on the first line and the tree root below). Everything else is verbatim.
+# Architecture — test-6
 
 A simple but scalable Astro base. It starts as light as a portfolio, yet every
 folder a growing project needs is already here — so you never restructure, you
@@ -11,7 +9,7 @@ left open.
 ## File map
 
 ```
-{{PROJECT_NAME}}/
+test-6/
 │
 ├── public/                   # Served AS-IS at the site root — no processing
 │   ├── favicon.svg           #   also reused, read-only, as the header logo

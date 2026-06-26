@@ -14,7 +14,7 @@
 
 ---
 
-Scaffolds a new Astro project using the `minimal` template, overlaid with a clean, ready-to-use architecture. It sets up a layout, a header with a logo and centered navigation, three standard pages, a light/dark theme toggle, and native Astro View Transitions right out of the box.
+Scaffolds a new Astro project using the `minimal` template, overlaid with a clean, **scalable** architecture — ready to grow from a portfolio to a full app. It sets up a shared layout, a header (logo + centered nav) and footer, four pages (incl. a themed 404), a zero-dependency light/dark theme toggle, native View Transitions, a `@/` path alias, a `SITE` + `ROUTES` single-source-of-truth config, icons (Lucide + custom brand SVGs), and Content Collections — right out of the box.
 
 <p align="center">
   <a href="https://skills.sh/bastndev/skills">
@@ -30,11 +30,15 @@ npx skills add bastndev/skills --skill start-astro
 
 ## Features
 
-- **Minimal Base** — Uses the empty `minimal` Astro template to avoid boilerplate cleanup.
-- **Pre-configured Layout** — Includes `Layout.astro` and `Header.astro` shared across all pages.
-- **Standard Pages** — Generates `Home`, `Work`, and `Contact` routes immediately.
-- **Theme Toggle** — Zero-dependency light/dark mode switch built with CSS variables and vanilla JS.
-- **View Transitions** — Native smooth page-to-page fades using Astro's `<ClientRouter />`.
+- **Minimal Base** — The empty `minimal` Astro template, no boilerplate to clean up. Static-first.
+- **Layout + Header + Footer** — A shared shell wrapping every page.
+- **Pages** — `Home`, `Work`, `Contact`, plus a themed `404`.
+- **Theme Toggle** — Zero-dependency light/dark switch (CSS variables + vanilla JS) with no-flash + View Transitions support.
+- **Single Source of Truth** — `SITE` + `ROUTES` in `consts.ts`: rename the project or add a route in one place.
+- **`@/` Path Alias** — Clean imports from `src/`, no `../../` chains.
+- **Icons** — [`@lucide/astro`](https://lucide.dev) line icons + a custom brand SVG set that inherits `currentColor`.
+- **Content Collections** — Wired up (`content.config.ts`) and ready for blog/docs/projects.
+- **Backend Door** — `lib/` + `pages/api/` ready; add an adapter only when you need a server.
 
 ---
 

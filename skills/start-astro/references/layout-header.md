@@ -1,21 +1,28 @@
-# Layout + Header
+# Layout + Header + Footer (the shell)
 
-Copy-paste ready. `Layout.astro` wraps every page, imports the global CSS, runs the no-flash theme script (which **re-applies on `astro:after-swap`** so the theme survives navigation), and pulls in Astro's native `<ClientRouter />` for smooth fade transitions between pages. `Header.astro` is a three-zone bar: the logo + project name on the left, the centered nav (Home/Work/Contact), and the theme toggle on the right.
+Copy-paste ready, byte-for-byte. These three wrap every page. They import from the `@/` alias and pull the project name from `SITE` (`@/consts`) — **nothing here hardcodes the project name.** `Layout.astro` runs the no-flash theme script and Astro's `<ClientRouter />`; `Header.astro` is a three-zone bar (brand / centered nav / theme toggle); `Footer.astro` is one centered line.
+
+> **Critical scoping note:** the footer's CSS and the theme-toggle icon CSS do **not** live in these components' scoped `<style>` blocks — they're in `global.css` (see `references/global-css.md`). Both depend on `[data-theme]` on `<html>`, an ancestor that a component's scoped styles can't target. Scope them and the toggle icon freezes on the moon and the footer flashes left-aligned on load.
 
 ## `src/layouts/Layout.astro`
 
 ```astro
 ---
 import { ClientRouter } from 'astro:transitions';
-import Header from '../components/Header.astro';
-import '../styles/global.css';
+import Header from '@/components/Header.astro';
+import Footer from '@/sections/Footer.astro';
+import { SITE } from '@/consts';
+import '@/styles/global.css';
 
 interface Props {
-  title: string;
-  projectName: string;
+  /** Page name, e.g. "Home". Composed into `<name> · <SITE.name>`. Omit for the bare site name. */
+  title?: string;
+  /** Brand text in the header. Defaults to the site name from consts.ts. */
+  projectName?: string;
 }
 
-const { title, projectName } = Astro.props;
+const { title, projectName = SITE.name } = Astro.props;
+const fullTitle = title ? `${title} · ${SITE.name}` : SITE.name;
 ---
 
 <!doctype html>
@@ -23,7 +30,8 @@ const { title, projectName } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
+    <meta name="description" content={SITE.description} />
+    <title>{fullTitle}</title>
     <ClientRouter />
     <script is:inline>
       (function () {
@@ -45,32 +53,36 @@ const { title, projectName } = Astro.props;
     <main transition:animate="fade">
       <slot />
     </main>
+    <Footer />
   </body>
 </html>
 ```
 
-> `transition:animate="fade"` on `<main>` is what gives the soft cross-fade when navigating between pages. `<Header />` sits outside `<main>` and is unaffected by transitions, so it doesn't blink/refade on every navigation.
+- The page composes its own `<title>` from `SITE.name`, so pages pass only `title="Home"` — no project name in any page.
+- `transition:animate="fade"` on `<main>` gives the soft cross-fade between pages. `<Header />` and `<Footer />` sit outside `<main>`, so they don't refade on navigation.
+- **Why the no-flash script is inline and re-runs on `astro:after-swap`:** it must run synchronously before first paint (or dark-mode reloads flash light). With `<ClientRouter />`, each navigation swaps in server HTML that has no `data-theme`, so Astro strips the attribute and the page flips to light — `astro:after-swap` fires after the new DOM is in place but before paint, restoring the theme with zero flash. The listener is on `document` (persists across swaps), so registering once is enough.
 
 ## `src/components/Header.astro`
 
+Nav is built from `ROUTES` (`@/consts`); the active link is computed with `stripTrailingSlash` (`@/lib/utils`); the toggle uses the imported sun/moon SVG components.
+
 ```astro
 ---
+import { ROUTES } from '@/consts';
+import { stripTrailingSlash } from '@/lib/utils';
+import Sun from '@/assets/icons/theme/sun.svg';
+import Moon from '@/assets/icons/theme/moon.svg';
+
 interface Props {
   projectName: string;
 }
 
 const { projectName } = Astro.props;
 
-const navItems = [
-  { href: '/', label: 'Home' },
-  { href: '/work', label: 'Work' },
-  { href: '/contact', label: 'Contact' },
-];
-
-// Normalise trailing slashes so the active link matches in both `bun run dev`
-// (path is `/work`) and the static build/preview (path is `/work/`).
-const stripSlash = (p: string) => (p !== '/' && p.endsWith('/') ? p.slice(0, -1) : p);
-const currentPath = stripSlash(Astro.url.pathname);
+// Nav is built from the shared ROUTES registry (src/consts.ts). Active-link state
+// compares the current path to each route; trailing slashes are normalised so it
+// matches in both `bun run dev` (`/work`) and the static build/preview (`/work/`).
+const currentPath = stripTrailingSlash(Astro.url.pathname);
 ---
 
 <header class="site-header">
@@ -81,26 +93,21 @@ const currentPath = stripSlash(Astro.url.pathname);
     </a>
 
     <ul class="nav-links">
-      {navItems.map((item) => (
+      {ROUTES.map((route) => (
         <li>
           <a
-            href={item.href}
-            class:list={['nav-link', { active: currentPath === item.href }]}
+            href={route.href}
+            class:list={['nav-link', { active: currentPath === route.href }]}
           >
-            {item.label}
+            {route.label}
           </a>
         </li>
       ))}
     </ul>
 
     <button id="theme-toggle" type="button" aria-label="Toggle light and dark theme">
-      <svg id="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="4" />
-        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-      </svg>
-      <svg id="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-      </svg>
+      <Sun id="icon-sun" aria-hidden="true" />
+      <Moon id="icon-moon" aria-hidden="true" />
     </button>
   </nav>
 </header>
@@ -181,11 +188,9 @@ const currentPath = stripSlash(Astro.url.pathname);
     outline: 2px solid var(--color-focus-ring);
     outline-offset: 2px;
   }
-  #icon-sun, #icon-moon { grid-area: 1 / 1; }
-  #icon-sun { display: none; }
-  #icon-moon { display: block; }
-  [data-theme='dark'] #icon-sun { display: block; }
-  [data-theme='dark'] #icon-moon { display: none; }
+  /* The sun/moon swap (display chosen by [data-theme] on <html>) lives in
+     global.css — a scoped style can't target the <html> ancestor, which is why
+     the icon previously stayed stuck on the moon in dark mode. */
 </style>
 
 <script is:inline>
@@ -207,9 +212,27 @@ const currentPath = stripSlash(Astro.url.pathname);
 </script>
 ```
 
-## Notes
+- **Why `astro:page-load`:** `<ClientRouter />` swaps the DOM (including `#theme-toggle`) on each navigation, but bundled module scripts only run once. Without re-binding the click handler on `astro:page-load`, the button goes dead after the first navigation. The `data-bound` guard avoids double-binding on the initial load (where both `initThemeToggle()` and `astro:page-load` fire).
+- The brand mark reuses `public/favicon.svg` via a CSS `mask` painted with `currentColor`, so it tracks the theme. **Read-only — leave `public/favicon.svg`/`.ico` exactly as `bun create astro` ships them.** (The `mask` uses only the shape, so any fill/colors inside the SVG are ignored — it renders as a single-color silhouette.)
+- `projectName` flows from `Layout` (default `SITE.name`) → `Header`. No hardcoded site name, no reliance on `Astro.site`.
 
-- `currentPath === item.href` highlights the active section in the nav. `Astro.url.pathname` is re-evaluated server-side on every navigation (Astro re-renders the component, it isn't a client-side SPA route guess), and `stripSlash` normalises trailing slashes so the match holds in both `dev` (`/work`) and the static build (`/work/`) — otherwise non-home links never highlight in production.
-- `class:list` is Astro's built-in conditional-class helper — no extra package needed.
-- The brand mark reuses `public/favicon.svg` via a CSS `mask`, painted with `currentColor`, so it tracks the in-app theme toggle. **This is read-only — the scaffold must leave `public/favicon.svg` and `public/favicon.ico` exactly as `bun create astro` ships them (the Astro default), and must not delete the `.ico`.** If the user later wants to rebrand, they can swap `public/favicon.svg` themselves and both the favicon and the header logo update at once. (Because `mask` uses only the shape, any fill/colors inside the SVG are ignored — it renders as a single-color silhouette.)
-- `projectName` flows from `Layout.astro`'s `title`/`projectName` props down into `Header.astro` — both ultimately come from `{{PROJECT_NAME}}` (detected automatically from the current folder's name; see `project-structure.md`). No hardcoded site name and no reliance on `Astro.site` (which is `undefined` unless `site` is explicitly set in `astro.config.mjs`).
+## `src/sections/Footer.astro`
+
+One centered line, `{SITE.name} © {year}`. Its styles live in `global.css` (see the critical scoping note above).
+
+```astro
+---
+// Minimal site footer: the project name + the current year. Shown on every page
+// via Layout.astro. The name comes from SITE so it follows the single source of
+// truth (rename once in consts.ts). Its styles live in global.css (a
+// render-blocking, global stylesheet) instead of a scoped <style> here — so the
+// centered line is applied before first paint and never flashes left-aligned.
+import { SITE } from '@/consts';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <p class="footer-line">{SITE.name} © {year}</p>
+</footer>
+```
