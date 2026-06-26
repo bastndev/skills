@@ -34,7 +34,7 @@ src/
 ├── sections/Footer.astro          page-level blocks
 ├── layouts/Layout.astro           HTML shell (ClientRouter + no-flash theme + Header + Footer)
 ├── content/                       Content Collection entries (empty, ready)
-├── pages/{index,work,contact,404,api/hello}
+├── pages/{index,work/index,contact/index,404,api/hello}
 ├── lib/utils.ts · types/index.ts
 ├── styles/global.css              design tokens (light + dark) + footer + toggle CSS
 ├── consts.ts                      SITE + ROUTES (single source of truth)
@@ -86,7 +86,7 @@ The whole base is built on **one principle: a single source of truth.** The proj
    - `src/layouts/Layout.astro`, `src/components/Header.astro`, `src/sections/Footer.astro`
    - `src/components/GXB.astro` (**byte-for-byte from the reference — do not edit the ASCII art**)
    - `src/styles/global.css`
-   - `src/pages/work.astro`, `src/pages/contact.astro`, `src/pages/404.astro`, `src/pages/api/hello.ts`
+   - `src/pages/work/index.astro`, `src/pages/contact/index.astro`, `src/pages/404.astro`, `src/pages/api/hello.ts` (Work and Contact each live in their own folder as `index.astro` — `pages/work/index.astro` → `/work` — so a route can grow sub-pages later without a move; Home and 404 stay flat at the `pages/` root)
    - `src/consts.ts`, `src/types/index.ts`, `src/lib/utils.ts`, `src/env.d.ts`, `src/content.config.ts`
    - `src/assets/icons/social/*.svg` (11 files) and `src/assets/icons/theme/{sun,moon}.svg`
    - `ARCHITECTURE.md` (project root, **uppercase**)
@@ -129,7 +129,7 @@ The whole base is built on **one principle: a single source of truth.** The proj
    ├── layouts/Layout.astro   ← shell: ClientRouter + no-flash theme + Header + Footer
    ├── content/               ← Content Collection entries (empty, ready)
    ├── pages/
-   │   ├── index / work / contact.astro
+   │   ├── index.astro · work/index.astro · contact/index.astro
    │   ├── 404.astro          ← themed, links home via ROUTES
    │   └── api/hello.ts       ← example endpoint (the backend door)
    ├── lib/utils.ts · types/index.ts

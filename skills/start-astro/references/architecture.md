@@ -40,8 +40,10 @@ left open.
 │   │
 │   ├── pages/                # File-based routing
 │   │   ├── index.astro       #   Home
-│   │   ├── work.astro        #   Work
-│   │   ├── contact.astro     #   Contact
+│   │   ├── work/
+│   │   │   └── index.astro   #   Work → /work (folder per route, room to grow)
+│   │   ├── contact/
+│   │   │   └── index.astro   #   Contact → /contact
 │   │   ├── 404.astro         #   themed not-found, links home via ROUTES
 │   │   └── api/
 │   │       └── hello.ts      #   example endpoint → GET /api/hello
