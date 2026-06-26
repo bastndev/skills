@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "start-astro": {
+      "source": "bastndev/skills",
+      "sourceType": "github",
+      "skillPath": "skills/start-astro/SKILL.md",
+      "computedHash": "d629ead67e56c2a2376dd8d0ec03f36d8fc74dcde0e746f53f459b2e3d2f4b56"
+    }
+  }
+}
