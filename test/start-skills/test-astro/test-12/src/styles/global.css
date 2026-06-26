@@ -1,15 +1,3 @@
-# Global styles — `src/styles/global.css`
-
-Copy-paste ready, byte-for-byte. This is the one global, render-blocking stylesheet (imported in `Layout.astro`). It holds: the design tokens (CSS variables, light on `:root` + dark on `[data-theme="dark"]`), the base `html`/`body`/`main` layout, the footer styles, and the theme-toggle icon swap.
-
-**Two things live here on purpose — do not move them into scoped component `<style>` blocks:**
-
-1. **The footer styles** (`.site-footer`, `.footer-line`). As a scoped style they flashed left-aligned for a frame on load before the centering attached; in this global (render-blocking) sheet the centered line is styled before first paint.
-2. **The theme-toggle icon swap** (`#icon-sun` / `#icon-moon` + the `[data-theme='dark']` overrides). The visible icon is chosen by `[data-theme]` on `<html>` — an **ancestor** that Astro's component scoping can't target (it would scope `[data-theme='dark']` to require the component's marker, which `<html>` doesn't have). Scoped, the rule never matches and the icon freezes on the moon in dark mode. Global, it works.
-
-Also note `html { scrollbar-gutter: stable }` — it reserves the scrollbar space on every page so centered content (the footer, the hero) doesn't shift sideways between a page that scrolls and one that doesn't.
-
-```css
 :root {
   /* backgrounds */
   --color-bg: #fafaf8;
@@ -105,18 +93,10 @@ main {
    Footer.astro so the centered line is styled before first paint and never
    flashes left-aligned on load. */
 .site-footer {
-  /* A faded ("degraded") top border: instead of a full-width solid rule, a
-     hairline that fades from transparent at the edges to the border colour
-     across the middle. border-image paints the 1px top border with the
-     gradient (the `1` slice makes it a simple line, no corner art). */
+  /* Original solid border: */
+  /* border-top: 1px solid var(--color-border); */
   border-top: 1px solid;
-  border-image: linear-gradient(
-      to right,
-      transparent,
-      var(--color-border) 40%,
-      var(--color-border) 60%,
-      transparent
-    ) 1;
+  border-image: linear-gradient(to right, transparent, var(--color-border) 40%, var(--color-border) 60%, transparent) 1;
   background: var(--color-nav-bg);
 }
 .footer-line {
@@ -149,8 +129,3 @@ main {
 [data-theme='dark'] #icon-moon {
   display: none;
 }
-```
-
-## Usage note
-
-All page content should use the CSS variables (`var(--color-text)`, etc.) instead of hardcoded colors, so it automatically respects whichever theme is active.

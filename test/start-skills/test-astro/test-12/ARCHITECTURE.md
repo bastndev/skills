@@ -1,6 +1,4 @@
-# Architecture — {{PROJECT_NAME}}
-
-> Copy this file to the project root as `ARCHITECTURE.md`, substituting `{{PROJECT_NAME}}` (the title on the first line and the tree root below). Everything else is verbatim.
+# Architecture — test-12
 
 A simple but scalable Astro base. It starts as light as a portfolio, yet every
 folder a growing project needs is already here — so you never restructure, you
@@ -11,7 +9,7 @@ left open.
 ## File map
 
 ```
-{{PROJECT_NAME}}/
+gohit.xyz/
 │
 ├── public/                   # Served AS-IS at the site root — no processing
 │   ├── favicon.svg           #   also reused, read-only, as the header logo
@@ -24,9 +22,9 @@ left open.
 │   │   └── icons/            #   custom inline SVGs (e.g. social/) imported as components
 │   │
 │   ├── components/           # Reusable pieces shared across pages
-│   │   ├── ui/               #   small primitives — ui/buttons/BackButton404.astro
+│   │   ├── ui/               #   small primitives (Button, Badge, Card…)
 │   │   ├── Header.astro      #   logo + centered nav (from ROUTES) + theme toggle
-│   │   └── GXB.astro         #   ASCII hero + social-links row (one source for the art)
+│   │   └── GXB.astro         #   ASCII hero (one source for the art)
 │   │
 │   ├── sections/             # Page-level blocks (Hero, Footer, FeatureGrid…)
 │   │   └── Footer.astro      #   minimal footer (brand + year)
@@ -44,7 +42,7 @@ left open.
 │   │   │   └── index.astro   #   Work → /work (folder per route, room to grow)
 │   │   ├── contact/
 │   │   │   └── index.astro   #   Contact → /contact
-│   │   ├── 404.astro         #   typing-animation 404, hides nav/footer, links home
+│   │   ├── 404.astro         #   themed not-found, links home via ROUTES
 │   │   └── api/
 │   │       └── hello.ts      #   example endpoint → GET /api/hello
 │   │
@@ -116,18 +114,15 @@ Two sources:
   import { Search } from '@lucide/astro';
   <Search />
   ```
-- **Custom / brand icons** as raw `.svg` files in `src/assets/icons/`, imported
-  either as components or as raw strings (`?raw`) for `set:html` (Astro 7 renders
-  `*.svg` imports inline):
+- **Custom / brand icons** as raw `.svg` files in `src/assets/icons/`, imported as
+  components (Astro 7 renders `*.svg` imports inline):
   ```astro
-  import X from '@/assets/icons/social/x.svg';
-  <X />
+  import Twitter from '@/assets/icons/social/twitter.svg';
+  <Twitter />
   ```
-  Brand logos (X, GitHub, LinkedIn, Instagram, YouTube, TikTok, Facebook) live
-  here because Lucide doesn't ship brand marks. The set is one consistent outline
-  style, and each file's `viewBox` is tuned so they look the same size in the hero
-  social row. Files are lowercase `kebab-case`, grouped in subfolders (`social/`,
-  `theme/`, and add `ui/`, `payment/`, … as needed).
+  Brand logos (Twitter/X, TikTok, Discord, Threads, …) live here because Lucide
+  doesn't ship brand marks. Files are lowercase `kebab-case`, grouped in
+  subfolders (`social/`, `theme/`, and add `ui/`, `payment/`, … as needed).
 
 Both render inline and inherit `currentColor`, so size and color come from CSS —
 they follow the light/dark theme for free:

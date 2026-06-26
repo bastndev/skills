@@ -19,9 +19,11 @@ interface Props {
   title?: string;
   /** Brand text in the header. Defaults to the site name from consts.ts. */
   projectName?: string;
+  /** Hide the Header + Footer for full-screen pages (e.g. 404). Defaults to false. */
+  hideNavAndFooter?: boolean;
 }
 
-const { title, projectName = SITE.name } = Astro.props;
+const { title, projectName = SITE.name, hideNavAndFooter = false } = Astro.props;
 const fullTitle = title ? `${title} · ${SITE.name}` : SITE.name;
 ---
 
@@ -49,17 +51,18 @@ const fullTitle = title ? `${title} · ${SITE.name}` : SITE.name;
     </script>
   </head>
   <body>
-    <Header projectName={projectName} />
+    {!hideNavAndFooter && <Header projectName={projectName} />}
     <main transition:animate="fade">
       <slot />
     </main>
-    <Footer />
+    {!hideNavAndFooter && <Footer />}
   </body>
 </html>
 ```
 
 - The page composes its own `<title>` from `SITE.name`, so pages pass only `title="Home"` — no project name in any page.
 - `transition:animate="fade"` on `<main>` gives the soft cross-fade between pages. `<Header />` and `<Footer />` sit outside `<main>`, so they don't refade on navigation.
+- **`hideNavAndFooter`** lets a page render full-screen with no chrome — `404.astro` sets it so the typing animation owns the whole viewport. Both `<Header />` and `<Footer />` are guarded with `{!hideNavAndFooter && …}`; `<main>` (flex:1 in `global.css`) then fills the screen.
 - **Why the no-flash script is inline and re-runs on `astro:after-swap`:** it must run synchronously before first paint (or dark-mode reloads flash light). With `<ClientRouter />`, each navigation swaps in server HTML that has no `data-theme`, so Astro strips the attribute and the page flips to light — `astro:after-swap` fires after the new DOM is in place but before paint, restoring the theme with zero flash. The listener is on `document` (persists across swaps), so registering once is enough.
 
 ## `src/components/Header.astro`
