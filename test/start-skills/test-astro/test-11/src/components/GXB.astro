@@ -1,0 +1,111 @@
+---
+import xIcon from "@/assets/icons/social/x.svg?raw";
+import githubIcon from "@/assets/icons/social/github.svg?raw";
+import linkedinIcon from "@/assets/icons/social/linkedin.svg?raw";
+import instagramIcon from "@/assets/icons/social/instagram.svg?raw";
+import youtubeIcon from "@/assets/icons/social/youtube.svg?raw";
+import tiktokIcon from "@/assets/icons/social/tiktok.svg?raw";
+import facebookIcon from "@/assets/icons/social/facebook.svg?raw";
+
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+
+// Social links shown under the hero tagline on every page. This array is the ONE
+// place a project's socials live — edit each href to your own handle (or trim the
+// list). Icons are imported ?raw and injected with set:html so they inherit
+// currentColor and follow the theme.
+const socials = [
+  { href: "https://x.com/intent/follow?screen_name=gohitx", icon: xIcon, label: "X (Twitter)" },
+  { href: "https://github.com/gohitx", icon: githubIcon, label: "GitHub" },
+  { href: "https://linkedin.com/in/gohitx", icon: linkedinIcon, label: "LinkedIn" },
+  { href: "https://instagram.com/gohitx", icon: instagramIcon, label: "Instagram" },
+  { href: "https://www.youtube.com/@gohitx?sub_confirmation=1", icon: youtubeIcon, label: "YouTube" },
+  { href: "https://tiktok.com/@gohitx", icon: tiktokIcon, label: "TikTok" },
+  { href: "https://facebook.com/gohitx", icon: facebookIcon, label: "Facebook" },
+];
+
+// ASCII-art logo — the single source for the art used on every page. Edit or
+// delete it here to change/remove it site-wide. The first line starts with a
+// leading space; keep it, it aligns the glyphs.
+const logo = ` ██████╗ ██╗  ██╗██████╗
+██╔════╝ ╚██╗██╔╝██╔══██╗
+██║  ███╗ ╚███╔╝ ██████╔╝
+██║   ██║ ██╔██╗ ██╔══██╗
+╚██████╔╝██╔╝ ██╗██████╔╝
+ ╚═════╝ ╚═╝  ╚═╝╚═════╝ `;
+---
+
+<section class="hero">
+  <pre class="hero-logo" aria-hidden="true">{logo}</pre>
+  <p class="hero-text">{text}</p>
+  <div class="hero-socials">
+    {
+      socials.map((social) => (
+        <a
+          href={social.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={social.label}
+          set:html={social.icon}
+        />
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .hero {
+    flex: 1; /* fill <main> (see global.css) so the hero centers without a
+                hard-coded height — that guess was overflowing into a scrollbar */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 1.5rem;
+    padding: 2rem 1.5rem;
+  }
+  .hero-logo {
+    margin: 0;
+    max-width: 100%;
+    color: var(--color-accent);
+    font-family: ui-monospace, 'Cascadia Code', 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
+    font-size: clamp(0.45rem, 2.2vw, 0.95rem);
+    line-height: 1.1;
+    white-space: pre;
+  }
+  .hero-text {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 1.05rem;
+  }
+  .hero-socials {
+    display: flex;
+    gap: 2rem;
+    margin-top: 0.5rem;
+    align-items: center;
+    justify-content: center;
+  }
+  .hero-socials a {
+    color: var(--color-text-muted);
+    transition:
+      color 0.2s ease,
+      transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+  }
+  .hero-socials a:hover {
+    color: var(--color-text);
+    transform: translateY(-2px);
+  }
+  .hero-socials a :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+</style>

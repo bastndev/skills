@@ -33,7 +33,7 @@ npx skills add bastndev/skills --skill start-astro
 1. **Detects** — Uses the current folder name as the project name. Never asks you to name it, never creates a separate sibling folder.
 2. **Scaffolds** — Runs `bun create astro` with the `minimal` (empty) template to ensure zero boilerplate needs to be deleted.
 3. **Builds** — Writes a scalable architecture (Layout, Header, Footer, pages, theme toggle, configs, aliases) into the project.
-4. **Installs & Verifies** — Installs `@lucide/astro` and runs `bun run build` to verify the production build works flawlessly before handing it over.
+4. **Installs & Verifies** — Installs `@lucide/astro` and runs the production build to verify it works flawlessly before handing it over. Uses **`bun`** if available, otherwise falls back to **`npm`**.
 
 ## Guarantees
 
@@ -90,7 +90,7 @@ src/
 ARCHITECTURE.md · README.md · tsconfig.json (@/ alias)
 ```
 
-A fully working site with a zero-dependency light/dark toggle, native View Transitions, a hero social-links row, an animated full-screen 404, a gradient footer, `@/` path aliases, Content Collections ready, and an open backend door (`lib/` + `pages/api/`).
+A fully working site with a zero-dependency light/dark toggle, native View Transitions, a hero social-links row, an animated full-screen 404 (resilient with JS off), a gradient footer, SEO/Open Graph meta, accessibility defaults (skip link, focus rings, `prefers-reduced-motion`), `@/` path aliases, Content Collections ready, and an open backend door (`lib/` + `pages/api/`). Works with `bun` or `npm`.
 
 ---
 

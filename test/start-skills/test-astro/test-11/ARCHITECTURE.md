@@ -1,6 +1,4 @@
-# Architecture — {{PROJECT_NAME}}
-
-> Copy this file to the project root as `ARCHITECTURE.md`, substituting `{{PROJECT_NAME}}` (the title on the first line and the tree root below). Everything else is verbatim.
+# Architecture — test-11
 
 A simple but scalable Astro base. It starts as light as a portfolio, yet every
 folder a growing project needs is already here — so you never restructure, you
@@ -11,7 +9,7 @@ left open.
 ## File map
 
 ```
-{{PROJECT_NAME}}/
+test-11/
 │
 ├── public/                   # Served AS-IS at the site root — no processing
 │   ├── favicon.svg           #   also reused, read-only, as the header logo
@@ -147,18 +145,6 @@ they follow the light/dark theme for free:
 - The toggle in `Header.astro` flips `data-theme` and re-binds on
   `astro:page-load`.
 
-## SEO & accessibility
-
-- `Layout.astro` emits a canonical `<link>`, `<meta name="description">`, and Open
-  Graph/Twitter cards — all composed from `SITE` (`consts.ts`) and the page's
-  props. Set `SITE.url` so the absolute URLs are correct; override per page with
-  `<Layout title="…" description="…" image="/og.png">` (pass `image` to add an
-  `og:image`).
-- Accessible defaults: a skip-to-content link, `aria-current="page"` on the active
-  nav link, a visible `:focus-visible` ring, and a `prefers-reduced-motion` reset
-  (the 404 also drops its typing animation). The 404 message is server-rendered,
-  so it's present with JavaScript disabled and for crawlers.
-
 ## Site name & the ROUTES registry
 
 - The project name lives once in `SITE.name` (`consts.ts`). `Layout.astro`
@@ -225,5 +211,3 @@ bun run dev      # local dev server with HMR
 bun run build    # production build into dist/
 bun run preview  # serve the production build locally
 ```
-
-> Using **npm** (or pnpm/yarn)? Swap `bun` for your manager — `npm run dev`, `npm run build`, `npm run preview`.

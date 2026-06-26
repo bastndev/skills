@@ -2,7 +2,7 @@
 
 Two sources, no React anywhere:
 
-- **Lucide** (`@lucide/astro`) for standard line icons. Install with `bun add @lucide/astro` (the only runtime dep this skill adds). Use directly: `import { Search } from '@lucide/astro'` → `<Search />`.
+- **Lucide** (`@lucide/astro`) for standard line icons. Install with `bun add @lucide/astro` (or `npm install @lucide/astro`; the only runtime dep this skill adds). Use directly: `import { Search } from '@lucide/astro'` → `<Search />`.
 - **Custom icons** as raw `.svg` files under `src/assets/icons/`, imported either as **components** (Astro 7 renders `*.svg` imports inline) or as **raw strings** (`?raw`) injected with `set:html`. Brand logos live here because **Lucide ships no brand marks**.
 
 Write the files below exactly. Filenames are lowercase `kebab-case`. Every icon is one consistent **outline (stroke) style** on a 24×24 grid using `currentColor`, so CSS controls color (they follow the theme) and the set reads as one family.

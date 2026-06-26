@@ -8,28 +8,14 @@ import '@/styles/global.css';
 interface Props {
   /** Page name, e.g. "Home". Composed into `<name> · <SITE.name>`. Omit for the bare site name. */
   title?: string;
-  /** Meta + Open Graph description for this page. Defaults to SITE.description. */
-  description?: string;
-  /** Social-share image (og:image) — a path (`/og.png`) or absolute URL. Optional. */
-  image?: string;
   /** Brand text in the header. Defaults to the site name from consts.ts. */
   projectName?: string;
   /** Hide the Header + Footer for full-screen pages (e.g. 404). Defaults to false. */
   hideNavAndFooter?: boolean;
 }
 
-const {
-  title,
-  description = SITE.description,
-  image,
-  projectName = SITE.name,
-  hideNavAndFooter = false,
-} = Astro.props;
-
+const { title, projectName = SITE.name, hideNavAndFooter = false } = Astro.props;
 const fullTitle = title ? `${title} · ${SITE.name}` : SITE.name;
-// Absolute URLs for canonical + social tags, derived from SITE.url (consts.ts).
-const canonicalURL = new URL(Astro.url.pathname, SITE.url);
-const ogImage = image ? new URL(image, SITE.url) : undefined;
 ---
 
 <!doctype html>
@@ -37,23 +23,8 @@ const ogImage = image ? new URL(image, SITE.url) : undefined;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={SITE.description} />
     <title>{fullTitle}</title>
-    <meta name="description" content={description} />
-    <link rel="canonical" href={canonicalURL} />
-
-    <!-- Open Graph / Twitter — composed from SITE + this page's title/description. -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content={canonicalURL} />
-    <meta property="og:site_name" content={SITE.name} />
-    <meta property="og:title" content={fullTitle} />
-    <meta property="og:description" content={description} />
-    {ogImage && <meta property="og:image" content={ogImage} />}
-    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
-    <meta name="twitter:title" content={fullTitle} />
-    <meta name="twitter:description" content={description} />
-    {ogImage && <meta name="twitter:image" content={ogImage} />}
-
     <ClientRouter />
     <script is:inline>
       (function () {
@@ -71,9 +42,8 @@ const ogImage = image ? new URL(image, SITE.url) : undefined;
     </script>
   </head>
   <body>
-    {!hideNavAndFooter && <a class="skip-link" href="#main-content">Skip to content</a>}
     {!hideNavAndFooter && <Header projectName={projectName} />}
-    <main id="main-content" transition:animate="fade">
+    <main transition:animate="fade">
       <slot />
     </main>
     {!hideNavAndFooter && <Footer />}
