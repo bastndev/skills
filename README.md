@@ -40,7 +40,7 @@ npx skills add bastndev/skills
 
 | Phase      | Purpose                              | Key Capabilities                                                                                                                                                                                   | Example Skills                  | Status |
 | ---------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------ |
-| **Start**  | Begin a project — scaffold new, or learn from an existing one | Create production-ready structures and configs from commit #1. Or analyze an existing codebase's architecture & packages and document it, so you can reuse what works in your own project.          | `start-package`, `skrapi`       | ㅤㅤ✅ |
+| **Start**  | Begin a project — scaffold new, or learn from an existing one | Create production-ready structures and configs from commit #1. Or analyze an existing codebase's architecture & packages and document it, so you can reuse what works in your own project.          | `start-package`, `start-astro`, `skrapi` | ㅤㅤ✅ |
 | **Middle** | Continuous improvement & polish      | Enhance UI/UX, harden security, boost performance, clean logic, and eliminate dead code during active development.                                                                                 | Targeted enhancers (TBD)        | Planned |
 | **End**    | Audit, diagnosis & safe refactoring  | Full architecture & quality analysis. Categorized findings with file-level evidence. Prioritized phased plan executed **only with explicit approval**. Behavior-preserving. Multi-runtime support. | `end`                           | ㅤㅤ✅ |
 
@@ -51,6 +51,7 @@ Listed in the natural order you'd reach for them — **Start** something new (or
 | Skill                                                 | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **[start-package](./skills/start-package/README.md)** | _Start_ — Scaffolds a publishable **dual ESM + CJS** TypeScript package with bundled type declarations, a zero-config `tsup` build, and TypeScript pinned to `5.x` so it builds cleanly in both CLI and editor. Generates `package.json`, `tsconfig.json`, tsup config, a smoke test, and `.vscode` settings, then installs, builds, and verifies.<br><br>→ [Full documentation](./skills/start-package/README.md)                                                                            |
+| **[start-astro](./skills/start-astro/README.md)** | _Start_ — Scaffolds a new Astro project using the `minimal` template, overlaid with a clean, **scalable** architecture — ready to grow from a portfolio to a full app. Sets up a shared layout, header, footer, pages, light/dark theme toggle, native View Transitions, path alias, and Content Collections out of the box.<br><br>→ [Full documentation](./skills/start-astro/README.md) |
 | **[skrapi](./skills/skrapi/README.md)**               | _Start_ — Point it at a project you admire and it maps how that codebase is built into a fixed `SKRAPI/` folder of focused Markdown — architecture, dependencies, and paste-ready prompts — so you can borrow the patterns that fit your own project before you start. Works on any stack (web, mobile, extension, library, monorepo); every description is verified against real code, never guessed from a package name. Multilingual output (🇪🇸 ES · 🇺🇸 EN · 🇨🇳 ZH).<br><br>→ [Full documentation](./skills/skrapi/README.md)                                                                  |
 | **[end](./skills/end/README.md)**                     | _End_ — Understands your project end-to-end. Delivers a clear diagnosis (confirmed bugs, risks, opportunities, technical debt) with concrete references, recommends the right architecture direction for _this_ codebase, and builds an ordered execution plan. Every change happens in an isolated, reviewable phase — it only proceeds when you say `go`, `start`, or `proceed`, and no files are touched during analysis.<br><br>→ [Full documentation & examples](./skills/end/README.md) |
 
@@ -62,6 +63,7 @@ Every skill installs the same way — pick the one you need:
 
 ```bash
 npx skills add bastndev/skills --skill start-package   # Start  — scaffold a TS npm package
+npx skills add bastndev/skills --skill start-astro     # Start  — scaffold an Astro project
 npx skills add bastndev/skills --skill skrapi          # Start  — study & document any codebase
 npx skills add bastndev/skills --skill end             # End    — audit & safely refactor
 ```
@@ -83,7 +85,7 @@ The full internal specification lives in [skills/end/SKILL.md](./skills/end/SKIL
 
 ## Roadmap
 
-- **Start** — `start-package` (scaffold) and `skrapi` (study an existing codebase) ship today; more `start-*` scaffolders are on the way.
+- **Start** — `start-package` (scaffold), `start-astro` (Astro scaffold) and `skrapi` (study an existing codebase) ship today; more `start-*` scaffolders are on the way.
 - **Middle** — focused, on-demand improvers (performance, security, UX, dead-code removal) are planned.
 - **End** — `end` ships today; more runtimes, additional specialized refactoring modes, and utilities are planned.
 
