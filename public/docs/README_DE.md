@@ -40,7 +40,7 @@ npx skills add bastndev/skills
 
 | Phase | Zweck | Schlüsselfähigkeiten | Beispiel-Skills | Status |
 | ---------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------ |
-| **Start** | Ein Projekt beginnen — neues erstellen oder aus einem bestehenden lernen | Erstellen Sie produktionsreife Strukturen und Konfigurationen ab Commit #1. Oder analysieren Sie die Architektur & Pakete einer bestehenden Codebasis und dokumentieren Sie diese, um funktionierende Muster in Ihrem Projekt wiederzuverwenden. | `start-package`, `skrapi`       | ㅤㅤ✅ |
+| **Start** | Ein Projekt beginnen — neues erstellen oder aus einem bestehenden lernen | Erstellen Sie produktionsreife Strukturen und Konfigurationen ab Commit #1. Oder analysieren Sie die Architektur & Pakete einer bestehenden Codebasis und dokumentieren Sie diese, um funktionierende Muster in Ihrem Projekt wiederzuverwenden. | `start-package`, `start-astro`, `skrapi`       | ㅤㅤ✅ |
 | **Middle** (Mitte)| Kontinuierliche Verbesserung & Feinschliff | Verbessern Sie UI/UX, härten Sie die Sicherheit, steigern Sie die Leistung, bereinigen Sie die Logik und entfernen Sie toten Code während der aktiven Entwicklung. | Gezielte Verbesserer (TBD) | Geplant |
 | **End** (Ende)| Audit, Diagnose & sicheres Refactoring | Vollständige Architektur- & Qualitätsanalyse. Kategorisierte Erkenntnisse mit Belegen auf Dateiebene. Priorisierter, phasenweiser Plan, der **nur mit expliziter Genehmigung** ausgeführt wird. Verhaltensbewahrend. Multi-Runtime-Unterstützung. | `end` | ㅤㅤ✅ |
 
@@ -51,6 +51,7 @@ Aufgelistet in der natürlichen Reihenfolge, in der Sie sie benötigen — **Sta
 | Skill | Beschreibung |
 | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **[start-package](../../skills/start-package/README.md)** | _Start_ — Erstellt ein veröffentlichbares **duales ESM + CJS** TypeScript-Paket mit gebündelten Typdeklarationen, einem Zero-Config `tsup`-Build und auf `5.x` fixiertem TypeScript, sodass es sowohl im CLI als auch im Editor sauber kompiliert. Generiert `package.json`, `tsconfig.json`, tsup-Konfiguration, einen Smoke-Test und `.vscode`-Einstellungen und führt dann Installation, Build und Überprüfung durch.<br><br>→ [Vollständige Dokumentation](../../skills/start-package/README.md) |
+| **[start-astro](../../skills/start-astro/README.md)** | _Start_ — Erstellt ein neues Astro-Projekt mit der Vorlage `minimal`, überlagert mit einer sauberen, **skalierbaren** Architektur — bereit, von einem Portfolio zu einer vollständigen App zu wachsen. Richtet standardmäßig ein gemeinsames Layout, Kopf- und Fußzeile, Seiten, Hell-/Dunkel-Theme-Umschalter, native View Transitions, Pfad-Alias und Content Collections ein.<br><br>→ [Vollständige Dokumentation](../../skills/start-astro/README.md) |
 | **[skrapi](../../skills/skrapi/README.md)**               | _Start_ — Richten Sie es auf ein Projekt, das Sie bewundern, und es bildet ab, wie diese Codebasis aufgebaut ist, in einem festen `SKRAPI/`-Ordner mit fokussiertem Markdown — Architektur, Abhängigkeiten und einfügefertige Prompts — damit Sie die für Ihr eigenes Projekt passenden Muster übernehmen können, bevor Sie beginnen. Funktioniert mit jedem Stack (Web, Mobile, Erweiterung, Bibliothek, Monorepo); jede Beschreibung wird an echtem Code verifiziert, niemals nur anhand eines Paketnamens erraten. Mehrsprachige Ausgabe (🇪🇸 ES · 🇺🇸 EN · 🇨🇳 ZH).<br><br>→ [Vollständige Dokumentation](../../skills/skrapi/README.md) |
 | **[end](../../skills/end/README.md)**                     | _End_ (Ende) — Versteht Ihr Projekt von A bis Z. Liefert eine klare Diagnose (bestätigte Bugs, Risiken, Chancen, technische Schulden) mit konkreten Referenzen, empfiehlt die richtige Architekturrichtung für _diese_ Codebasis und erstellt einen geordneten Ausführungsplan. Jede Änderung erfolgt in einer isolierten, überprüfbaren Phase — sie wird nur fortgesetzt, wenn Sie `go`, `start` oder `proceed` sagen, und während der Analyse werden keine Dateien berührt.<br><br>→ [Vollständige Dokumentation & Beispiele](../../skills/end/README.md) |
 
@@ -62,6 +63,7 @@ Jeder Skill wird auf die gleiche Weise installiert — wählen Sie den aus, den 
 
 ```bash
 npx skills add bastndev/skills --skill start-package   # Start — TS-npm-Paket erstellen
+npx skills add bastndev/skills --skill start-astro     # Start — Astro-Projekt erstellen
 npx skills add bastndev/skills --skill skrapi          # Start — Jede Codebasis studieren & dokumentieren
 npx skills add bastndev/skills --skill end             # End   — Audit & sicheres Refactoring
 ```
@@ -83,7 +85,7 @@ Die vollständige interne Spezifikation finden Sie in [skills/end/SKILL.md](../.
 
 ## Roadmap
 
-- **Start** — `start-package` (Gerüstbau) und `skrapi` (Studium einer bestehenden Codebasis) sind heute verfügbar; weitere `start-*`-Scaffolder sind in Arbeit.
+- **Start** — `start-package` (Gerüstbau), `start-astro` (Astro-Gerüstbau) und `skrapi` (Studium einer bestehenden Codebasis) sind heute verfügbar; weitere `start-*`-Scaffolder sind in Arbeit.
 - **Middle** — fokussierte, On-Demand-Verbesserer (Leistung, Sicherheit, UX, Entfernung von totem Code) sind geplant.
 - **End** — `end` ist heute verfügbar; weitere Runtimes, zusätzliche spezialisierte Refactoring-Modi und Dienstprogramme sind geplant.
 
