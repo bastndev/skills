@@ -1,0 +1,2 @@
+# Content Collection entries live here, one PLURAL folder per collection
+# (e.g. content/projects/, content/blog/). Schemas are in src/content.config.ts.
