@@ -5,7 +5,7 @@
 <h1 align="center">[Start] / Astro Starter</h1>
 
 <p align="center">
-  <strong>Start Astro</strong> — Scaffold a minimal Astro project with theme toggle and View Transitions
+  <strong>Start Astro</strong> — The scalable Astro scaffolding skill
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@
 
 ---
 
-Scaffolds a new Astro project using the `minimal` template, overlaid with a clean, **scalable** architecture — ready to grow from a portfolio to a full app. It sets up a shared layout, a header (logo + centered nav) and footer, four pages (incl. a themed 404), a zero-dependency light/dark theme toggle, native View Transitions, a `@/` path alias, a `SITE` + `ROUTES` single-source-of-truth config, icons (Lucide + custom brand SVGs), and Content Collections — right out of the box.
+Scaffolds a new Astro project using the `minimal` template, overlaid with a clean, **scalable** architecture — ready to grow from a portfolio to a full app. The stuff you set up every single time you start an Astro project, done once, correctly.
 
 <p align="center">
   <a href="https://skills.sh/bastndev/skills">
@@ -28,17 +28,69 @@ Scaffolds a new Astro project using the `minimal` template, overlaid with a clea
 npx skills add bastndev/skills --skill start-astro
 ```
 
-## Features
+## How It Works
 
-- **Minimal Base** — The empty `minimal` Astro template, no boilerplate to clean up. Static-first.
-- **Layout + Header + Footer** — A shared shell wrapping every page.
-- **Pages** — `Home`, `Work`, `Contact`, plus a themed `404`.
-- **Theme Toggle** — Zero-dependency light/dark switch (CSS variables + vanilla JS) with no-flash + View Transitions support.
-- **Single Source of Truth** — `SITE` + `ROUTES` in `consts.ts`: rename the project or add a route in one place.
-- **`@/` Path Alias** — Clean imports from `src/`, no `../../` chains.
-- **Icons** — [`@lucide/astro`](https://lucide.dev) line icons + a custom brand SVG set that inherits `currentColor`.
-- **Content Collections** — Wired up (`content.config.ts`) and ready for blog/docs/projects.
-- **Backend Door** — `lib/` + `pages/api/` ready; add an adapter only when you need a server.
+1. **Detects** — Uses the current folder name as the project name. Never asks you to name it, never creates a separate sibling folder.
+2. **Scaffolds** — Runs `bun create astro` with the `minimal` (empty) template to ensure zero boilerplate needs to be deleted.
+3. **Builds** — Writes a scalable architecture (Layout, Header, Footer, pages, theme toggle, configs, aliases) into the project.
+4. **Installs & Verifies** — Installs `@lucide/astro` and runs `bun run build` to verify the production build works flawlessly before handing it over.
+
+## Guarantees
+
+- **Single Source of Truth**: Project name and routes live exactly once in `consts.ts`.
+- **Zero Boilerplate**: Uses the empty `minimal` template, never the `basic` one.
+- **In-place Setup**: Operates in the current directory; never creates a throwaway or differently-named project folder.
+- **Untouched Favicons**: Preserves the default Astro favicons (`public/favicon.svg`, `public/favicon.ico`).
+
+## What You Get
+
+```
+src/
+    ├── assets/               # Imported in code → optimized & hashed by Astro/Vite
+    │   ├── images/
+    │   └── icons/            #   custom inline SVGs (e.g. social/) imported as components
+    │
+    ├── components/           # Reusable pieces shared across pages
+    │   ├── ui/               #   small primitives (Button, Badge, Card…)
+    │   ├── Header.astro      #   logo + centered nav (from ROUTES) + theme toggle
+    │   └── GXB.astro         #   ASCII hero (one source for the art)
+    │
+    ├── sections/             # Page-level blocks (Hero, Footer, FeatureGrid…)
+    │   └── Footer.astro      #   minimal footer (brand + year)
+    │
+    ├── layouts/
+    │   └── Layout.astro      #   HTML shell: <head>, ClientRouter, no-flash theme
+    │                         #   script, <Header />, <slot />, <Footer />
+    │
+    ├── content/              # Content Collection entries — one PLURAL folder
+    │                         #   per collection (blog/, projects/…)
+    │
+    ├── pages/                # File-based routing
+    │   ├── index.astro       #   Home
+    │   ├── work/
+    │   │   └── index.astro   #   Work → /work (folder per route, room to grow)
+    │   ├── contact/
+    │   │   └── index.astro   #   Contact → /contact
+    │   ├── 404.astro         #   themed not-found, links home via ROUTES
+    │   └── api/
+    │       └── hello.ts      #   example endpoint → GET /api/hello
+    │
+    ├── lib/                  # Framework-agnostic helpers (no UI)
+    │   └── utils.ts
+    ├── types/               # Shared TypeScript types
+    │   └── index.ts
+    │
+    ├── styles/
+    │   └── global.css        #   design tokens (CSS vars: light + dark) + base
+    │
+    ├── content.config.ts     # Content Collections schema (Astro 7 location)
+    ├── consts.ts             # SITE config + ROUTES registry — single source
+    └── env.d.ts              # Typed import.meta.env
+
+ARCHITECTURE.md · README.md · tsconfig.json (@/ alias)
+```
+
+A fully working site with a zero-dependency light/dark toggle, native View Transitions, `@/` path aliases, Content Collections ready, and an open backend door (`lib/` + `pages/api/`).
 
 ---
 
