@@ -1,6 +1,6 @@
 # Global styles — `src/styles/global.css`
 
-Copy-paste ready, byte-for-byte. This is the one global, render-blocking stylesheet (imported in `Layout.astro`). It holds: the design tokens (CSS variables, light on `:root` + dark on `[data-theme="dark"]`), the base `html`/`body`/`main` layout, the footer styles, and the theme-toggle icon swap.
+Copy-paste ready, byte-for-byte. This is the one global, render-blocking stylesheet (imported in `Layout.astro`). It holds: the design tokens (CSS variables, light on `:root` + dark on `[data-theme="dark"]`), the base `html`/`body`/`main` layout, the skip-link + `:focus-visible` accessibility defaults, the footer styles, the theme-toggle icon swap, and a `prefers-reduced-motion` reset.
 
 **Two things live here on purpose — do not move them into scoped component `<style>` blocks:**
 
@@ -101,6 +101,32 @@ main {
   flex-direction: column;
 }
 
+/* Skip-to-content link — visually hidden until focused, so keyboard users can
+   jump past the header straight to <main id="main-content">. */
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -3.5rem;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+.skip-link:focus {
+  top: 0.5rem;
+}
+
+/* A visible keyboard-focus ring as a low-specificity default (`:where()` so
+   components can still override it). Mouse clicks don't trigger :focus-visible. */
+:where(a, button, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
 /* Footer — kept here (global, render-blocking) rather than scoped in
    Footer.astro so the centered line is styled before first paint and never
    flashes left-aligned on load. */
@@ -148,6 +174,20 @@ main {
 }
 [data-theme='dark'] #icon-moon {
   display: none;
+}
+
+/* Respect users who ask for less motion: near-instant transitions/animations
+   (the theme fade, hover lifts, the 404 cursor blink) and no smooth scroll. The
+   404 typing effect also checks this in JS and just shows the finished text. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 ```
 

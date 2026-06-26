@@ -29,6 +29,7 @@ const currentPath = stripTrailingSlash(Astro.url.pathname);
           <a
             href={route.href}
             class:list={['nav-link', { active: currentPath === route.href }]}
+            aria-current={currentPath === route.href ? 'page' : undefined}
           >
             {route.label}
           </a>

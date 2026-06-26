@@ -21,7 +21,7 @@ Modern TypeScript: `paths` works **without** `baseUrl`. No React JSX settings (t
 
 ## `package.json`
 
-Leave the file `bun create astro` generated as-is; **add the one runtime dependency** with `bun add @lucide/astro` (do not hand-edit `package.json`). After install it looks like:
+Leave the file the scaffold generated as-is; **add the one runtime dependency** with `bun add @lucide/astro` (or `npm install @lucide/astro` if you scaffolded with npm — do not hand-edit `package.json`). After install it looks like:
 
 ```json
 "dependencies": {

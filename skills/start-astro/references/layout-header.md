@@ -17,14 +17,28 @@ import '@/styles/global.css';
 interface Props {
   /** Page name, e.g. "Home". Composed into `<name> · <SITE.name>`. Omit for the bare site name. */
   title?: string;
+  /** Meta + Open Graph description for this page. Defaults to SITE.description. */
+  description?: string;
+  /** Social-share image (og:image) — a path (`/og.png`) or absolute URL. Optional. */
+  image?: string;
   /** Brand text in the header. Defaults to the site name from consts.ts. */
   projectName?: string;
   /** Hide the Header + Footer for full-screen pages (e.g. 404). Defaults to false. */
   hideNavAndFooter?: boolean;
 }
 
-const { title, projectName = SITE.name, hideNavAndFooter = false } = Astro.props;
+const {
+  title,
+  description = SITE.description,
+  image,
+  projectName = SITE.name,
+  hideNavAndFooter = false,
+} = Astro.props;
+
 const fullTitle = title ? `${title} · ${SITE.name}` : SITE.name;
+// Absolute URLs for canonical + social tags, derived from SITE.url (consts.ts).
+const canonicalURL = new URL(Astro.url.pathname, SITE.url);
+const ogImage = image ? new URL(image, SITE.url) : undefined;
 ---
 
 <!doctype html>
@@ -32,8 +46,23 @@ const fullTitle = title ? `${title} · ${SITE.name}` : SITE.name;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content={SITE.description} />
+    <meta name="generator" content={Astro.generator} />
     <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Open Graph / Twitter — composed from SITE + this page's title/description. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+
     <ClientRouter />
     <script is:inline>
       (function () {
@@ -51,8 +80,9 @@ const fullTitle = title ? `${title} · ${SITE.name}` : SITE.name;
     </script>
   </head>
   <body>
+    {!hideNavAndFooter && <a class="skip-link" href="#main-content">Skip to content</a>}
     {!hideNavAndFooter && <Header projectName={projectName} />}
-    <main transition:animate="fade">
+    <main id="main-content" transition:animate="fade">
       <slot />
     </main>
     {!hideNavAndFooter && <Footer />}
@@ -61,6 +91,8 @@ const fullTitle = title ? `${title} · ${SITE.name}` : SITE.name;
 ```
 
 - The page composes its own `<title>` from `SITE.name`, so pages pass only `title="Home"` — no project name in any page.
+- **SEO/social tags** are composed from `SITE` + the page props: a canonical `<link>`, `<meta name="description">`, and Open Graph/Twitter cards. A page can override the description (`<Layout description="…">`) and pass an `image` for `og:image`. Absolute URLs come from `SITE.url`, so set it in `consts.ts`.
+- A visually-hidden **skip-to-content** link (`.skip-link` → `#main-content`, styled in `global.css`) appears on focus for keyboard users; it's omitted on chrome-less pages (the 404).
 - `transition:animate="fade"` on `<main>` gives the soft cross-fade between pages. `<Header />` and `<Footer />` sit outside `<main>`, so they don't refade on navigation.
 - **`hideNavAndFooter`** lets a page render full-screen with no chrome — `404.astro` sets it so the typing animation owns the whole viewport. Both `<Header />` and `<Footer />` are guarded with `{!hideNavAndFooter && …}`; `<main>` (flex:1 in `global.css`) then fills the screen.
 - **Why the no-flash script is inline and re-runs on `astro:after-swap`:** it must run synchronously before first paint (or dark-mode reloads flash light). With `<ClientRouter />`, each navigation swaps in server HTML that has no `data-theme`, so Astro strips the attribute and the page flips to light — `astro:after-swap` fires after the new DOM is in place but before paint, restoring the theme with zero flash. The listener is on `document` (persists across swaps), so registering once is enough.
@@ -101,6 +133,7 @@ const currentPath = stripTrailingSlash(Astro.url.pathname);
           <a
             href={route.href}
             class:list={['nav-link', { active: currentPath === route.href }]}
+            aria-current={currentPath === route.href ? 'page' : undefined}
           >
             {route.label}
           </a>
