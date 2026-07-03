@@ -298,9 +298,9 @@ cannot: a constraint, a "why", a gotcha, units, an invariant. Apply in order:
   look like comments but change build, lint, or runtime behavior.
 
 **Failure symptoms are the most valuable why.** A comment that links a cause
-to an observable failure ("without this, the packaged build can't write
-`.f1/` — only `graphify-out/` shows up") must survive compression: shorten
-the words, never drop the symptom→cause link.
+to an observable failure ("without this init call, the page renders blank" ·
+"removing this listener leaks memory on every reload") must survive
+compression: shorten the words, never drop the symptom→cause link.
 
 **Ordering — standard shape, only where provably safe.** Move file content
 toward: imports → constants → types → main export → helpers, following the
