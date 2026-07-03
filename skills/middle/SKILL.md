@@ -1,6 +1,6 @@
 ---
 name: middle
-description: "Focused, on-demand project improver for active development. Option 0 scores the project or folder with a 0–100 health overview (Architecture, Maintainability, Performance, Security, Documentation), report-only. Options 1–6 improve ONE dimension at a time — performance (1), UI/UX (2), security (3), structure (4), cleanup/dead code (5), code quality (6) — scoring the focus 0–10, proposing a correction plan, and executing only with explicit approval. Use for 'score my project', 'harden security in src/api', 'speed up this page', 'clean dead code'. Invoke with /middle <0-6|focus> (@path)"
+description: "Focused, on-demand project improver for active development. Option 0 scores the project or folder with a 0–100 health overview (Architecture, Maintainability, Performance, Security, Documentation), report-only. Options 1–6 improve ONE dimension at a time — performance (1), UI/UX (2), security (3), structure (4), cleanup/dead code (5), code quality (6) — scoring the focus 0–100, proposing a correction plan, and executing only with explicit approval. Use for 'score my project', 'harden security in src/api', 'speed up this page', 'clean dead code'. Invoke with /middle <0-6|focus> (@path)"
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
@@ -82,7 +82,7 @@ its job is to tell the user where the project stands and which focus (1–6) is
 worth running next.
 
 ```text
-📊 [middle] Health Overview — 74 / 100
+📊 [project-name] Health Overview — 74 / 100
 
 🔴 Bugs 1    🟡 Debt/Risks 3    🟢 Suggestions 2
 
@@ -93,9 +93,11 @@ worth running next.
 📚 Documentation     7/10
 ```
 
-Use this exact title shape; do not add the project name. If existing tests are
-present, insert `🧪 Testing [x/10]` before Documentation; if no test structure
-exists, omit the bar entirely (never `0/10`).
+Replace `[project-name]` with the real project name: the manifest name
+(`package.json` `name`, `Cargo.toml` `[package].name`, etc.) or, if none, the
+root folder name. Keep the rest of the title shape exact. If existing tests
+are present, insert `🧪 Testing [x/10]` before Documentation; if no test
+structure exists, omit the bar entirely (never `0/10`).
 
 After the block, add:
 
@@ -289,17 +291,19 @@ The analysis output has four parts, in this order, always compact.
 Same visual shape as option 0's overview, but with **only the chosen focus**:
 
 ```text
-📊 [middle] ⚡ Performance Overview — 6/10
+📊 [project-name] 🎨 UI/UX Overview — 46 / 100
 
-🔴 Critical 1    🟡 Improvements 3    🟢 Polish 2
+🔴 Critical 1    🟡 Improvements 4    🟢 Polish 2
 ```
 
-The counts row uses the focus categories (Critical / Improvements / Polish),
-not option 0's Bugs / Debt / Suggestions. Score the focus 0–10, honest and
-conservative: 9–10 nearly nothing to do · 7–8 solid, minor gains · 5–6 clear
-improvements available · 3–4 focus is hurting the project · 0–2 urgent. Do not
-score or display other dimensions. Record this as the **baseline** for the
-final summary.
+`[project-name]` follows the same rule as option 0 (manifest name, else root
+folder name). The counts row uses the focus categories (Critical /
+Improvements / Polish), not option 0's Bugs / Debt / Suggestions. Score the
+focus **0–100** on the same thermometer as option 0, honest and conservative:
+90–100 nearly nothing to do · 70–89 solid, minor gains · 50–69 clear
+improvements available · 30–49 the focus is hurting the project · 0–29 urgent.
+Do not score or display other dimensions. Record this as the **baseline** for
+the final summary.
 
 ### 2. Understanding
 
@@ -410,7 +414,7 @@ failures honestly.
 ```text
 ## [Focus] Improved 🎉
 
-⚡ Performance  6/10 → 8/10   ▲ +2
+🎨 UI/UX  46 / 100 → 78 / 100   ▲ +32
 
 ### What was done
 - ✅ Phase 1 ([name]) — [1-line summary] ([impact metric])

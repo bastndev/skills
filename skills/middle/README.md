@@ -61,7 +61,7 @@ No `@path`? The whole project is analyzed — scope is discovered from the proje
 
 1. **Score it** (option `0`) — A 0–100 health overview of the project or folder, with findings and a pointer to the weakest area. Nothing is planned or modified.
 2. **One lens** (options `1–6`) — Analyzes your scope through the chosen focus only. Everything else is ignored (except critical security issues, reported in one line).
-3. **Focused diagnosis** — The same overview visual, scoped to one focus (0–10), evidence-backed findings sorted into Critical / Improvements / Polish, and a compact plan of 1–3 phases.
+3. **Focused diagnosis** — The same overview visual, scoped to one focus (0–100), evidence-backed findings sorted into Critical / Improvements / Polish, and a compact plan of 1–3 phases. Headers show your project's name, taken from the manifest (`package.json` `name`, etc.) or the folder name.
 4. **You authorize** — Say `go` to begin. It executes **one phase**, reports changes + validations, then stops. Closes with an honest before → after score; `▲ +0` if nothing improved.
 
 ## What You Get
@@ -69,7 +69,7 @@ No `@path`? The whole project is analyzed — scope is discovered from the proje
 Option `0` — the project thermometer:
 
 ```
-📊 [middle] Health Overview — 74 / 100
+📊 [my-project] Health Overview — 74 / 100
 
 🔴 Bugs 1    🟡 Debt/Risks 3    🟢 Suggestions 2
 
@@ -85,7 +85,7 @@ Weakest bar: 🔒 Security 5/10 — run `/middle 3` to improve it.
 Options `1–6` — the same visual, one focus, plus a plan:
 
 ```
-📊 [middle] ⚡ Performance Overview — 6/10
+📊 [my-project] ⚡ Performance Overview — 62 / 100
 
 🔴 Critical 0    🟡 Improvements 2    🟢 Polish 1
 
