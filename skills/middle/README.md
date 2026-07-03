@@ -14,7 +14,7 @@
 
 ---
 
-Improves **one dimension at a time** — performance, UI/UX, security, structure, cleanup, code quality, or tidy (file order + comment hygiene) — inside the path you point at. Small surface, fast diagnosis, surgical changes. Zero edits until you say `go`.
+Improves **one dimension at a time** — performance, UI/UX, tidy (file order + comment hygiene), security, structure, cleanup, or code quality — inside the path you point at. Small surface, fast diagnosis, surgical changes. Zero edits until you say `go`.
 
 <p align="center">
   <a href="https://skills.sh/bastndev/skills">
@@ -36,6 +36,7 @@ npx skills add bastndev/skills --skill middle
 /middle 0                        # health overview of the project
 /middle (@src/) 0                # health overview of src/ only
 /middle (@src/) 1                # performance improvement in src/
+/middle (@file.ts) 3             # tidy one file — applies directly, no approval
 /middle security                 # names and aliases also work
 /middle                          # shows the menu
 ```
@@ -44,7 +45,7 @@ Natural language works too: _"make this page faster"_ → `1`, _"harden security
 
 ## The Menu
 
-Every option is a number, so it's easy to call. `0` gives **statistics only**. Each focus `1–7` does the same three things for its dimension: **qualifies it** (score + counts), **reports** evidence-backed findings, and **proposes a correction plan** — executed phase by phase when you say `go`.
+Every option is a number, so it's easy to call. `0` gives **statistics only**. Each focus `1–7` does the same three things for its dimension: **qualifies it** (score + counts), **reports** evidence-backed findings, and **proposes a correction plan** — executed phase by phase when you say `go`. One exception: **tidy (`3`) on a single small file applies directly** — no report, no `go`, just a compact after-report.
 
 | #   | Option             | What it hunts                                          |
 | --- | ------------------ | ------------------------------------------------------ |
@@ -52,11 +53,11 @@ Every option is a number, so it's easy to call. `0` gives **statistics only**. E
 | -   |  |     |
 | 1   | ⚡ **performance** | Wasted work, N+1 queries, waterfalls, heavy bundles    |
 | 2   | 🎨 **ui-ux**       | Missing states, accessibility, consistency, feedback   |
-| 3   | 🔒 **security**    | Secrets, unvalidated input, injection, missing authz   |
-| 4   | 🏗️ **structure**   | Oversized files, wrong owners, weak boundaries         |
-| 5   | 🧹 **cleanup**     | Dead code, unused deps, duplication, debug leftovers   |
-| 6   | 🧩 **quality**     | Naming, complexity, swallowed errors, magic values     |
-| 7   | 🗂️ **tidy**        | File order + comment hygiene — English, AI-first, zero logic changes |
+| 3   | 🗂️ **tidy**        | File order + comment hygiene — English, AI-first, zero logic changes |
+| 4   | 🔒 **security**    | Secrets, unvalidated input, injection, missing authz   |
+| 5   | 🏗️ **structure**   | Oversized files, wrong owners, weak boundaries         |
+| 6   | 🧹 **cleanup**     | Dead code, unused deps, duplication, debug leftovers   |
+| 7   | 🧩 **quality**     | Naming, complexity, swallowed errors, magic values     |
 
 No `@path`? The whole project is analyzed — scope is discovered from the project's entry points (`package.json` → `pyproject.toml` → `Cargo.toml` → `go.mod` → `*.csproj`), the same way the `end` skill does it.
 
@@ -82,7 +83,7 @@ Option `0` — the project thermometer:
 🔒 Security          5/10
 📚 Documentation     7/10
 
-Weakest bar: 🔒 Security 5/10 — run `/middle 3` to improve it.
+Weakest bar: 🔒 Security 5/10 — run `/middle 4` to improve it.
 ```
 
 Options `1–7` — the same visual, one focus, plus a plan:

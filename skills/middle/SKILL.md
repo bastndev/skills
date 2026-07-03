@@ -1,10 +1,10 @@
 ---
 name: middle
-description: "Focused, on-demand project improver for active development. Option 0 scores the project or folder with a 0–100 health overview (Architecture, Maintainability, Performance, Security, Documentation), report-only. Options 1–7 improve ONE dimension at a time — performance (1), UI/UX (2), security (3), structure (4), cleanup/dead code (5), code quality (6), tidy/file order + comment hygiene (7) — scoring the focus 0–100, proposing a correction plan, and executing only with explicit approval. Use for 'score my project', 'harden security in src/api', 'speed up this page', 'clean dead code', 'translate/clean the comments'. Invoke with /middle <0-7|focus> (@path)"
+description: "Focused, on-demand project improver for active development. Option 0 scores the project or folder with a 0–100 health overview (Architecture, Maintainability, Performance, Security, Documentation), report-only. Options 1–7 improve ONE dimension at a time — performance (1), UI/UX (2), tidy/file order + comment hygiene (3), security (4), structure (5), cleanup/dead code (6), code quality (7) — scoring the focus 0–100, proposing a correction plan, and executing only with explicit approval. Exception: tidy (3) on a single small file applies directly, no approval needed. Use for 'score my project', 'sort this file / translate the comments', 'harden security in src/api', 'speed up this page', 'clean dead code'. Invoke with /middle <0-7|focus> (@path)"
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "2.2.0"
+  version: "2.3.0"
 ---
 
 # Improve / [Middle]
@@ -27,6 +27,7 @@ bar without touching anything else.
 /middle 0                    # health overview of the inferred scope
 /middle (@src/) 0            # health overview of src/ only
 /middle (@src/) 1            # performance improvement in src/
+/middle (@file.ts) 3         # tidy one file — applies directly, no approval
 /middle security             # names and aliases also work
 /middle
 ```
@@ -35,9 +36,9 @@ bar without touching anything else.
   come in either order (`/middle src 0` = `/middle 0 (@src/)`).
 * **Natural language works too** — a request that clearly names one dimension
   maps straight to its focus without showing the menu: "make this page faster"
-  → 1 · "polish the UI of the gallery" → 2 · "harden security in src/api" →
-  3 (@src/api) · "clean the dead code" → 5 · "sort this file and clean the
-  comments" → 7.
+  → 1 · "polish the UI of the gallery" → 2 · "sort this file and clean the
+  comments" → 3 · "harden security in src/api" → 4 (@src/api) · "clean the
+  dead code" → 6.
 * **No option given, or ambiguous request** ("improve my project") → print the
   Menu, ask which one, and wait. Do not guess an option or analyze anything
   yet. Same for an invalid option (`/middle 9`, unknown name).
@@ -63,11 +64,11 @@ bar without touching anything else.
 
 1. ⚡ performance   — speed, efficiency, wasted work
 2. 🎨 ui-ux         — states, accessibility, consistency, feedback
-3. 🔒 security      — input handling, secrets, unsafe patterns
-4. 🏗️ structure     — file/module organization within the scope
-5. 🧹 cleanup       — dead code, duplication, leftovers
-6. 🧩 quality       — naming, complexity, error handling
-7. 🗂️ tidy          — file order + comment hygiene (English, AI-first)
+3. 🗂️ tidy          — file order + comment hygiene (English, AI-first)
+4. 🔒 security      — input handling, secrets, unsafe patterns
+5. 🏗️ structure     — file/module organization within the scope
+6. 🧹 cleanup       — dead code, duplication, leftovers
+7. 🧩 quality       — naming, complexity, error handling
 
 Reply with a number or name (optionally add a @path).
 ```
@@ -77,20 +78,22 @@ menu — `Scope detected: src/style.css — [very short description]` — and re
 that scope when the user replies with just a number.
 
 Aliases: `overview`, `health`, `score` → 0 · `perf` → performance · `ui`,
-`ux`, `design` → ui-ux · `sec` → security · `arch`, `architecture` →
-structure · `dead-code`, `clean` → cleanup · `maintainability`,
-`refactor-lite` → quality · `sort`, `order`, `comments`,
-`translate-comments` → tidy.
+`ux`, `design` → ui-ux · `sort`, `order`, `comments`, `translate-comments` →
+tidy · `sec` → security · `arch`, `architecture` → structure · `dead-code`,
+`clean` → cleanup · `maintainability`, `refactor-lite` → quality.
 
 **The contract of every number:** option `0` delivers statistics only — score
 and findings, no plan, no edits. Every focus option `1–7` behaves identically
 to the others: it qualifies that one dimension (score + counts), reports
 evidence-backed findings, and proposes a correction plan with the solution —
-executed phase by phase only when the user says `go`.
+executed phase by phase only when the user says `go`. **One exception:** tidy
+(3) on a single small file runs in **direct mode** — no report, no approval;
+see its lens.
 
 **Workflow:** 1. Resolve option + scope. 2. Analyze (read-only). 3. Report —
 score, findings, plan. 4. Wait for `go`. 5. Execute one phase, report, wait.
-6. Final summary with before → after. Option 0 stops at step 3.
+6. Final summary with before → after. Option 0 stops at step 3. Direct-mode
+tidy collapses steps 3–6 into one pass.
 
 ---
 
@@ -132,11 +135,11 @@ After the block, add:
 3. **Next step** — close by pointing at the weakest bar and its focus number:
 
 ```text
-Weakest bar: 🔒 Security 5/10 — run `/middle (@src/) 3` to improve it.
+Weakest bar: 🔒 Security 5/10 — run `/middle (@src/) 4` to improve it.
 ```
 
-Bar → focus mapping: ⚡ Performance → 1 · 🔒 Security → 3 · 🏗️ Architecture →
-4 (structure) · 🧩 Maintainability → 6 (quality). If 📚 Documentation is the
+Bar → focus mapping: ⚡ Performance → 1 · 🔒 Security → 4 · 🏗️ Architecture →
+5 (structure) · 🧩 Maintainability → 7 (quality). If 📚 Documentation is the
 weakest, mention it as debt (no dedicated focus; the `end` skill covers docs).
 
 ### Scoring the overview
@@ -263,7 +266,50 @@ unresponsive or overflowing layouts · dead-end flows (no way back, no retry).
 
 Respect the existing design language — align to it, do not restyle the app.
 
-### 3 — 🔒 security
+### 3 — 🗂️ tidy
+
+The only focus that never touches logic: it **moves code and edits comments**,
+nothing else. Zero behavior change by definition.
+
+**Direct mode — no report, no approval.** When the scope is a **single file of
+normal size (≤ ~500 lines)**, skip the report and the `go` entirely: read the
+file, apply the complete tidy in **one pass** (comments + ordering together,
+compressed from the original — never twice), and close with the compact
+after-report defined in Execution. The working-tree warning still applies
+before writing. Folders and larger files keep the normal report + `go` flow;
+no other focus has a direct mode.
+
+**Comments — written for the AI, not for a human reading along.** A comment
+survives only if it tells the next reader (usually an AI) something the code
+cannot: a constraint, a "why", a gotcha, units, an invariant. Apply in order:
+
+* **Delete:** decorative banners (`// =====`), narrative intros at the top of
+  a file, author/date blocks, comments that narrate the next line, comments
+  that add nothing in any language, and commented-out code (shared with focus
+  6 — whichever runs first removes it).
+* **Translate + compress:** comments carrying real information but written in
+  Spanish or another language, or longer than needed → English, one line
+  where possible.
+* **Keep, but translate + compress:** docstrings/JSDoc on public APIs — they
+  power IDE hints and doc generators; never delete them outright.
+* **Untouchable:** license/copyright headers, shebangs (`#!/...`), framework
+  directives (`'use client'`), and tooling directives (`// eslint-disable`,
+  `// @ts-expect-error`, `# type: ignore`, `/* prettier-ignore */`) — they
+  look like comments but change build, lint, or runtime behavior.
+
+**Ordering — standard shape, only where provably safe.** Move file content
+toward: imports → constants → types → main export → helpers, following the
+language/framework convention. Never move: side-effect imports
+(`import './polyfill'`), order-sensitive code (module-level statements in
+Python, hoisting-sensitive JS declarations), or CSS rules — rule order is the
+cascade. If order-independence cannot be verified, leave the code where it is.
+
+**Plan shape (report flow only):** batch by concern, not by file — Phase 1 =
+comment pass across the whole scope; later phases = reordering, batched by
+folder. Verify comment-only phases by diff (only comment lines changed) plus
+build/typecheck; verify reorder phases as behavior-preserving moves.
+
+### 4 — 🔒 security
 
 Hardcoded secrets, tokens, or credentials · unvalidated/unsanitized input ·
 injection surfaces (SQL, command, path, XSS) · unsafe `eval`/dynamic code ·
@@ -273,7 +319,7 @@ headers · unverified downloads or unsafe deserialization.
 
 Confirmed exploitable issues are **critical** and always become Phase 1.
 
-### 4 — 🏗️ structure
+### 5 — 🏗️ structure
 
 Oversized files with too many responsibilities · code living in the wrong
 module · weak or leaky boundaries · circular dependencies · duplicated modules
@@ -303,7 +349,7 @@ src/                             src/
 If the real fix requires restructuring **beyond the scope**, say so honestly
 and recommend running the `end` skill instead of forcing a partial move.
 
-### 5 — 🧹 cleanup
+### 6 — 🧹 cleanup
 
 Dead code and unreachable branches · unused exports, imports, variables, and
 dependencies · duplicated logic worth consolidating · commented-out code
@@ -312,47 +358,12 @@ blocks · leftover debug logs and TODO corpses · obsolete files and assets.
 Deleting is the point — but verify nothing references the code before removing
 it (including dynamic references, config entries, and public API surface).
 
-### 6 — 🧩 quality
+### 7 — 🧩 quality
 
 Misleading or inconsistent naming · deep nesting and high complexity · empty
 `catch` blocks, swallowed errors, unhandled promises · magic values that need
 names · copy-paste variation of the same logic · inconsistent patterns for the
 same task within the scope.
-
-### 7 — 🗂️ tidy
-
-The only focus that never touches logic: it **moves code and edits comments**,
-nothing else. Zero behavior change by definition.
-
-**Comments — written for the AI, not for a human reading along.** A comment
-survives only if it tells the next reader (usually an AI) something the code
-cannot: a constraint, a "why", a gotcha, units, an invariant. Apply in order:
-
-* **Delete:** decorative banners (`// =====`), narrative intros at the top of
-  a file, author/date blocks, comments that narrate the next line, comments
-  that add nothing in any language, and commented-out code (shared with focus
-  5 — whichever runs first removes it).
-* **Translate + compress:** comments carrying real information but written in
-  Spanish or another language, or longer than needed → English, one line
-  where possible.
-* **Keep, but translate + compress:** docstrings/JSDoc on public APIs — they
-  power IDE hints and doc generators; never delete them outright.
-* **Untouchable:** license/copyright headers, shebangs (`#!/...`), framework
-  directives (`'use client'`), and tooling directives (`// eslint-disable`,
-  `// @ts-expect-error`, `# type: ignore`, `/* prettier-ignore */`) — they
-  look like comments but change build, lint, or runtime behavior.
-
-**Ordering — standard shape, only where provably safe.** Move file content
-toward: imports → constants → types → main export → helpers, following the
-language/framework convention. Never move: side-effect imports
-(`import './polyfill'`), order-sensitive code (module-level statements in
-Python, hoisting-sensitive JS declarations), or CSS rules — rule order is the
-cascade. If order-independence cannot be verified, leave the code where it is.
-
-**Plan shape for this focus:** batch by concern, not by file — Phase 1 =
-comment pass across the whole scope; later phases = reordering, batched by
-folder. Verify comment-only phases by diff (only comment lines changed) plus
-build/typecheck; verify reorder phases as behavior-preserving moves.
 
 ---
 
@@ -438,6 +449,12 @@ Check: [typecheck + lint | build | manual verification]
   This is targeted improvement, not a project overhaul; if the work honestly
   needs more than 5 phases, say the scope is too big for `middle` and suggest
   narrowing the path or running `end`.
+* **Single-file scope → exactly one phase** doing the complete job in one
+  pass (two only when a Critical deserves its own step). Phases exist to
+  batch work across files, never to split work inside one file.
+* **No phase may rework lines a previous phase already wrote.** Every line is
+  edited at most once per run, always from its original form — compressing a
+  compression loses information each pass.
 * Every phase must be executable **now** — no conditional or speculative
   phases ("only if components are added later"). If a fix depends on a future
   decision, it is a 🟢 Polish note, not a phase.
@@ -488,12 +505,17 @@ Validations:
 - [command or method] — [passed | failed | not run + reason]
 
 Impact: [one metric, e.g. nav usable at 375 px · -420 lines · 0 hardcoded secrets]
+Dropped: [planned change not applied — reason] (omit this line when nothing was dropped)
 
 Remaining:
 - Phase N+1 — [name]
 
 Continue with Phase N+1?
 ```
+
+If execution disproves a planned change — the finding was wrong, or the edit
+turns out to be unsafe — do not apply it, and do not silently deliver less
+than the phase promised: state it in `Dropped:` with the reason.
 
 Wait for confirmation between phases. For the **last phase**, skip the
 per-phase report and go straight to the final summary. Before each phase:
@@ -502,6 +524,23 @@ inside the authorized scope. Run the validations after every change and report
 failures honestly. For move, extract, or delete phases (structure, cleanup),
 confirm the relocated code is logic-identical and deleted code is truly
 unreferenced before reporting the phase complete.
+
+### Direct mode (tidy 3, single file ≤ ~500 lines)
+
+No report, no `go`: execute the complete one-pass tidy immediately, then close
+with only:
+
+```text
+✅ Tidy applied — path/file
+
+📊 [before] → [after] / 100
+Impact: [one line, e.g. −9 comment lines · comments now 1-line English · imports reordered]
+Dropped: [refused changes + why — omit if none]
+```
+
+Score the file before and after with the normal rubric. Every lens guardrail
+still applies: untouchable comments, provably-safe ordering only, and the
+working-tree warning before writing.
 
 ### Final Summary
 
@@ -529,12 +568,14 @@ they decline, close with exactly `Improvement Complete 🎉`.
 
 * `/middle 0` → health overview of the whole project. Statistics only, ends
   with the weakest-bar pointer.
-* `/middle (@src/api) 3` → security qualification + findings + plan for
+* `/middle (@src/api) 4` → security qualification + findings + plan for
   `src/api`; waits for `go`.
 * **"make the gallery page faster"** → focus 1 on that page's scope directly,
   no menu.
-* **"sort this file and translate the comments"** → focus 7 on that file, no
-  menu.
+* `/middle (@utils.ts) 3` or **"sort this file and translate the comments"**
+  → direct mode: tidy applied immediately, compact after-report, no `go`.
+* `/middle (@src/) 3` → tidy on a folder: normal report + plan, waits for
+  `go`.
 * **"improve my project"** → ambiguous; show the Menu and wait.
 * **`go` after a focus report** → execute Phase 1 only, report, wait.
 * **`go` after option 0** → nothing to execute; ask which focus to run.
