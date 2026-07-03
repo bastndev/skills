@@ -498,6 +498,8 @@ When all phases are complete:
 ### What was done
 - ✅ Phase 1 ([name]) — [1-line summary] ([impact metric])
 - ✅ Phase 2 ([name]) — [1-line summary] ([impact metric])
+
+🟢 Would you like to implement the optional suggestions?
 ```
 
 Rules for the health-delta block: include `🧪 Testing [x → y]` only when the project
