@@ -189,6 +189,12 @@ the health overview and do not assign `0/10`; there is nothing to rate. Missing
 tests may still be mentioned as Debt/Risks when relevant, but do not lower the
 overall health score solely because no test structure exists.
 
+Record the analysis-time score as the **baseline**. After all phases are complete,
+re-score the project with the same rubric and caps to produce the **post-refactor**
+score. Only resolved findings may raise a score; any Debt/Risk that remains open
+must continue to count against the project. Do not inflate the after-score to look
+better than the code is.
+
 ### 11. Plan ordering & phases
 
 Order the plan by actual refactoring value for *this* project — which area, if
@@ -233,6 +239,10 @@ Before each phase: confirm the exact phase, check available project scripts,
 detect the package manager, and identify the safest validation commands.
 During each phase: stay within the authorized scope, preserve current behavior,
 and run available validations after the change.
+
+For pure move or extract phases, confirm the relocated code is logic-identical
+(a behavior-preserving move, not a rewrite) and that the validation gate passed
+before reporting the phase complete.
 
 Safety: check the working tree first; if there are pre-existing user changes,
 report them before modifying anything and never overwrite, remove, or rewrite
@@ -461,6 +471,8 @@ Changed files:
 Validations:
 - [command or method] — [passed | failed | not run + reason]
 
+Impact: [metric, e.g. main.ts 1305 → 741 lines, +1 module]
+
 Remaining:
 - Phase N+1 — [name]
 - Phase N+2 — [name]
@@ -475,9 +487,17 @@ When all phases are complete:
 ```markdown
 ## 🎉 Refactor Complete
 
+📊 Health — [before] / 100  →  [after] / 100   ▲ +[delta]
+
+🏗️ Architecture     [x → y]
+🧩 Maintainability  [x → y]
+⚡ Performance       [x → y]
+🔒 Security          [x → y]
+📚 Documentation     [x → y]
+
 ### What was done
-- ✅ Phase 1 ([name]) — [1-line summary]
-- ✅ Phase 2 ([name]) — [1-line summary]
+- ✅ Phase 1 ([name]) — [1-line summary] ([impact metric])
+- ✅ Phase 2 ([name]) — [1-line summary] ([impact metric])
 
 ### Final validations
 - [command or method] — [passed | failed | not run + reason]
@@ -489,6 +509,11 @@ When all phases are complete:
 [2–3 lines: what improved, what the structure looks like now, and whether any
 known risks or debt remain.]
 ```
+
+Rules for the health-delta block: include `🧪 Testing [x → y]` only when the project
+has an existing test structure (same condition as the Health Overview). Show the
+same number on both sides when a category did not change (e.g. `7 → 7`). Show
+`▲ +0` honestly if nothing improved.
 
 ---
 
