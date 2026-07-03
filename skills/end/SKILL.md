@@ -4,7 +4,7 @@ description: "Audits, reviews, and refactors project architecture, code quality,
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "2.0.0"
+  version: "2.0.1"
 ---
 
 # Refactor Project / [End]
@@ -189,6 +189,12 @@ the health overview and do not assign `0/10`; there is nothing to rate. Missing
 tests may still be mentioned as Debt/Risks when relevant, but do not lower the
 overall health score solely because no test structure exists.
 
+Record the analysis-time score as the **baseline**. After all phases are complete,
+re-score the project with the same rubric and caps to produce the **post-refactor**
+score. Only resolved findings may raise a score; any Debt/Risk that remains open
+must continue to count against the project. Do not inflate the after-score to look
+better than the code is.
+
 ### 11. Plan ordering & phases
 
 Order the plan by actual refactoring value for *this* project — which area, if
@@ -223,8 +229,11 @@ first`. The architecture direction is recommended by the analysis, never chosen
 by the user as A/B.
 
 On authorization, execute **only the first pending phase** — never multiple
-phases in one response — then stop and report (per template) and wait for
-explicit confirmation before continuing. The workflow is:
+phases in one response — then stop and report. For every phase except the last
+one in the main plan, use the per-phase report template and wait for explicit
+confirmation before continuing. For the **last phase of the main plan**, skip the
+separate per-phase report and proceed directly to the `🎉 Final Summary`, since
+that phase is already summarized there. The workflow is:
 
 1. Analyze. 2. Build the ordered plan. 3. Wait for authorization. 4. Execute
 the first pending phase only. 5. Stop and report. 6. Wait before the next phase.
@@ -233,6 +242,10 @@ Before each phase: confirm the exact phase, check available project scripts,
 detect the package manager, and identify the safest validation commands.
 During each phase: stay within the authorized scope, preserve current behavior,
 and run available validations after the change.
+
+For pure move or extract phases, confirm the relocated code is logic-identical
+(a behavior-preserving move, not a rewrite) and that the validation gate passed
+before reporting the phase complete.
 
 Safety: check the working tree first; if there are pre-existing user changes,
 report them before modifying anything and never overwrite, remove, or rewrite
@@ -461,6 +474,8 @@ Changed files:
 Validations:
 - [command or method] — [passed | failed | not run + reason]
 
+Impact: [metric, e.g. main.ts 1305 → 741 lines, +1 module]
+
 Remaining:
 - Phase N+1 — [name]
 - Phase N+2 — [name]
@@ -468,27 +483,74 @@ Remaining:
 Continue with Phase N+1?
 ```
 
-### 🎉 Final Summary
+Skip this separate per-phase report for the **last phase of the main refactor
+plan**; that phase is already summarized in `What was done` inside the
+`🎉 Final Summary`.
+
+### Final Summary 🎉
 
 When all phases are complete:
 
 ```markdown
-## 🎉 Refactor Complete
+## Refactor Complete 🎉
+
+📊 Health — [before] / 100  →  [after] / 100   ▲ +[delta]
+
+🏗️ Architecture     [x → y]
+🧩 Maintainability  [x → y]
+⚡ Performance       [x → y]
+🔒 Security          [x → y]
+📚 Documentation     [x → y]
 
 ### What was done
-- ✅ Phase 1 ([name]) — [1-line summary]
-- ✅ Phase 2 ([name]) — [1-line summary]
+- ✅ Phase 1 ([name]) — [1-line summary] ([impact metric])
+- ✅ Phase 2 ([name]) — [1-line summary] ([impact metric])
 
-### Final validations
-- [command or method] — [passed | failed | not run + reason]
-
-### Out of scope (not touched)
-- [area] — [reason]
-
-### Project state after refactor
-[2–3 lines: what improved, what the structure looks like now, and whether any
-known risks or debt remain.]
+Would you like to implement the (optional 🟢) suggestions?
 ```
+
+Rules for the health-delta block: include `🧪 Testing [x → y]` only when the project
+has an existing test structure (same condition as the Health Overview). Show the
+same number on both sides when a category did not change (e.g. `7 → 7`). Show
+`▲ +0` honestly if nothing improved.
+
+### Optional Suggestions follow-up
+
+The Final Summary ends with the prompt `🟢 Would you like to implement the optional
+suggestions?`. Handle the user's answer as follows:
+
+- **If the user declines** (no, no thanks, not now, etc.): close with exactly:
+
+  ```text
+  Refactor Complete 🎉
+  ```
+
+  Do not reprint the health delta, the category bars, or the phase list.
+
+- **If the user accepts** (go, sí, dale, yes, proceed, ok, ya, start, advances,
+  etc.): first classify the accepted suggestions by complexity, then act accordingly:
+
+  * **Simple suggestions** — low-risk changes that touch 1–2 files, need no
+    structural rework, and can be validated quickly (e.g., add a meta tag, add an
+    `aria-label`, add a preconnect hint). If all accepted suggestions are simple,
+    implement them immediately and automatically after the user confirms. Then
+    print only the minimal closing:
+
+    ```text
+    📊 Health — [before] / 100  →  [after] / 100   ▲ +[delta]
+
+    Refactor Complete 🎉
+    ```
+
+  * **Complex suggestions** — changes that touch multiple files, need phased
+    execution, or have behavioral/structural implications (e.g., replace bare
+    `<audio>` / `<video>` elements with a styled player, refactor a design system).
+    Do **not** act alone. Build a `🗺️ Proposed Plan (Optional Suggestions)` using
+    the same phase format, present it, and wait for an explicit `go` before
+    executing one phase at a time. For the **last suggestion phase**, skip the
+    separate per-phase report and proceed directly to the minimal closing above.
+
+  Do not print the full Final Summary or the optional-suggestions question again.
 
 ---
 
