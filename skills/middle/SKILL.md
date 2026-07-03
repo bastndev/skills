@@ -1,6 +1,6 @@
 ---
 name: middle
-description: "Focused, on-demand project improver for active development. Improves ONE dimension at a time — performance, security, UI/UX, structure, cleanup (dead code), or code quality — within a given path. Analyzes through that single lens, scores the focus 0–10, proposes a compact phased plan, and executes only with explicit approval. Use for targeted improvements like 'harden security in src/api', 'speed up this page', 'clean dead code', 'polish the UI'. Invoke with /middle <focus> (@path)"
+description: "Focused, on-demand project improver for active development. Option 0 scores the project or folder with a 0–100 health overview (Architecture, Maintainability, Performance, Security, Documentation), report-only. Options 1–6 improve ONE dimension at a time — performance (1), UI/UX (2), security (3), structure (4), cleanup/dead code (5), code quality (6) — scoring the focus 0–10, proposing a correction plan, and executing only with explicit approval. Use for 'score my project', 'harden security in src/api', 'speed up this page', 'clean dead code'. Invoke with /middle <0-6|focus> (@path)"
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
@@ -21,31 +21,39 @@ bar without touching anything else.
 ## Invocation
 
 ```
-/middle <focus> (@path)
+/middle <option|focus> (@path)
 
-/middle performance (@src/api)
-/middle security
-/middle 3 (@components/)
+/middle 0                    # health overview of the inferred scope
+/middle (@src/) 0            # health overview of src/ only
+/middle (@src/) 1            # performance improvement in src/
+/middle security             # names and aliases also work
 /middle
 ```
 
-* Accept the focus by **name, alias, or menu number**.
-* **No focus given** → print the Focus Menu, ask which one, and wait. Do not
-  guess a focus or analyze anything yet.
-* **No path given** → infer the smallest relevant source scope from the
-  project's entry points (`package.json`, then `pyproject.toml` → `Cargo.toml`
-  → `go.mod` → `*.csproj`). Never scan the whole repository blindly.
+* Accept the option by **menu number, name, or alias**. Path and number may
+  come in either order (`/middle src 0` = `/middle 0 (@src/)`).
+* **No option given** → print the Menu, ask which one, and wait. Do not guess
+  an option or analyze anything yet.
+* **No path given** → analyze the general project, discovering scope the same
+  way the `end` skill does: find `package.json` and follow its entry points.
+  If absent, look in order and adapt to the runtime: `pyproject.toml` →
+  `Cargo.toml` → `go.mod` → `*.csproj`. If none exist, inspect root-level
+  files first, infer the runtime, then choose the smallest relevant source
+  scope. In a monorepo, analyze only the workspace tied to the request. Never
+  scan the entire repository blindly.
 * **Two or more focuses requested** → run only the first; after its final
   summary, offer to run the next one.
 
-### Focus Menu
+### Menu
 
 ```text
-🎯 [middle] What do you want to improve?
+🎯 [middle] What do you want?
+
+0. 📊 overview      — score the whole scope (statistics only)
 
 1. ⚡ performance   — speed, efficiency, wasted work
-2. 🔒 security      — input handling, secrets, unsafe patterns
-3. 🎨 ui-ux         — states, accessibility, consistency, feedback
+2. 🎨 ui-ux         — states, accessibility, consistency, feedback
+3. 🔒 security      — input handling, secrets, unsafe patterns
 4. 🏗️ structure     — file/module organization within the scope
 5. 🧹 cleanup       — dead code, duplication, leftovers
 6. 🧩 quality       — naming, complexity, error handling
@@ -53,9 +61,76 @@ bar without touching anything else.
 Reply with a number or name (optionally add a @path).
 ```
 
-Aliases: `perf` → performance · `sec` → security · `ui`, `ux`, `design` →
-ui-ux · `arch`, `architecture` → structure · `dead-code`, `clean` → cleanup ·
-`maintainability`, `refactor-lite` → quality.
+Aliases: `overview`, `health`, `score` → 0 · `perf` → performance · `ui`,
+`ux`, `design` → ui-ux · `sec` → security · `arch`, `architecture` →
+structure · `dead-code`, `clean` → cleanup · `maintainability`,
+`refactor-lite` → quality.
+
+**The contract of every number:** option `0` delivers statistics only — score
+and findings, no plan, no edits. Every focus option `1–6` behaves identically
+to the others: it qualifies that one dimension (score + counts), reports
+evidence-backed findings, and proposes a correction plan with the solution —
+executed phase by phase only when the user says `go`.
+
+---
+
+## Option 0 — 📊 Health Overview (report-only)
+
+Score the target scope across all dimensions and deliver a diagnosis. **No
+plan, no edits** — option 0 never modifies files and never proposes phases;
+its job is to tell the user where the project stands and which focus (1–6) is
+worth running next.
+
+```text
+📊 [middle] Health Overview — 74 / 100
+
+🔴 Bugs 1    🟡 Debt/Risks 3    🟢 Suggestions 2
+
+🏗️ Architecture     7/10
+🧩 Maintainability  6/10
+⚡ Performance       8/10
+🔒 Security          5/10
+📚 Documentation     7/10
+```
+
+Use this exact title shape; do not add the project name. If existing tests are
+present, insert `🧪 Testing [x/10]` before Documentation; if no test structure
+exists, omit the bar entirely (never `0/10`).
+
+After the block, add:
+
+1. **Understanding** — max 2 lines: what the scope is and anything that shaped
+   the analysis. Add `Scope note:` only if meaningful areas were skipped.
+2. **Findings** — the same compact block as focus runs (see Report Format),
+   but with option-0 labels: `🔴 Bugs` (confirmed incorrect behavior only,
+   marked `critical` / `non-critical`) · `🟡 Debt / Risks` (top 3–5) ·
+   `🟢 Suggestions (Optional)` (max 3).
+3. **Next step** — close by pointing at the weakest bar and its focus number:
+
+```text
+Weakest bar: 🔒 Security 5/10 — run `/middle (@src/) 3` to improve it.
+```
+
+Bar → focus mapping: ⚡ Performance → 1 · 🔒 Security → 3 · 🏗️ Architecture →
+4 (structure) · 🧩 Maintainability → 6 (quality). If 📚 Documentation is the
+weakest, mention it as debt (no dedicated focus; the `end` skill covers docs).
+
+### Scoring the overview
+
+Score 0–100 overall plus each category 0–10. Be honest and conservative; do
+not invent issues to justify a low score, and say when an area cannot be
+judged from the scope. Calibrate: greenfield/no debt 85–92 · maintained
+production codebase 62–80 · legacy with known debt 40–62. Never score above 80
+with 3+ Debt/Risk items, or above 90 with any.
+
+| Score | Meaning |
+| ----- | ------- |
+| **0–40** | 🚨 Critical — hard to maintain, risky to change |
+| **40–60** | 🔴 Heavy debt — significant refactoring recommended |
+| **60–70** | 🟡 Needs improvement — works, but address debt before production |
+| **70–80** | 🟢 Production-ready — solid, maintainable code |
+| **80–90** | ⭐ Excellent — clean architecture, praise-worthy |
+| **90–100** | 🏆 Outstanding — reference-grade codebase |
 
 ---
 
@@ -63,8 +138,9 @@ ui-ux · `arch`, `architecture` → structure · `dead-code`, `clean` → cleanu
 
 ### 1. One lens only
 
-Analyze the scope **through the chosen focus only**. Do not report, score, or
-plan anything outside the focus.
+These rules govern both option 0 and focus runs; option 0 additionally never
+plans or edits. For focus runs (1–6), analyze the scope **through the chosen
+focus only**. Do not report, score, or plan anything outside the focus.
 
 * **Exception:** a **critical** security or data-loss issue noticed outside the
   focus is surfaced in one line, report-only (`⚠️ Out of focus:`), never as a
@@ -125,7 +201,7 @@ them before modifying anything and never overwrite or rewrite them.
 What to actively look for per focus. Check only what applies to the stack; skip
 what doesn't exist in the scope.
 
-### ⚡ performance
+### 1 — ⚡ performance
 
 Repeated or unnecessary work · N+1 queries and request waterfalls · blocking
 I/O on hot paths · inefficient loops and algorithms on real data sizes ·
@@ -137,7 +213,16 @@ could be lazy.
 Do not micro-optimize cold paths. Every performance finding must name the cost
 (what is wasted, how often it runs).
 
-### 🔒 security
+### 2 — 🎨 ui-ux
+
+Missing loading / error / empty states · no feedback on user actions ·
+accessibility: labels, alt text, focus handling, keyboard navigation, contrast,
+semantic HTML · inconsistent spacing, typography, or component patterns ·
+unresponsive or overflowing layouts · dead-end flows (no way back, no retry).
+
+Respect the existing design language — align to it, do not restyle the app.
+
+### 3 — 🔒 security
 
 Hardcoded secrets, tokens, or credentials · unvalidated/unsanitized input ·
 injection surfaces (SQL, command, path, XSS) · unsafe `eval`/dynamic code ·
@@ -147,16 +232,7 @@ headers · unverified downloads or unsafe deserialization.
 
 Confirmed exploitable issues are **critical** and always become Phase 1.
 
-### 🎨 ui-ux
-
-Missing loading / error / empty states · no feedback on user actions ·
-accessibility: labels, alt text, focus handling, keyboard navigation, contrast,
-semantic HTML · inconsistent spacing, typography, or component patterns ·
-unresponsive or overflowing layouts · dead-end flows (no way back, no retry).
-
-Respect the existing design language — align to it, do not restyle the app.
-
-### 🏗️ structure
+### 4 — 🏗️ structure
 
 Oversized files with too many responsibilities · code living in the wrong
 module · weak or leaky boundaries · circular dependencies · duplicated modules
@@ -186,7 +262,7 @@ src/                             src/
 If the real fix requires restructuring **beyond the scope**, say so honestly
 and recommend running the `end` skill instead of forcing a partial move.
 
-### 🧹 cleanup
+### 5 — 🧹 cleanup
 
 Dead code and unreachable branches · unused exports, imports, variables, and
 dependencies · duplicated logic worth consolidating · commented-out code
@@ -195,7 +271,7 @@ blocks · leftover debug logs and TODO corpses · obsolete files and assets.
 Deleting is the point — but verify nothing references the code before removing
 it (including dynamic references, config entries, and public API surface).
 
-### 🧩 quality
+### 6 — 🧩 quality
 
 Misleading or inconsistent naming · deep nesting and high complexity · empty
 `catch` blocks, swallowed errors, unhandled promises · magic values that need
@@ -204,20 +280,26 @@ same task within the scope.
 
 ---
 
-## Report Format
+## Report Format (focus runs 1–6)
 
 The analysis output has four parts, in this order, always compact.
 
 ### 1. Header + focus score
 
+Same visual shape as option 0's overview, but with **only the chosen focus**:
+
 ```text
-🎯 [middle] ⚡ Performance — @src/api — 6/10
+📊 [middle] ⚡ Performance Overview — 6/10
+
+🔴 Critical 1    🟡 Improvements 3    🟢 Polish 2
 ```
 
-Score **only the chosen focus**, 0–10, honest and conservative: 9–10 nearly
-nothing to do · 7–8 solid, minor gains · 5–6 clear improvements available ·
-3–4 focus is hurting the project · 0–2 urgent. Do not score other dimensions.
-Record this as the **baseline** for the final summary.
+The counts row uses the focus categories (Critical / Improvements / Polish),
+not option 0's Bugs / Debt / Suggestions. Score the focus 0–10, honest and
+conservative: 9–10 nearly nothing to do · 7–8 solid, minor gains · 5–6 clear
+improvements available · 3–4 focus is hurting the project · 0–2 urgent. Do not
+score or display other dimensions. Record this as the **baseline** for the
+final summary.
 
 ### 2. Understanding
 

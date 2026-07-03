@@ -31,36 +31,62 @@ npx skills add bastndev/skills --skill middle
 ## Usage
 
 ```
-/middle <focus> (@path)
+/middle <option|focus> (@path)
 
-/middle performance (@src/api)
-/middle security
-/middle 3 (@components/)
-/middle                          # shows the focus menu
+/middle 0                        # health overview of the project
+/middle (@src/) 0                # health overview of src/ only
+/middle (@src/) 1                # performance improvement in src/
+/middle security                 # names and aliases also work
+/middle                          # shows the menu
 ```
 
-## The Six Focuses
+## The Menu
 
-| #   | Focus              | What it hunts                                          |
+Every option is a number, so it's easy to call. `0` gives **statistics only**. Each focus `1–6` does the same three things for its dimension: **qualifies it** (score + counts), **reports** evidence-backed findings, and **proposes a correction plan** — executed phase by phase when you say `go`.
+
+| #   | Option             | What it hunts                                          |
 | --- | ------------------ | ------------------------------------------------------ |
+| 0   | 📊 **overview**    | Scores the scope 0–100 + category bars — stats only    |
 | 1   | ⚡ **performance** | Wasted work, N+1 queries, waterfalls, heavy bundles    |
-| 2   | 🔒 **security**    | Secrets, unvalidated input, injection, missing authz   |
-| 3   | 🎨 **ui-ux**       | Missing states, accessibility, consistency, feedback   |
+| 2   | 🎨 **ui-ux**       | Missing states, accessibility, consistency, feedback   |
+| 3   | 🔒 **security**    | Secrets, unvalidated input, injection, missing authz   |
 | 4   | 🏗️ **structure**   | Oversized files, wrong owners, weak boundaries         |
 | 5   | 🧹 **cleanup**     | Dead code, unused deps, duplication, debug leftovers   |
 | 6   | 🧩 **quality**     | Naming, complexity, swallowed errors, magic values     |
 
+No `@path`? The whole project is analyzed — scope is discovered from the project's entry points (`package.json` → `pyproject.toml` → `Cargo.toml` → `go.mod` → `*.csproj`), the same way the `end` skill does it.
+
 ## How It Works
 
-1. **One lens** — Analyzes your scope through the chosen focus only. Everything else is ignored (except critical security issues, reported in one line).
-2. **Focused diagnosis** — A single focus score (0–10), evidence-backed findings sorted into Critical / Improvements / Polish, and a compact plan of 1–3 phases.
-3. **You authorize** — Say `go` to begin. It executes **one phase**, reports changes + validations, then stops.
-4. **Proven gain** — Closes with an honest before → after score for the focus. `▲ +0` if nothing improved.
+1. **Score it** (option `0`) — A 0–100 health overview of the project or folder, with findings and a pointer to the weakest area. Nothing is planned or modified.
+2. **One lens** (options `1–6`) — Analyzes your scope through the chosen focus only. Everything else is ignored (except critical security issues, reported in one line).
+3. **Focused diagnosis** — The same overview visual, scoped to one focus (0–10), evidence-backed findings sorted into Critical / Improvements / Polish, and a compact plan of 1–3 phases.
+4. **You authorize** — Say `go` to begin. It executes **one phase**, reports changes + validations, then stops. Closes with an honest before → after score; `▲ +0` if nothing improved.
 
 ## What You Get
 
+Option `0` — the project thermometer:
+
 ```
-🎯 [middle] ⚡ Performance — @src/api — 6/10
+📊 [middle] Health Overview — 74 / 100
+
+🔴 Bugs 1    🟡 Debt/Risks 3    🟢 Suggestions 2
+
+🏗️ Architecture     7/10
+🧩 Maintainability  6/10
+⚡ Performance       8/10
+🔒 Security          5/10
+📚 Documentation     7/10
+
+Weakest bar: 🔒 Security 5/10 — run `/middle 3` to improve it.
+```
+
+Options `1–6` — the same visual, one focus, plus a plan:
+
+```
+📊 [middle] ⚡ Performance Overview — 6/10
+
+🔴 Critical 0    🟡 Improvements 2    🟢 Polish 1
 
 ⚠️ Findings:
 
@@ -77,6 +103,17 @@ Files: `src/api/session.ts`
 Check: typecheck + manual verification
 ```
 
+### Reading the Score
+
+| Score | Meaning |
+| ----- | ------- |
+| **0–40** | 🚨 Critical — hard to maintain, risky to change |
+| **40–60** | 🔴 Heavy debt — significant refactoring recommended |
+| **60–70** | 🟡 Needs improvement — works, but address debt before production |
+| **70–80** | 🟢 Production-ready — solid, maintainable code |
+| **80–90** | ⭐ Excellent — clean architecture, praise-worthy |
+| **90–100** | 🏆 Outstanding — reference-grade codebase |
+
 ## Guarantees
 
 - No files modified during analysis
@@ -89,6 +126,7 @@ Check: typecheck + manual verification
 
 | Question                        | Use          |
 | ------------------------------- | ------------ |
+| "How healthy is this folder?"   | **`middle`** |
 | "Make this page faster"         | **`middle`** |
 | "Harden security in `src/api`"  | **`middle`** |
 | "Clean the dead code here"      | **`middle`** |
