@@ -40,6 +40,8 @@ npx skills add bastndev/skills --skill middle
 /middle                          # shows the menu
 ```
 
+Natural language works too: _"make this page faster"_ → `1`, _"harden security in src/api"_ → `3` on `src/api`. Ambiguous requests get the menu.
+
 ## The Menu
 
 Every option is a number, so it's easy to call. `0` gives **statistics only**. Each focus `1–6` does the same three things for its dimension: **qualifies it** (score + counts), **reports** evidence-backed findings, and **proposes a correction plan** — executed phase by phase when you say `go`.
@@ -94,6 +96,7 @@ Options `1–6` — the same visual, one focus, plus a plan:
 🟡 Improvements
 
   01. User lookup runs once per request item instead of once per request.
+      ↳ `src/api/session.ts` — getUser() called inside the items loop.
   02. The reports endpoint loads the full dataset to return the first page.
 
 🗺️ Plan

@@ -4,14 +4,15 @@ description: "Focused, on-demand project improver for active development. Option
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "2.0.0"
+  version: "2.1.0"
 ---
 
 # Improve / [Middle]
 
 A focused improvement skill for projects in active development. Unlike a full
 audit, it improves **one dimension at a time** — the one the user asks for —
-inside the scope they point at. Small surface, fast diagnosis, surgical changes,
+inside the scope they point at. Option 0 first scores the whole scope so the
+user knows where to aim. Small surface, fast diagnosis, surgical changes,
 explicit approval before any edit.
 
 `middle` sits between scaffolding (**Start**) and full refactoring (**End**):
@@ -32,8 +33,13 @@ bar without touching anything else.
 
 * Accept the option by **menu number, name, or alias**. Path and number may
   come in either order (`/middle src 0` = `/middle 0 (@src/)`).
-* **No option given** → print the Menu, ask which one, and wait. Do not guess
-  an option or analyze anything yet.
+* **Natural language works too** — a request that clearly names one dimension
+  maps straight to its focus without showing the menu: "make this page faster"
+  → 1 · "polish the UI of the gallery" → 2 · "harden security in src/api" →
+  3 (@src/api) · "clean the dead code" → 5.
+* **No option given, or ambiguous request** ("improve my project") → print the
+  Menu, ask which one, and wait. Do not guess an option or analyze anything
+  yet. Same for an invalid option (`/middle 9`, unknown name).
 * **No path given** → analyze the general project, discovering scope the same
   way the `end` skill does: find `package.json` and follow its entry points.
   If absent, look in order and adapt to the runtime: `pyproject.toml` →
@@ -71,6 +77,10 @@ and findings, no plan, no edits. Every focus option `1–6` behaves identically
 to the others: it qualifies that one dimension (score + counts), reports
 evidence-backed findings, and proposes a correction plan with the solution —
 executed phase by phase only when the user says `go`.
+
+**Workflow:** 1. Resolve option + scope. 2. Analyze (read-only). 3. Report —
+score, findings, plan. 4. Wait for `go`. 5. Execute one phase, report, wait.
+6. Final summary with before → after. Option 0 stops at step 3.
 
 ---
 
@@ -196,6 +206,14 @@ a change is behavior-altering by design, mark it in the plan with
 Check the working tree first; if there are pre-existing user changes, mention
 them before modifying anything and never overwrite or rewrite them.
 
+### 8. Speak the user's language
+
+Write the Understanding, findings, plan outcomes, and explanations in the
+language the user is using (Spanish request → Spanish report). The fixed
+structure never translates: emoji, section titles, category labels
+(`Critical` / `Improvements` / `Polish`), phase line keys (`Outcome`, `Files`,
+`Check`), and the closing lines stay exactly as defined.
+
 ---
 
 ## Focus Lenses
@@ -303,7 +321,9 @@ focus **0–100** on the same thermometer as option 0, honest and conservative:
 90–100 nearly nothing to do · 70–89 solid, minor gains · 50–69 clear
 improvements available · 30–49 the focus is hurting the project · 0–29 urgent.
 Do not score or display other dimensions. Record this as the **baseline** for
-the final summary.
+the final summary. If option 0 already ran in this session, keep the focus
+score coherent with its category bar (bar × 10 as the starting point); deviate
+only when deeper reading justifies it, and say why in the Understanding.
 
 ### 2. Understanding
 
@@ -322,6 +342,7 @@ Add `Scope note:` only if meaningful areas were skipped.
 🟡 Improvements
 
   01. [short direct finding.]
+      ↳ `path/file` — [exact location + one evidence detail.]
   02. [short direct finding.]
 
 🟢 Polish (Optional)
@@ -336,8 +357,10 @@ Add `Scope note:` only if meaningful areas were skipped.
 * **🟢 Polish** — optional extras, max 3.
 * Two-digit numbering (`01.`). Empty category → exactly
   `00. .--- --- --- --- --- --- -_- --- --- --- --- --- ---.`
-* One short sentence per item, plain maintainer language; add a path only when
-  needed to disambiguate.
+* Each item is **one short sentence** in plain maintainer language, optionally
+  followed by a single indented `↳` evidence line with the exact path and
+  location. Never more than two lines per item; put deeper detail in the plan,
+  not the findings.
 * For the `structure` focus, insert the decision block between Findings and
   the Plan.
 
@@ -384,7 +407,12 @@ If the focus is healthy (no 🔴, no 🟡), skip the plan and close with:
 
 Execute only on explicit approval: `go`, `start`, `proceed`, `dale`, `do it`,
 `approved`, or a clear equivalent. Ambiguous replies (`what do you think?`,
-`maybe`) are discussion, not authorization.
+`maybe`) are discussion, not authorization. Two edge cases:
+
+* Approval bundled with the invocation (`/middle 1 go`) does **not** skip the
+  report — analyze, present the report, and wait anyway.
+* `go` after option 0 → there is nothing to execute; ask which focus (1–6) to
+  run.
 
 On approval, execute **only the first pending phase**, then stop and report:
 
@@ -397,6 +425,8 @@ Changed files:
 Validations:
 - [command or method] — [passed | failed | not run + reason]
 
+Impact: [one metric, e.g. nav usable at 375 px · -420 lines · 0 hardcoded secrets]
+
 Remaining:
 - Phase N+1 — [name]
 
@@ -407,7 +437,9 @@ Wait for confirmation between phases. For the **last phase**, skip the
 per-phase report and go straight to the final summary. Before each phase:
 detect the package manager, pick the safest validation commands, and stay
 inside the authorized scope. Run the validations after every change and report
-failures honestly.
+failures honestly. For move, extract, or delete phases (structure, cleanup),
+confirm the relocated code is logic-identical and deleted code is truly
+unreferenced before reporting the phase complete.
 
 ### Final Summary
 
@@ -428,6 +460,22 @@ score, and open 🟡 items keep counting against it. Show `▲ +0` honestly if
 nothing improved. Ask the polish question only when 🟢 items exist; if the user
 accepts, implement simple ones directly and plan complex ones as phases; if
 they decline, close with exactly `Improvement Complete 🎉`.
+
+---
+
+## Examples
+
+* `/middle 0` → health overview of the whole project. Statistics only, ends
+  with the weakest-bar pointer.
+* `/middle (@src/api) 3` → security qualification + findings + plan for
+  `src/api`; waits for `go`.
+* **"make the gallery page faster"** → focus 1 on that page's scope directly,
+  no menu.
+* **"improve my project"** → ambiguous; show the Menu and wait.
+* **`go` after a focus report** → execute Phase 1 only, report, wait.
+* **`go` after option 0** → nothing to execute; ask which focus to run.
+* **Focus looks healthy** → `✅ [focus] looks solid here — nothing worth
+  changing.` and stop.
 
 ---
 
