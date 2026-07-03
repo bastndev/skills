@@ -4,7 +4,7 @@ description: "Audits, reviews, and refactors project architecture, code quality,
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "2.0.1"
+  version: "2.1.0"
 ---
 
 # Refactor Project / [End]
@@ -143,7 +143,19 @@ Every finding must be based on concrete evidence from inspected code: exact file
 path, function/class/component/hook/service/module name, and a line or range
 when possible. Use that evidence to choose the finding, but keep the visible
 Findings list short and plain. No vague findings ("bad architecture", "poor
-performance"). For every confirmed bug assign a severity:
+performance"). Three precision rules:
+
+* **Cite line numbers only when verified** by reading the file in this
+  session; otherwise name the element, function, or section instead. A wrong
+  line number is worse than none.
+* **Measure once, reuse everywhere.** Sizes, counts, and totals must be
+  consistent across the whole report — never two different figures for the
+  same thing.
+* **Verify default runtime behavior before labeling something critical** —
+  e.g., an unlinked script never executes; `<audio controls>` preloads only
+  metadata by default, not the full file.
+
+For every confirmed bug assign a severity:
 
 * **Critical** — security holes, data loss, crashes, or anything blocking work.
 * **Non-critical** — incorrect but contained behavior.
@@ -212,6 +224,14 @@ execute independently, and tied to a finding or architecture decision. Do not
 turn optional suggestions into phases unless they unlock the main refactor or
 the user explicitly asked for them.
 
+Every phase must be executable **now** — no conditional or speculative phases
+("only if components are added later"). If a fix depends on a future decision,
+it is a Suggestion, not a phase. No phase may rework lines a previous phase
+already wrote: every line is edited at most once per refactor, always from its
+original form — rewriting a rewrite loses information each pass. For a
+single-file or trivially small scope, use exactly one phase (two only when a
+critical bug deserves its own step).
+
 Phase names must name the specific target, not the category. ✅ Extract voice
 helpers from main.ts ✅ Fix CliAgentOption duplication in tab.ts ❌ Improve
 maintainability ❌ Refactor large files.
@@ -247,6 +267,11 @@ For pure move or extract phases, confirm the relocated code is logic-identical
 (a behavior-preserving move, not a rewrite) and that the validation gate passed
 before reporting the phase complete.
 
+If execution disproves a planned change — the finding was wrong, or the edit
+turns out to be unsafe — do not apply it, and do not silently deliver less
+than the phase promised: state it in the per-phase report's `Dropped:` line
+with the reason.
+
 Safety: check the working tree first; if there are pre-existing user changes,
 report them before modifying anything and never overwrite, remove, or rewrite
 them — modify only the authorized area.
@@ -265,6 +290,14 @@ Stay within the authorized scope for all changes. **Exception:** if you notice a
 were not deeply reviewed. Keep limitations clear before findings. Do not re-list
 items there that you already reported as findings.
 
+### 14. Speak the user's language
+
+Write the Project Understanding, findings, plan outcomes, and explanations in
+the language the user is using (Spanish request → Spanish report). The fixed
+structure never translates: emoji, section titles, category labels, decision
+lines, phase line keys (`Outcome`, `Files`, `Check`), and the closing lines
+stay exactly as defined.
+
 ---
 
 ## Report Format
@@ -272,7 +305,7 @@ items there that you already reported as findings.
 ### 📊 Health Overview
 
 ```text
-📊 [end] Health Overview — [score] / 100
+📊 my-project Health Overview — [score] / 100
 
 🔴 Bugs [n]    🟡 Debt/Risks [n]    🟢 Suggestions [n]
 
@@ -283,7 +316,10 @@ items there that you already reported as findings.
 📚 Documentation     [x/10]
 ```
 
-Use this exact title shape; do not add the project name or project type here.
+`my-project` is a placeholder — replace it with the analyzed project's real
+name, written **without square brackets**: the manifest name (`package.json`
+`name`, `Cargo.toml` `[package].name`, etc.) or, if none, the root folder
+name. Do not add the project type. Keep the rest of the title shape exact.
 If existing tests are present, insert `🧪 Testing           [x/10]` before
 Documentation.
 
@@ -475,6 +511,7 @@ Validations:
 - [command or method] — [passed | failed | not run + reason]
 
 Impact: [metric, e.g. main.ts 1305 → 741 lines, +1 module]
+Dropped: [planned change not applied — reason] (omit this line when nothing was dropped)
 
 Remaining:
 - Phase N+1 — [name]
