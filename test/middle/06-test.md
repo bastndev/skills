@@ -5,7 +5,8 @@
 .vscodeignore
 .yarnrc
 
-# Exclude src/ except webview runtime assets (HTML/CSS/images); removing negations → panels render blank.
+# Exclude all src/ except runtime assets loaded via extensionUri at runtime.
+# Negations below are required — removing them causes panels to render blank.
 src/**
 !src/shared/
 !src/shared/**/
@@ -22,10 +23,11 @@ src/**
 !src/my-skills/**/*.png
 !src/my-skills/**/*.webp
 
-# Smart + Skills reads SKILL.md from src/my-plus/ at runtime (smart-service.ts → RULES_ASSET_SEGMENTS); .md only, .ts stays out.
+# Smart + Skills rules asset read via extensionUri at runtime (loadRules → RULES_ASSET_SEGMENTS).
+# Match only .md so bundled .ts sources stay out of the package.
 !src/my-plus/**/*.md
 
-# Repo-only assets (screenshots, GIFs ~13 MB) — not loaded by the extension
+# Repo-only assets (~13 MB) — not loaded by the extension
 public/**
 
 # Tests and generated development maps
@@ -46,13 +48,14 @@ esbuild.js
 # Native debug symbols — trims ~53 MB of node-pty .pdb files
 **/*.pdb
 
-# fixnow ships 8 language dicts (~11 MB); keep en/es/pt/ru only — see src/my-cli/shared/prompt/languages.ts
+# fixnow dictionaries (~11 MB total). Keep en/es/pt/ru; drop ar/de/fr/vi (unused).
+# Mirrors src/my-cli/shared/prompt/languages.ts.
 node_modules/fixnow/dictionaries/ar/**
 node_modules/fixnow/dictionaries/de/**
 node_modules/fixnow/dictionaries/fr/**
 node_modules/fixnow/dictionaries/vi/**
 
-# Project notes and contributor-only documentation
+# Contributor-only documentation
 AGENTS.md
 ARCHITECTURE.md
 CLAUDE.md
