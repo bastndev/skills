@@ -1,29 +1,111 @@
 ---
 name: middle
-description: "Interactive project analysis skill. Option 1: scored health overview (0-100) with emoji table across Architecture, Maintainability, Performance, Security, Documentation plus Bug/Debt/Suggestion counts. Option 2: architecture analysis with structural decisions. Invoke with /skill analyze (@path) <1|2>"
+description: "Focused, on-demand project improver for active development. Option 0 scores the project or folder with a 0–100 health overview (Architecture, Maintainability, Performance, Security, Documentation), report-only. Options 1–7 improve ONE dimension at a time — performance (1), UI/UX (2), tidy/file order + comment hygiene (3), security (4), structure (5), cleanup/dead code (6), code quality (7) — scoring the focus 0–100, proposing a correction plan, and executing only with explicit approval. Exception: tidy (3) on a single small file applies directly, no approval needed. Use for 'score my project', 'sort this file / translate the comments', 'harden security in src/api', 'speed up this page', 'clean dead code'. Invoke with /middle <0-7|focus> (@path)"
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "1.0.0"
+  version: "2.3.0"
 ---
 
-# Analyze / [Middle]
+# Improve / [Middle]
 
-Interactive project analysis skill. Call it with a target path and an option number:
+A focused improvement skill for projects in active development. Unlike a full
+audit, it improves **one dimension at a time** — the one the user asks for —
+inside the scope they point at. Option 0 first scores the whole scope so the
+user knows where to aim. Small surface, fast diagnosis, surgical changes,
+explicit approval before any edit.
+
+`middle` sits between scaffolding (**Start**) and full refactoring (**End**):
+the project already exists and works; the goal is to raise one specific quality
+bar without touching anything else.
+
+## Invocation
 
 ```
-/skill analyze (@src/) 1
-/skill analyze (@src/) 2
+/middle <option|focus> (@path)
+
+/middle 0                    # health overview of the inferred scope
+/middle (@src/) 0            # health overview of src/ only
+/middle (@src/) 1            # performance improvement in src/
+/middle (@file.ts) 3         # tidy one file — applies directly, no approval
+/middle security             # names and aliases also work
+/middle
 ```
+
+* Accept the option by **menu number, name, or alias**. Path and number may
+  come in either order (`/middle src 0` = `/middle 0 (@src/)`).
+* **Natural language works too** — a request that clearly names one dimension
+  maps straight to its focus without showing the menu: "make this page faster"
+  → 1 · "polish the UI of the gallery" → 2 · "sort this file and clean the
+  comments" → 3 · "harden security in src/api" → 4 (@src/api) · "clean the
+  dead code" → 6.
+* **No option given, or ambiguous request** ("improve my project") → print the
+  Menu, ask which one, and wait. Do not guess an option or analyze anything
+  yet. Same for an invalid option (`/middle 9`, unknown name).
+* **Option lost in transport** — some IDE wrappers rewrite the prompt and drop
+  arguments, delivering only a path or file. Treat that as "no option given":
+  show the Menu with a `Scope detected:` line and wait.
+* **No path given** → analyze the general project, discovering scope the same
+  way the `end` skill does: find `package.json` and follow its entry points.
+  If absent, look in order and adapt to the runtime: `pyproject.toml` →
+  `Cargo.toml` → `go.mod` → `*.csproj`. If none exist, inspect root-level
+  files first, infer the runtime, then choose the smallest relevant source
+  scope. In a monorepo, analyze only the workspace tied to the request. Never
+  scan the entire repository blindly.
+* **Two or more focuses requested** → run only the first; after its final
+  summary, offer to run the next one.
+
+### Menu
+
+```text
+🎯 [middle] What do you want?
+
+0. 📊 overview      — score the whole scope (statistics only)
+
+1. ⚡ performance   — speed, efficiency, wasted work
+2. 🎨 ui-ux         — states, accessibility, consistency, feedback
+3. 🗂️ tidy          — file order + comment hygiene (English, AI-first)
+4. 🔒 security      — input handling, secrets, unsafe patterns
+5. 🏗️ structure     — file/module organization within the scope
+6. 🧹 cleanup       — dead code, duplication, leftovers
+7. 🧩 quality       — naming, complexity, error handling
+
+Reply with a number or name (optionally add a @path).
+```
+
+If a path or file already arrived with the request, append one line to the
+menu — `Scope detected: src/style.css — [very short description]` — and reuse
+that scope when the user replies with just a number.
+
+Aliases: `overview`, `health`, `score` → 0 · `perf` → performance · `ui`,
+`ux`, `design` → ui-ux · `sort`, `order`, `comments`, `translate-comments` →
+tidy · `sec` → security · `arch`, `architecture` → structure · `dead-code`,
+`clean` → cleanup · `maintainability`, `refactor-lite` → quality.
+
+**The contract of every number:** option `0` delivers statistics only — score
+and findings, no plan, no edits. Every focus option `1–7` behaves identically
+to the others: it qualifies that one dimension (score + counts), reports
+evidence-backed findings, and proposes a correction plan with the solution —
+executed phase by phase only when the user says `go`. **One exception:** tidy
+(3) on a single small file runs in **direct mode** — no report, no approval;
+see its lens.
+
+**Workflow:** 1. Resolve option + scope. 2. Analyze (read-only). 3. Report —
+score, findings, plan. 4. Wait for `go`. 5. Execute one phase, report, wait.
+6. Final summary with before → after. Option 0 stops at step 3. Direct-mode
+tidy collapses steps 3–6 into one pass.
 
 ---
 
-## Option 1 — Health Overview (Scored 0–100)
+## Option 0 — 📊 Health Overview (report-only)
 
-Analyze the target, score it from 1–100 across these dimensions, and display the result:
+Score the target scope across all dimensions and deliver a diagnosis. **No
+plan, no edits** — option 0 never modifies files and never proposes phases;
+its job is to tell the user where the project stands and which focus (1–7) is
+worth running next.
 
-```
-📊 [end] Health Overview — 74 / 100
+```text
+📊 my-project Health Overview — 74 / 100
 
 🔴 Bugs 1    🟡 Debt/Risks 3    🟢 Suggestions 2
 
@@ -34,11 +116,39 @@ Analyze the target, score it from 1–100 across these dimensions, and display t
 📚 Documentation     7/10
 ```
 
-A scored overview, findings sorted into Bugs / Debt / Suggestions, one architecture decision, and a phased plan — executed one phase at a time on your `go`.
+`my-project` is a placeholder — replace it with the analyzed project's real
+name, written **without square brackets**: the manifest name (`package.json`
+`name`, `Cargo.toml` `[package].name`, etc.) or, if none, the root folder
+name. The skill is global; nothing about it is tied to any one project. Keep the rest of
+the title shape exact. If existing tests are present, insert
+`🧪 Testing [x/10]` before Documentation; if no test structure exists, omit
+the bar entirely (never `0/10`).
 
-### Reading the Score
+After the block, add:
 
-The overall score is a **0–100** thermometer:
+1. **Understanding** — max 2 lines: what the scope is and anything that shaped
+   the analysis. Add `Scope note:` only if meaningful areas were skipped.
+2. **Findings** — the same compact block as focus runs (see Report Format),
+   but with option-0 labels: `🔴 Bugs` (confirmed incorrect behavior only,
+   marked `critical` / `non-critical`) · `🟡 Debt / Risks` (top 3–5) ·
+   `🟢 Suggestions (Optional)` (max 3).
+3. **Next step** — close by pointing at the weakest bar and its focus number:
+
+```text
+Weakest bar: 🔒 Security 5/10 — run `/middle (@src/) 4` to improve it.
+```
+
+Bar → focus mapping: ⚡ Performance → 1 · 🔒 Security → 4 · 🏗️ Architecture →
+5 (structure) · 🧩 Maintainability → 7 (quality). If 📚 Documentation is the
+weakest, mention it as debt (no dedicated focus; the `end` skill covers docs).
+
+### Scoring the overview
+
+Score 0–100 overall plus each category 0–10. Be honest and conservative; do
+not invent issues to justify a low score, and say when an area cannot be
+judged from the scope. Calibrate: greenfield/no debt 85–92 · maintained
+production codebase 62–80 · legacy with known debt 40–62. Never score above 80
+with 3+ Debt/Risk items, or above 90 with any.
 
 | Score | Meaning |
 | ----- | ------- |
@@ -51,66 +161,432 @@ The overall score is a **0–100** thermometer:
 
 ---
 
-## Option 2 — Architecture Analysis
+## Operating Rules
 
-Analyze the target's structure and output the appropriate architecture decision format.
+### 1. One lens only
 
-### Decision 1 — Architecture OK
+These rules govern both option 0 and focus runs; option 0 additionally never
+plans or edits. For focus runs (1–7), analyze the scope **through the chosen
+focus only**. Do not report, score, or plan anything outside the focus.
 
-```
-🏗️ Architecture
+* **Exception:** a **critical** security or data-loss issue noticed outside the
+  focus is surfaced in one line, report-only (`⚠️ Out of focus:`), never as a
+  plan phase.
+* Everything else out of focus is silently ignored — no "while I was here"
+  findings, no bonus advice.
 
-Decision 1️⃣:
-Architecture ok, ready for work.
+### 2. Scope & where to look
 
+* The given path is the authorized scope. Files outside it may be **read** only
+  to understand imports, entry points, config, or runtime behavior — never
+  modified.
+* Ignore by default: `node_modules/`, `dist/`, `build/`, `.next/`, `out/`,
+  `coverage/`, `.cache/`, `.git/`, generated and minified files. Config
+  dotfiles may be inspected when relevant to the focus.
+* For scopes with many files, read entry points, the largest files, and
+  representative files per directory — not everything. Note skipped areas in
+  one `Scope note:` line.
+
+### 3. Read-only during analysis
+
+Do not modify, move, create, or delete any file while analyzing. Changes happen
+only in approved phases.
+
+### 4. Evidence or silence
+
+Every finding must be backed by inspected code: file path, and
+function/component/module name or line range when possible. No vague findings
+("slow code", "insecure app"). Never present a risk or assumption as a
+confirmed problem. If the focus looks healthy, say so and stop — do not invent
+work. Two precision rules:
+
+* **Cite line numbers only when verified** by reading the file in this
+  session; otherwise name the element, function, or section instead. A wrong
+  line number is worse than none.
+* **Measure once, reuse everywhere.** Sizes, counts, and totals must be
+  consistent across the whole report — never two different figures for the
+  same thing (e.g., "75 MB of assets" in one section and "46 MB" in another).
+
+### 5. Preserve behavior
+
+Improvements must not change observable behavior unless the finding **is** the
+incorrect behavior (e.g., an injection vulnerability, a broken UI state). When
+a change is behavior-altering by design, mark it in the plan with
+`(behavior change)`.
+
+### 6. Tests & dependencies
+
+* If the project has no test structure, do not create test folders, files, or
+  suites in any language. Validate with the safest available method: build,
+  typecheck, lint, manual verification of the affected flow.
+* Do not add dependencies, change the package manager, or modify lockfiles
+  unless explicitly authorized. Prefer improving existing code over adding
+  packages.
+
+### 7. Working-tree safety
+
+Check the working tree first; if there are pre-existing user changes, mention
+them before modifying anything and never overwrite or rewrite them.
+
+### 8. Speak the user's language
+
+Write the Understanding, findings, plan outcomes, and explanations in the
+language the user is using (Spanish request → Spanish report). The fixed
+structure never translates: emoji, section titles, category labels
+(`Critical` / `Improvements` / `Polish`), phase line keys (`Outcome`, `Files`,
+`Check`), and the closing lines stay exactly as defined.
+
+---
+
+## Focus Lenses
+
+What to actively look for per focus. Check only what applies to the stack; skip
+what doesn't exist in the scope.
+
+### 1 — ⚡ performance
+
+Repeated or unnecessary work · N+1 queries and request waterfalls · blocking
+I/O on hot paths · inefficient loops and algorithms on real data sizes ·
+missing caching or memoization **where it measurably matters** · unreleased
+resources (listeners, handles, subscriptions) · oversized imports/bundles and
+assets · unnecessary re-renders (UI frameworks) · work done at startup that
+could be lazy.
+
+Do not micro-optimize cold paths. Every performance finding must name the cost
+(what is wasted, how often it runs). Verify default runtime/browser behavior
+before labeling something critical — e.g., `<audio controls>` preloads only
+metadata by default, not the full file; an unlinked script never executes.
+
+### 2 — 🎨 ui-ux
+
+Missing loading / error / empty states · no feedback on user actions ·
+accessibility: labels, alt text, focus handling, keyboard navigation, contrast,
+semantic HTML · inconsistent spacing, typography, or component patterns ·
+unresponsive or overflowing layouts · dead-end flows (no way back, no retry).
+
+Respect the existing design language — align to it, do not restyle the app.
+
+### 3 — 🗂️ tidy
+
+The only focus that never touches logic: it **moves code and edits comments**,
+nothing else. Zero behavior change by definition.
+
+**Direct mode — no report, no approval.** When the scope is a **single file of
+normal size (≤ ~500 lines)**, skip the report and the `go` entirely: read the
+file, apply the complete tidy in **one pass** (comments + ordering together,
+compressed from the original — never twice), and close with the compact
+after-report defined in Execution. The working-tree warning still applies
+before writing. Folders and larger files keep the normal report + `go` flow;
+no other focus has a direct mode.
+
+**Comments — written for the AI, not for a human reading along.** A comment
+survives only if it tells the next reader (usually an AI) something the code
+cannot: a constraint, a "why", a gotcha, units, an invariant. Apply in order:
+
+* **Delete:** decorative banners (`// =====`), narrative intros at the top of
+  a file, author/date blocks, comments that narrate the next line, comments
+  that add nothing in any language, and commented-out code (shared with focus
+  6 — whichever runs first removes it).
+* **Translate + compress:** comments carrying real information but written in
+  Spanish or another language, or longer than needed → English, one line
+  where possible.
+* **Keep, but translate + compress:** docstrings/JSDoc on public APIs — they
+  power IDE hints and doc generators; never delete them outright.
+* **Untouchable:** license/copyright headers, shebangs (`#!/...`), framework
+  directives (`'use client'`), and tooling directives (`// eslint-disable`,
+  `// @ts-expect-error`, `# type: ignore`, `/* prettier-ignore */`) — they
+  look like comments but change build, lint, or runtime behavior.
+
+**Ordering — standard shape, only where provably safe.** Move file content
+toward: imports → constants → types → main export → helpers, following the
+language/framework convention. Never move: side-effect imports
+(`import './polyfill'`), order-sensitive code (module-level statements in
+Python, hoisting-sensitive JS declarations), or CSS rules — rule order is the
+cascade. If order-independence cannot be verified, leave the code where it is.
+
+**Plan shape (report flow only):** batch by concern, not by file — Phase 1 =
+comment pass across the whole scope; later phases = reordering, batched by
+folder. Verify comment-only phases by diff (only comment lines changed) plus
+build/typecheck; verify reorder phases as behavior-preserving moves.
+
+### 4 — 🔒 security
+
+Hardcoded secrets, tokens, or credentials · unvalidated/unsanitized input ·
+injection surfaces (SQL, command, path, XSS) · unsafe `eval`/dynamic code ·
+missing authorization checks on protected operations · sensitive data in logs
+or error messages · permissive CORS, insecure cookies, missing critical
+headers · unverified downloads or unsafe deserialization.
+
+Confirmed exploitable issues are **critical** and always become Phase 1.
+
+### 5 — 🏗️ structure
+
+Oversized files with too many responsibilities · code living in the wrong
+module · weak or leaky boundaries · circular dependencies · duplicated modules
+· obsolete files. Scoped to the target path — this is **not** a whole-project
+restructure (that is the `end` skill's job).
+
+Report the structural direction with one of these decision blocks:
+
+```text
+Decision 1️⃣: Structure ok, nothing to move.
 Why: [one short reason.]
 ```
 
-### Decision 2 — Small adjustments needed
-
-Show only the affected paths:
-
-```
-🏗️ Architecture
-
-Decision 2️⃣:
-Small architecture adjustments needed.
-
+```text
+Decision 2️⃣: Small adjustments inside the scope.
 Why: [one short reason.]
 
-Before:
+Before:                          After:
 
-src/
-├── feature-a/
-└── large-file.ts
-
-After:
-
-src/
-├── feature-a/
-│   ├── index.ts
-│   └── helpers.ts              # extracted from large-file.ts
-└── large-file.ts               # smaller owner
+src/                             src/
+├── feature-a/                   ├── feature-a/
+└── large-file.ts                │   ├── index.ts
+                                 │   └── helpers.ts   # extracted from large-file.ts
+                                 └── large-file.ts    # smaller owner
 ```
 
-### Decision 3 — Restructure recommended
+If the real fix requires restructuring **beyond the scope**, say so honestly
+and recommend running the `end` skill instead of forcing a partial move.
 
-Show the proposed structure only:
+### 6 — 🧹 cleanup
 
+Dead code and unreachable branches · unused exports, imports, variables, and
+dependencies · duplicated logic worth consolidating · commented-out code
+blocks · leftover debug logs and TODO corpses · obsolete files and assets.
+
+Deleting is the point — but verify nothing references the code before removing
+it (including dynamic references, config entries, and public API surface).
+
+### 7 — 🧩 quality
+
+Misleading or inconsistent naming · deep nesting and high complexity · empty
+`catch` blocks, swallowed errors, unhandled promises · magic values that need
+names · copy-paste variation of the same logic · inconsistent patterns for the
+same task within the scope.
+
+---
+
+## Report Format (focus runs 1–7)
+
+The analysis output has four parts, in this order, always compact. A
+horizontal separator line (`────…`) between parts is optional and welcome —
+it applies to option 0's report too.
+
+### 1. Header + focus score
+
+Same visual shape as option 0's overview, but with **only the chosen focus**:
+
+```text
+📊 my-project 🎨 UI/UX Overview — 46 / 100
+
+🔴 Critical 1    🟡 Improvements 4    🟢 Polish 2
 ```
-🏗️ Architecture
 
-Decision 3️⃣:
-Restructure architecture recommended.
+The project name follows the same rule as option 0 (manifest name, else root
+folder name, no square brackets). The counts row uses the focus categories (Critical /
+Improvements / Polish), not option 0's Bugs / Debt / Suggestions. Score the
+focus **0–100** on the same thermometer as option 0, honest and conservative:
+90–100 nearly nothing to do · 70–89 solid, minor gains · 50–69 clear
+improvements available · 30–49 the focus is hurting the project · 0–29 urgent.
+Do not score or display other dimensions. Record this as the **baseline** for
+the final summary. If option 0 already ran in this session, keep the focus
+score coherent with its category bar (bar × 10 as the starting point); deviate
+only when deeper reading justifies it, and say why in the Understanding.
 
-Why: [one short reason.]
+### 2. Understanding
 
-Proposed structure:
+Max 2 lines: what the scope does and anything that shaped the analysis.
+Add `Scope note:` only if meaningful areas were skipped.
 
-src/
-├── core/                       # shared foundations
-├── features/                   # feature-owned modules
-├── shared/                     # reusable UI/helpers
-├── infrastructure/             # external services/config
-└── app/                        # startup/routes/bootstrap
+### 3. Findings
+
+```text
+⚠️ Findings:
+
+🔴 Critical
+
+  00. .--- --- --- --- --- --- -_- --- --- --- --- --- ---.
+
+🟡 Improvements
+
+  01. [short direct finding.]
+      ↳ `path/file` — [exact location + one evidence detail.]
+  02. [short direct finding.]
+
+🟢 Polish (Optional)
+
+  01. [short optional item.]
 ```
+
+* **Always two-digit numbering**: `01.`, `02.`, `03.` — never `1.`, `2.`.
+  Empty category → exactly
+  `00. .--- --- --- --- --- --- -_- --- --- --- --- --- ---.`
+* **🔴 Critical** — the focus is actively hurting users or the project now
+  (exploitable vulnerability, real slowdown, broken UI state).
+* **🟡 Improvements** — recommended in-focus gains; top 3–5 only, ordered by
+  value.
+* **🟢 Polish** — optional extras, max 3.
+* Each item is **one short sentence** in plain maintainer language, optionally
+  followed by a single indented `↳` evidence line with the exact path and
+  location. Never more than two lines per item; put deeper detail in the plan,
+  not the findings.
+* For the `structure` focus, insert the decision block between Findings and
+  the Plan.
+
+### 4. Plan + closing
+
+```text
+🗺️ Plan
+
+Phase 1 — [verb + short target]
+Outcome: [one concrete result.]
+Files: `path/file`, `path/file`
+Check: [typecheck + lint | build | manual verification]
+```
+
+* **1–3 phases** by default, 5 max — each phase maps to a specific finding.
+  This is targeted improvement, not a project overhaul; if the work honestly
+  needs more than 5 phases, say the scope is too big for `middle` and suggest
+  narrowing the path or running `end`.
+* **Single-file scope → exactly one phase** doing the complete job in one
+  pass (two only when a Critical deserves its own step). Phases exist to
+  batch work across files, never to split work inside one file.
+* **No phase may rework lines a previous phase already wrote.** Every line is
+  edited at most once per run, always from its original form — compressing a
+  compression loses information each pass.
+* Every phase must be executable **now** — no conditional or speculative
+  phases ("only if components are added later"). If a fix depends on a future
+  decision, it is a 🟢 Polish note, not a phase.
+* Critical findings jump the queue and become Phase 1.
+* Phase names start with a verb and name the target: ✅ `Cache repeated user
+  lookups in session.ts` ❌ `Improve performance`.
+* Do not turn 🟢 Polish items into phases unless the user asks.
+* Mark new files `(new)`, deletions `(delete)`, behavior-altering fixes
+  `(behavior change)`.
+
+End every analysis with exactly:
+
+```text
+Any questions?
+If not, I'll start with Phase 1.
+
+🚀 Ready when you are.
+```
+
+If the focus is healthy (no 🔴, no 🟡), skip the plan and close with:
+
+```text
+✅ [focus] looks solid here — nothing worth changing.
+```
+
+---
+
+## Execution
+
+Execute only on explicit approval: `go`, `start`, `proceed`, `dale`, `do it`,
+`approved`, or a clear equivalent. Ambiguous replies (`what do you think?`,
+`maybe`) are discussion, not authorization. Two edge cases:
+
+* Approval bundled with the invocation (`/middle 1 go`) does **not** skip the
+  report — analyze, present the report, and wait anyway.
+* `go` after option 0 → there is nothing to execute; ask which focus (1–7) to
+  run.
+
+On approval, execute **only the first pending phase**, then stop and report:
+
+```text
+✅ Phase N complete — [phase name]
+
+Changed files:
+- `path/file` — what changed and why
+
+Validations:
+- [command or method] — [passed | failed | not run + reason]
+
+Impact: [one metric, e.g. nav usable at 375 px · -420 lines · 0 hardcoded secrets]
+Dropped: [planned change not applied — reason] (omit this line when nothing was dropped)
+
+Remaining:
+- Phase N+1 — [name]
+
+Continue with Phase N+1?
+```
+
+If execution disproves a planned change — the finding was wrong, or the edit
+turns out to be unsafe — do not apply it, and do not silently deliver less
+than the phase promised: state it in `Dropped:` with the reason.
+
+Wait for confirmation between phases. For the **last phase**, skip the
+per-phase report and go straight to the final summary. Before each phase:
+detect the package manager, pick the safest validation commands, and stay
+inside the authorized scope. Run the validations after every change and report
+failures honestly. For move, extract, or delete phases (structure, cleanup),
+confirm the relocated code is logic-identical and deleted code is truly
+unreferenced before reporting the phase complete.
+
+### Direct mode (tidy 3, single file ≤ ~500 lines)
+
+No report, no `go`: execute the complete one-pass tidy immediately, then close
+with only:
+
+```text
+✅ Tidy applied — path/file
+
+📊 [before] → [after] / 100
+Impact: [one line, e.g. −9 comment lines · comments now 1-line English · imports reordered]
+Dropped: [refused changes + why — omit if none]
+```
+
+Score the file before and after with the normal rubric. Every lens guardrail
+still applies: untouchable comments, provably-safe ordering only, and the
+working-tree warning before writing.
+
+### Final Summary
+
+```text
+## [Focus] Improved 🎉
+
+🎨 UI/UX  46 / 100 → 78 / 100   ▲ +32
+
+### What was done
+- ✅ Phase 1 ([name]) — [1-line summary] ([impact metric])
+- ✅ Phase 2 ([name]) — [1-line summary] ([impact metric])
+
+Would you like the 🟢 polish items too?
+```
+
+Re-score the focus with the same rubric; only resolved findings may raise the
+score, and open 🟡 items keep counting against it. Show `▲ +0` honestly if
+nothing improved. Ask the polish question only when 🟢 items exist; if the user
+accepts, implement simple ones directly and plan complex ones as phases; if
+they decline, close with exactly `Improvement Complete 🎉`.
+
+---
+
+## Examples
+
+* `/middle 0` → health overview of the whole project. Statistics only, ends
+  with the weakest-bar pointer.
+* `/middle (@src/api) 4` → security qualification + findings + plan for
+  `src/api`; waits for `go`.
+* **"make the gallery page faster"** → focus 1 on that page's scope directly,
+  no menu.
+* `/middle (@utils.ts) 3` or **"sort this file and translate the comments"**
+  → direct mode: tidy applied immediately, compact after-report, no `go`.
+* `/middle (@src/) 3` → tidy on a folder: normal report + plan, waits for
+  `go`.
+* **"improve my project"** → ambiguous; show the Menu and wait.
+* **`go` after a focus report** → execute Phase 1 only, report, wait.
+* **`go` after option 0** → nothing to execute; ask which focus to run.
+* **Focus looks healthy** → `✅ [focus] looks solid here — nothing worth
+  changing.` and stop.
+
+---
+
+## Philosophy
+
+One focus, one scope, one clear win at a time. `middle` behaves like a senior
+engineer doing a focused pass during active development: it sharpens the one
+thing you asked about, proves the gain, and leaves everything else exactly as
+it found it. For whole-project diagnosis and deep refactoring, use `end`.
