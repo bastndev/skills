@@ -499,13 +499,41 @@ When all phases are complete:
 - ✅ Phase 1 ([name]) — [1-line summary] ([impact metric])
 - ✅ Phase 2 ([name]) — [1-line summary] ([impact metric])
 
-🟢 Would you like to implement the optional suggestions?
+🟢 Would you like to implement the (optional) suggestions?
 ```
 
 Rules for the health-delta block: include `🧪 Testing [x → y]` only when the project
 has an existing test structure (same condition as the Health Overview). Show the
 same number on both sides when a category did not change (e.g. `7 → 7`). Show
 `▲ +0` honestly if nothing improved.
+
+### Optional Suggestions follow-up
+
+The Final Summary ends with the prompt `🟢 Would you like to implement the optional
+suggestions?`. Handle the user's answer as follows:
+
+- **If the user declines** (no, no thanks, not now, etc.): close with exactly:
+
+  ```text
+  ## Refactor Complete 🎉
+  ```
+
+  Do not reprint the health delta, the category bars, or the phase list.
+
+- **If the user accepts** (go, sí, dale, yes, proceed, etc.): treat the existing
+  `🟢 Suggestions (Optional)` as a new work package. Build a
+  `🗺️ Proposed Plan (Optional Suggestions)` using the same phase format and
+  one-phase-at-a-time authorization rules, then execute each phase with the
+  standard per-phase report. After all suggestion phases are complete, print only
+  the minimal closing:
+
+  ```text
+  📊 Health — [before] / 100  →  [after] / 100   ▲ +[delta]
+
+  ## Refactor Complete 🎉
+  ```
+
+  Do not print the full Final Summary or the optional-suggestions question again.
 
 ---
 
