@@ -58,6 +58,19 @@ npx skills add bastndev/skills --skill end
 
 A scored overview, findings sorted into Bugs / Debt / Suggestions, one architecture decision, and a phased plan — executed one phase at a time on your `go`.
 
+### Reading the Score
+
+The overall score is a **0–100** thermometer:
+
+| Score | Meaning |
+| ----- | ------- |
+| **0–40** | 🚨 Critical — hard to maintain, risky to change |
+| **40–60** | 🔴 Heavy debt — significant refactoring recommended |
+| **60–70** | 🟡 Needs improvement — works, but address debt before production |
+| **70–80** | 🟢 Production-ready — solid, maintainable code |
+| **80–90** | ⭐ Excellent — clean architecture, praise-worthy |
+| **90–100** | 🏆 Outstanding — reference-grade codebase |
+
 ---
 
 → Full spec & rules: [SKILL.md](./SKILL.md)
