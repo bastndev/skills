@@ -30,7 +30,7 @@ Analyze any project, generate a prioritized refactoring plan, and apply changes 
 npx skills add bastndev/skills --skill end
 ```
 
-## Health Score
+## Health Overview
 
 Every analysis starts with a project health score.
 
@@ -46,18 +46,18 @@ Every analysis starts with a project health score.
 Example:
 
 ```text
-📊 Health Score — 74 / 100
+📊 my-project Health Overview — 74 / 100
 
-🔴 Bugs ............... 1
-🟡 Debt & Risks ....... 3
-🟢 Suggestions ........ 2
+🔴 Bugs 1    🟡 Debt/Risks 3    🟢 Suggestions 2
 
-🏗️ Architecture ...... 7/10
-🧩 Maintainability ... 6/10
-⚡ Performance ....... 8/10
-🔒 Security .......... 5/10
-📚 Documentation ..... 7/10
+🏗️ Architecture     7/10
+🧩 Maintainability  6/10
+⚡ Performance       8/10
+🔒 Security          5/10
+📚 Documentation     7/10
 ```
+
+`my-project` is replaced with your project's real name (from its manifest, or the folder name).
 
 ## Workflow
 
@@ -74,6 +74,7 @@ Example:
 - ✅ No new dependencies without permission
 - ✅ No tests added if none exist
 - ✅ Never overwrites uncommitted work
+- ✅ Reports in your language
 
 ---
 
