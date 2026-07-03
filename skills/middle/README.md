@@ -14,7 +14,7 @@
 
 ---
 
-Improves **one dimension at a time** — performance, security, UI/UX, structure, cleanup, or code quality — inside the path you point at. Small surface, fast diagnosis, surgical changes. Zero edits until you say `go`.
+Improves **one dimension at a time** — performance, UI/UX, security, structure, cleanup, code quality, or tidy (file order + comment hygiene) — inside the path you point at. Small surface, fast diagnosis, surgical changes. Zero edits until you say `go`.
 
 <p align="center">
   <a href="https://skills.sh/bastndev/skills">
@@ -44,7 +44,7 @@ Natural language works too: _"make this page faster"_ → `1`, _"harden security
 
 ## The Menu
 
-Every option is a number, so it's easy to call. `0` gives **statistics only**. Each focus `1–6` does the same three things for its dimension: **qualifies it** (score + counts), **reports** evidence-backed findings, and **proposes a correction plan** — executed phase by phase when you say `go`.
+Every option is a number, so it's easy to call. `0` gives **statistics only**. Each focus `1–7` does the same three things for its dimension: **qualifies it** (score + counts), **reports** evidence-backed findings, and **proposes a correction plan** — executed phase by phase when you say `go`.
 
 | #   | Option             | What it hunts                                          |
 | --- | ------------------ | ------------------------------------------------------ |
@@ -56,13 +56,14 @@ Every option is a number, so it's easy to call. `0` gives **statistics only**. E
 | 4   | 🏗️ **structure**   | Oversized files, wrong owners, weak boundaries         |
 | 5   | 🧹 **cleanup**     | Dead code, unused deps, duplication, debug leftovers   |
 | 6   | 🧩 **quality**     | Naming, complexity, swallowed errors, magic values     |
+| 7   | 🗂️ **tidy**        | File order + comment hygiene — English, AI-first, zero logic changes |
 
 No `@path`? The whole project is analyzed — scope is discovered from the project's entry points (`package.json` → `pyproject.toml` → `Cargo.toml` → `go.mod` → `*.csproj`), the same way the `end` skill does it.
 
 ## How It Works
 
 1. **Score it** (option `0`) — A 0–100 health overview of the project or folder, with findings and a pointer to the weakest area. Nothing is planned or modified.
-2. **One lens** (options `1–6`) — Analyzes your scope through the chosen focus only. Everything else is ignored (except critical security issues, reported in one line).
+2. **One lens** (options `1–7`) — Analyzes your scope through the chosen focus only. Everything else is ignored (except critical security issues, reported in one line).
 3. **Focused diagnosis** — The same overview visual, scoped to one focus (0–100), evidence-backed findings sorted into Critical / Improvements / Polish, and a compact plan of 1–3 phases. Headers show your project's name, taken from the manifest (`package.json` `name`, etc.) or the folder name.
 4. **You authorize** — Say `go` to begin. It executes **one phase**, reports changes + validations, then stops. Closes with an honest before → after score; `▲ +0` if nothing improved.
 
@@ -84,7 +85,7 @@ Option `0` — the project thermometer:
 Weakest bar: 🔒 Security 5/10 — run `/middle 3` to improve it.
 ```
 
-Options `1–6` — the same visual, one focus, plus a plan:
+Options `1–7` — the same visual, one focus, plus a plan:
 
 ```
 📊 my-project ⚡ Performance Overview — 62 / 100
@@ -134,6 +135,7 @@ Check: typecheck + manual verification
 | "Make this page faster"         | **`middle`** |
 | "Harden security in `src/api`"  | **`middle`** |
 | "Clean the dead code here"      | **`middle`** |
+| "Sort this file, fix comments"  | **`middle`** |
 | "Audit my whole project"        | **`end`**    |
 | "Restructure the architecture"  | **`end`**    |
 

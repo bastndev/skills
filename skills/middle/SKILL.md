@@ -1,10 +1,10 @@
 ---
 name: middle
-description: "Focused, on-demand project improver for active development. Option 0 scores the project or folder with a 0–100 health overview (Architecture, Maintainability, Performance, Security, Documentation), report-only. Options 1–6 improve ONE dimension at a time — performance (1), UI/UX (2), security (3), structure (4), cleanup/dead code (5), code quality (6) — scoring the focus 0–100, proposing a correction plan, and executing only with explicit approval. Use for 'score my project', 'harden security in src/api', 'speed up this page', 'clean dead code'. Invoke with /middle <0-6|focus> (@path)"
+description: "Focused, on-demand project improver for active development. Option 0 scores the project or folder with a 0–100 health overview (Architecture, Maintainability, Performance, Security, Documentation), report-only. Options 1–7 improve ONE dimension at a time — performance (1), UI/UX (2), security (3), structure (4), cleanup/dead code (5), code quality (6), tidy/file order + comment hygiene (7) — scoring the focus 0–100, proposing a correction plan, and executing only with explicit approval. Use for 'score my project', 'harden security in src/api', 'speed up this page', 'clean dead code', 'translate/clean the comments'. Invoke with /middle <0-7|focus> (@path)"
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "2.1.2"
+  version: "2.2.0"
 ---
 
 # Improve / [Middle]
@@ -36,7 +36,8 @@ bar without touching anything else.
 * **Natural language works too** — a request that clearly names one dimension
   maps straight to its focus without showing the menu: "make this page faster"
   → 1 · "polish the UI of the gallery" → 2 · "harden security in src/api" →
-  3 (@src/api) · "clean the dead code" → 5.
+  3 (@src/api) · "clean the dead code" → 5 · "sort this file and clean the
+  comments" → 7.
 * **No option given, or ambiguous request** ("improve my project") → print the
   Menu, ask which one, and wait. Do not guess an option or analyze anything
   yet. Same for an invalid option (`/middle 9`, unknown name).
@@ -66,6 +67,7 @@ bar without touching anything else.
 4. 🏗️ structure     — file/module organization within the scope
 5. 🧹 cleanup       — dead code, duplication, leftovers
 6. 🧩 quality       — naming, complexity, error handling
+7. 🗂️ tidy          — file order + comment hygiene (English, AI-first)
 
 Reply with a number or name (optionally add a @path).
 ```
@@ -77,10 +79,11 @@ that scope when the user replies with just a number.
 Aliases: `overview`, `health`, `score` → 0 · `perf` → performance · `ui`,
 `ux`, `design` → ui-ux · `sec` → security · `arch`, `architecture` →
 structure · `dead-code`, `clean` → cleanup · `maintainability`,
-`refactor-lite` → quality.
+`refactor-lite` → quality · `sort`, `order`, `comments`,
+`translate-comments` → tidy.
 
 **The contract of every number:** option `0` delivers statistics only — score
-and findings, no plan, no edits. Every focus option `1–6` behaves identically
+and findings, no plan, no edits. Every focus option `1–7` behaves identically
 to the others: it qualifies that one dimension (score + counts), reports
 evidence-backed findings, and proposes a correction plan with the solution —
 executed phase by phase only when the user says `go`.
@@ -95,7 +98,7 @@ score, findings, plan. 4. Wait for `go`. 5. Execute one phase, report, wait.
 
 Score the target scope across all dimensions and deliver a diagnosis. **No
 plan, no edits** — option 0 never modifies files and never proposes phases;
-its job is to tell the user where the project stands and which focus (1–6) is
+its job is to tell the user where the project stands and which focus (1–7) is
 worth running next.
 
 ```text
@@ -160,7 +163,7 @@ with 3+ Debt/Risk items, or above 90 with any.
 ### 1. One lens only
 
 These rules govern both option 0 and focus runs; option 0 additionally never
-plans or edits. For focus runs (1–6), analyze the scope **through the chosen
+plans or edits. For focus runs (1–7), analyze the scope **through the chosen
 focus only**. Do not report, score, or plan anything outside the focus.
 
 * **Exception:** a **critical** security or data-loss issue noticed outside the
@@ -316,9 +319,44 @@ Misleading or inconsistent naming · deep nesting and high complexity · empty
 names · copy-paste variation of the same logic · inconsistent patterns for the
 same task within the scope.
 
+### 7 — 🗂️ tidy
+
+The only focus that never touches logic: it **moves code and edits comments**,
+nothing else. Zero behavior change by definition.
+
+**Comments — written for the AI, not for a human reading along.** A comment
+survives only if it tells the next reader (usually an AI) something the code
+cannot: a constraint, a "why", a gotcha, units, an invariant. Apply in order:
+
+* **Delete:** decorative banners (`// =====`), narrative intros at the top of
+  a file, author/date blocks, comments that narrate the next line, comments
+  that add nothing in any language, and commented-out code (shared with focus
+  5 — whichever runs first removes it).
+* **Translate + compress:** comments carrying real information but written in
+  Spanish or another language, or longer than needed → English, one line
+  where possible.
+* **Keep, but translate + compress:** docstrings/JSDoc on public APIs — they
+  power IDE hints and doc generators; never delete them outright.
+* **Untouchable:** license/copyright headers, shebangs (`#!/...`), framework
+  directives (`'use client'`), and tooling directives (`// eslint-disable`,
+  `// @ts-expect-error`, `# type: ignore`, `/* prettier-ignore */`) — they
+  look like comments but change build, lint, or runtime behavior.
+
+**Ordering — standard shape, only where provably safe.** Move file content
+toward: imports → constants → types → main export → helpers, following the
+language/framework convention. Never move: side-effect imports
+(`import './polyfill'`), order-sensitive code (module-level statements in
+Python, hoisting-sensitive JS declarations), or CSS rules — rule order is the
+cascade. If order-independence cannot be verified, leave the code where it is.
+
+**Plan shape for this focus:** batch by concern, not by file — Phase 1 =
+comment pass across the whole scope; later phases = reordering, batched by
+folder. Verify comment-only phases by diff (only comment lines changed) plus
+build/typecheck; verify reorder phases as behavior-preserving moves.
+
 ---
 
-## Report Format (focus runs 1–6)
+## Report Format (focus runs 1–7)
 
 The analysis output has four parts, in this order, always compact. A
 horizontal separator line (`────…`) between parts is optional and welcome —
@@ -435,7 +473,7 @@ Execute only on explicit approval: `go`, `start`, `proceed`, `dale`, `do it`,
 
 * Approval bundled with the invocation (`/middle 1 go`) does **not** skip the
   report — analyze, present the report, and wait anyway.
-* `go` after option 0 → there is nothing to execute; ask which focus (1–6) to
+* `go` after option 0 → there is nothing to execute; ask which focus (1–7) to
   run.
 
 On approval, execute **only the first pending phase**, then stop and report:
@@ -495,6 +533,8 @@ they decline, close with exactly `Improvement Complete 🎉`.
   `src/api`; waits for `go`.
 * **"make the gallery page faster"** → focus 1 on that page's scope directly,
   no menu.
+* **"sort this file and translate the comments"** → focus 7 on that file, no
+  menu.
 * **"improve my project"** → ambiguous; show the Menu and wait.
 * **`go` after a focus report** → execute Phase 1 only, report, wait.
 * **`go` after option 0** → nothing to execute; ask which focus to run.
