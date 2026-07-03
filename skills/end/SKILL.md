@@ -229,8 +229,11 @@ first`. The architecture direction is recommended by the analysis, never chosen
 by the user as A/B.
 
 On authorization, execute **only the first pending phase** — never multiple
-phases in one response — then stop and report (per template) and wait for
-explicit confirmation before continuing. The workflow is:
+phases in one response — then stop and report. For every phase except the last
+one in the main plan, use the per-phase report template and wait for explicit
+confirmation before continuing. For the **last phase of the main plan**, skip the
+separate per-phase report and proceed directly to the `🎉 Final Summary`, since
+that phase is already summarized there. The workflow is:
 
 1. Analyze. 2. Build the ordered plan. 3. Wait for authorization. 4. Execute
 the first pending phase only. 5. Stop and report. 6. Wait before the next phase.
@@ -480,6 +483,10 @@ Remaining:
 Continue with Phase N+1?
 ```
 
+Skip this separate per-phase report for the **last phase of the main refactor
+plan**; that phase is already summarized in `What was done` inside the
+`🎉 Final Summary`.
+
 ### Final Summary 🎉
 
 When all phases are complete:
@@ -524,8 +531,9 @@ suggestions?`. Handle the user's answer as follows:
   `🟢 Suggestions (Optional)` as a new work package. Build a
   `🗺️ Proposed Plan (Optional Suggestions)` using the same phase format and
   one-phase-at-a-time authorization rules, then execute each phase with the
-  standard per-phase report. After all suggestion phases are complete, print only
-  the minimal closing:
+  standard per-phase report. For the **last suggestion phase**, skip the separate
+  per-phase report and proceed directly to the minimal closing. After all
+  suggestion phases are complete, print only:
 
   ```text
   📊 Health — [before] / 100  →  [after] / 100   ▲ +[delta]
