@@ -2,19 +2,19 @@
   <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/github/icons/middle.webp" width="150" />
 </p>
 
-<h1 align="center">[End] / Refactor Project</h1>
+<h1 align="center">[Middle] / Improve Project</h1>
 
 <p align="center">
-  <strong>End</strong> — The disciplined refactoring skill
+  <strong>Middle</strong> — The focused improvement skill
 </p>
 
 <p align="center">
-  <a href="../../README.md">← Back to Start / Middle / [End]</a>
+  <a href="../../README.md">← Back to Start / [Middle] / End</a>
 </p>
 
 ---
 
-Analyzes your project, builds a prioritized refactoring plan, and applies every change **only with your explicit authorization**. Zero guessing. Zero rushing. Zero edits until you say `go`.
+Improves **one dimension at a time** — performance, security, UI/UX, structure, cleanup, or code quality — inside the path you point at. Small surface, fast diagnosis, surgical changes. Zero edits until you say `go`.
 
 <p align="center">
   <a href="https://skills.sh/bastndev/skills">
@@ -25,51 +25,75 @@ Analyzes your project, builds a prioritized refactoring plan, and applies every 
 ## Install
 
 ```bash
-npx skills add bastndev/skills --skill end
+npx skills add bastndev/skills --skill middle
 ```
+
+## Usage
+
+```
+/middle <focus> (@path)
+
+/middle performance (@src/api)
+/middle security
+/middle 3 (@components/)
+/middle                          # shows the focus menu
+```
+
+## The Six Focuses
+
+| #   | Focus              | What it hunts                                          |
+| --- | ------------------ | ------------------------------------------------------ |
+| 1   | ⚡ **performance** | Wasted work, N+1 queries, waterfalls, heavy bundles    |
+| 2   | 🔒 **security**    | Secrets, unvalidated input, injection, missing authz   |
+| 3   | 🎨 **ui-ux**       | Missing states, accessibility, consistency, feedback   |
+| 4   | 🏗️ **structure**   | Oversized files, wrong owners, weak boundaries         |
+| 5   | 🧹 **cleanup**     | Dead code, unused deps, duplication, debug leftovers   |
+| 6   | 🧩 **quality**     | Naming, complexity, swallowed errors, magic values     |
 
 ## How It Works
 
-1. **Analysis** — Maps entry points, reads only relevant source. Nothing is touched.
-2. **Diagnosis** — Structured report: Confirmed Bugs (with severity), Risks, Refactoring Opportunities, Technical Debt + an architecture recommendation and ordered plan.
-3. **You authorize** — Say `go`, `start`, or `proceed` to begin. It executes **one phase**, reports what changed + validations, then stops.
-4. **Repeat** — Phase by phase, until done. Closes with a full summary.
-
-## Guarantees
-
-- No files modified during analysis
-- No new tests created if the project had none
-- No dependencies added without permission
-- Uncommitted work is never overwritten
+1. **One lens** — Analyzes your scope through the chosen focus only. Everything else is ignored (except critical security issues, reported in one line).
+2. **Focused diagnosis** — A single focus score (0–10), evidence-backed findings sorted into Critical / Improvements / Polish, and a compact plan of 1–3 phases.
+3. **You authorize** — Say `go` to begin. It executes **one phase**, reports changes + validations, then stops.
+4. **Proven gain** — Closes with an honest before → after score for the focus. `▲ +0` if nothing improved.
 
 ## What You Get
 
 ```
-📊 [end] Health Overview — 74 / 100
+🎯 [middle] ⚡ Performance — @src/api — 6/10
 
-🔴 Bugs 1    🟡 Debt/Risks 3    🟢 Suggestions 2
+⚠️ Findings:
 
-🏗️ Architecture     7/10
-🧩 Maintainability  6/10
-⚡ Performance       8/10
-🔒 Security          5/10
-📚 Documentation     7/10
+🟡 Improvements
+
+  01. User lookup runs once per request item instead of once per request.
+  02. The reports endpoint loads the full dataset to return the first page.
+
+🗺️ Plan
+
+Phase 1 — Cache repeated user lookups in session.ts
+Outcome: One DB call per request instead of N.
+Files: `src/api/session.ts`
+Check: typecheck + manual verification
 ```
 
-A scored overview, findings sorted into Bugs / Debt / Suggestions, one architecture decision, and a phased plan — executed one phase at a time on your `go`.
+## Guarantees
 
-### Reading the Score
+- No files modified during analysis
+- One focus per run — no "while I was here" edits
+- No new tests created if the project had none
+- No dependencies added without permission
+- Uncommitted work is never overwritten
 
-The overall score is a **0–100** thermometer:
+## Middle vs End
 
-| Score | Meaning |
-| ----- | ------- |
-| **0–40** | 🚨 Critical — hard to maintain, risky to change |
-| **40–60** | 🔴 Heavy debt — significant refactoring recommended |
-| **60–70** | 🟡 Needs improvement — works, but address debt before production |
-| **70–80** | 🟢 Production-ready — solid, maintainable code |
-| **80–90** | ⭐ Excellent — clean architecture, praise-worthy |
-| **90–100** | 🏆 Outstanding — reference-grade codebase |
+| Question                        | Use          |
+| ------------------------------- | ------------ |
+| "Make this page faster"         | **`middle`** |
+| "Harden security in `src/api`"  | **`middle`** |
+| "Clean the dead code here"      | **`middle`** |
+| "Audit my whole project"        | **`end`**    |
+| "Restructure the architecture"  | **`end`**    |
 
 ---
 
