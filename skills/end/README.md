@@ -5,7 +5,7 @@
 <h1 align="center">[End] / Refactor Project</h1>
 
 <p align="center">
-  <strong>End</strong> — The disciplined refactoring skill
+  <strong>The disciplined refactoring skill</strong>
 </p>
 
 <p align="center">
@@ -14,7 +14,9 @@
 
 ---
 
-Analyzes your project, builds a prioritized refactoring plan, and applies every change **only with your explicit authorization**. Zero guessing. Zero rushing. Zero edits until you say `go`.
+Analyze any project, generate a prioritized refactoring plan, and apply changes **only after your approval**.
+
+**Nothing is modified until you say:** `go`
 
 <p align="center">
   <a href="https://skills.sh/bastndev/skills">
@@ -28,55 +30,57 @@ Analyzes your project, builds a prioritized refactoring plan, and applies every 
 npx skills add bastndev/skills --skill end
 ```
 
-## How It Works
+## Health Score
 
-1. **Analysis** — Maps entry points, reads only relevant source. Nothing is touched.
-2. **Diagnosis** — Structured report: Confirmed Bugs (with severity), Risks, Refactoring Opportunities, Technical Debt + an architecture recommendation and ordered plan.
-3. **You authorize** — Say `go`, `start`, or `proceed` to begin. It executes **one phase**, reports what changed + validations, then stops.
-4. **Repeat** — Phase by phase, until done. Closes with a full summary.
-
-## Guarantees
-
-- No files modified during analysis
-- No new tests created if the project had none
-- No dependencies added without permission
-- Uncommitted work is never overwritten
-
-## What You Get
-
-```
-📊 [end] Health Overview — 74 / 100
-
-🔴 Bugs 1    🟡 Debt/Risks 3    🟢 Suggestions 2
-
-🏗️ Architecture     7/10
-🧩 Maintainability  6/10
-⚡ Performance       8/10
-🔒 Security          5/10
-📚 Documentation     7/10
-```
-
-A scored overview, findings sorted into Bugs / Debt / Suggestions, one architecture decision, and a phased plan — executed one phase at a time on your `go`.
-
-### Reading the Score
-
-The overall score is a **0–100** thermometer:
+Every analysis starts with a project health score.
 
 | Score | Meaning |
 | ----- | ------- |
 | **0–40** | 🚨 Critical — hard to maintain, risky to change |
 | **40–60** | 🔴 Heavy debt — significant refactoring recommended |
-| **60–70** | 🟡 Needs improvement — works, but address debt before production |
-| **70–80** | 🟢 Production-ready — solid, maintainable code |
-| **80–90** | ⭐ Excellent — clean architecture, praise-worthy |
+| **60–70** | 🟡 Needs improvement — address debt before production |
+| **70–80** | 🟢 Production-ready — solid and maintainable |
+| **80–90** | ⭐ Excellent — clean architecture |
 | **90–100** | 🏆 Outstanding — reference-grade codebase |
+
+Example:
+
+```text
+📊 Health Score — 74 / 100
+
+🔴 Bugs ............... 1
+🟡 Debt & Risks ....... 3
+🟢 Suggestions ........ 2
+
+🏗️ Architecture ...... 7/10
+🧩 Maintainability ... 6/10
+⚡ Performance ....... 8/10
+🔒 Security .......... 5/10
+📚 Documentation ..... 7/10
+```
+
+## Workflow
+
+1. Analyze the project (read-only).
+2. Report bugs, risks, technical debt, and opportunities.
+3. Generate a phased refactoring plan.
+4. Wait for `go`.
+5. Execute **one phase**, validate it, stop, and wait again.
+
+## Guarantees
+
+- ✅ Read-only analysis
+- ✅ No edits without approval
+- ✅ No new dependencies without permission
+- ✅ No tests added if none exist
+- ✅ Never overwrites uncommitted work
 
 ---
 
-→ Full spec & rules: [SKILL.md](./SKILL.md)
+→ Full behavior: [SKILL.md](./SKILL.md)
 
 <div align="center">
-  <sub>Built for developers who want their AI agents to act with the discipline of a senior engineer.</sub>
+  <sub>Built for developers who expect AI agents to refactor like senior engineers.</sub>
   <br><br>
-  <sub>Made in 🇵🇪 by <a href="https://gohit.xyz">Gohit X</a> · Licensed under <a href="https://github.com/bastndev/skills/blob/main/LICENSE">MIT</a></sub>
+  <sub>Made in 🇵🇪 by <a href="https://gohit.xyz">Gohit X</a> · MIT License</sub>
 </div>
