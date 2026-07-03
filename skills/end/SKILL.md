@@ -498,16 +498,6 @@ When all phases are complete:
 ### What was done
 - ✅ Phase 1 ([name]) — [1-line summary] ([impact metric])
 - ✅ Phase 2 ([name]) — [1-line summary] ([impact metric])
-
-### Final validations
-- [command or method] — [passed | failed | not run + reason]
-
-### Out of scope (not touched)
-- [area] — [reason]
-
-### Project state after refactor
-[2–3 lines: what improved, what the structure looks like now, and whether any
-known risks or debt remain.]
 ```
 
 Rules for the health-delta block: include `🧪 Testing [x → y]` only when the project
