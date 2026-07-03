@@ -71,7 +71,7 @@ No `@path`? The whole project is analyzed — scope is discovered from the proje
 Option `0` — the project thermometer:
 
 ```
-📊 [my-project] Health Overview — 74 / 100
+📊 my-project Health Overview — 74 / 100
 
 🔴 Bugs 1    🟡 Debt/Risks 3    🟢 Suggestions 2
 
@@ -87,7 +87,7 @@ Weakest bar: 🔒 Security 5/10 — run `/middle 3` to improve it.
 Options `1–6` — the same visual, one focus, plus a plan:
 
 ```
-📊 [my-project] ⚡ Performance Overview — 62 / 100
+📊 my-project ⚡ Performance Overview — 62 / 100
 
 🔴 Critical 0    🟡 Improvements 2    🟢 Polish 1
 

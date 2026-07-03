@@ -4,7 +4,7 @@ description: "Focused, on-demand project improver for active development. Option
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "2.1.0"
+  version: "2.1.2"
 ---
 
 # Improve / [Middle]
@@ -40,6 +40,9 @@ bar without touching anything else.
 * **No option given, or ambiguous request** ("improve my project") → print the
   Menu, ask which one, and wait. Do not guess an option or analyze anything
   yet. Same for an invalid option (`/middle 9`, unknown name).
+* **Option lost in transport** — some IDE wrappers rewrite the prompt and drop
+  arguments, delivering only a path or file. Treat that as "no option given":
+  show the Menu with a `Scope detected:` line and wait.
 * **No path given** → analyze the general project, discovering scope the same
   way the `end` skill does: find `package.json` and follow its entry points.
   If absent, look in order and adapt to the runtime: `pyproject.toml` →
@@ -67,6 +70,10 @@ bar without touching anything else.
 Reply with a number or name (optionally add a @path).
 ```
 
+If a path or file already arrived with the request, append one line to the
+menu — `Scope detected: src/style.css — [very short description]` — and reuse
+that scope when the user replies with just a number.
+
 Aliases: `overview`, `health`, `score` → 0 · `perf` → performance · `ui`,
 `ux`, `design` → ui-ux · `sec` → security · `arch`, `architecture` →
 structure · `dead-code`, `clean` → cleanup · `maintainability`,
@@ -92,7 +99,7 @@ its job is to tell the user where the project stands and which focus (1–6) is
 worth running next.
 
 ```text
-📊 [project-name] Health Overview — 74 / 100
+📊 my-project Health Overview — 74 / 100
 
 🔴 Bugs 1    🟡 Debt/Risks 3    🟢 Suggestions 2
 
@@ -103,11 +110,13 @@ worth running next.
 📚 Documentation     7/10
 ```
 
-Replace `[project-name]` with the real project name: the manifest name
-(`package.json` `name`, `Cargo.toml` `[package].name`, etc.) or, if none, the
-root folder name. Keep the rest of the title shape exact. If existing tests
-are present, insert `🧪 Testing [x/10]` before Documentation; if no test
-structure exists, omit the bar entirely (never `0/10`).
+`my-project` is a placeholder — replace it with the analyzed project's real
+name, written **without square brackets**: the manifest name (`package.json`
+`name`, `Cargo.toml` `[package].name`, etc.) or, if none, the root folder
+name. The skill is global; nothing about it is tied to any one project. Keep the rest of
+the title shape exact. If existing tests are present, insert
+`🧪 Testing [x/10]` before Documentation; if no test structure exists, omit
+the bar entirely (never `0/10`).
 
 After the block, add:
 
@@ -183,7 +192,14 @@ Every finding must be backed by inspected code: file path, and
 function/component/module name or line range when possible. No vague findings
 ("slow code", "insecure app"). Never present a risk or assumption as a
 confirmed problem. If the focus looks healthy, say so and stop — do not invent
-work.
+work. Two precision rules:
+
+* **Cite line numbers only when verified** by reading the file in this
+  session; otherwise name the element, function, or section instead. A wrong
+  line number is worse than none.
+* **Measure once, reuse everywhere.** Sizes, counts, and totals must be
+  consistent across the whole report — never two different figures for the
+  same thing (e.g., "75 MB of assets" in one section and "46 MB" in another).
 
 ### 5. Preserve behavior
 
@@ -231,7 +247,9 @@ assets · unnecessary re-renders (UI frameworks) · work done at startup that
 could be lazy.
 
 Do not micro-optimize cold paths. Every performance finding must name the cost
-(what is wasted, how often it runs).
+(what is wasted, how often it runs). Verify default runtime/browser behavior
+before labeling something critical — e.g., `<audio controls>` preloads only
+metadata by default, not the full file; an unlinked script never executes.
 
 ### 2 — 🎨 ui-ux
 
@@ -302,20 +320,22 @@ same task within the scope.
 
 ## Report Format (focus runs 1–6)
 
-The analysis output has four parts, in this order, always compact.
+The analysis output has four parts, in this order, always compact. A
+horizontal separator line (`────…`) between parts is optional and welcome —
+it applies to option 0's report too.
 
 ### 1. Header + focus score
 
 Same visual shape as option 0's overview, but with **only the chosen focus**:
 
 ```text
-📊 [project-name] 🎨 UI/UX Overview — 46 / 100
+📊 my-project 🎨 UI/UX Overview — 46 / 100
 
 🔴 Critical 1    🟡 Improvements 4    🟢 Polish 2
 ```
 
-`[project-name]` follows the same rule as option 0 (manifest name, else root
-folder name). The counts row uses the focus categories (Critical /
+The project name follows the same rule as option 0 (manifest name, else root
+folder name, no square brackets). The counts row uses the focus categories (Critical /
 Improvements / Polish), not option 0's Bugs / Debt / Suggestions. Score the
 focus **0–100** on the same thermometer as option 0, honest and conservative:
 90–100 nearly nothing to do · 70–89 solid, minor gains · 50–69 clear
@@ -350,13 +370,14 @@ Add `Scope note:` only if meaningful areas were skipped.
   01. [short optional item.]
 ```
 
+* **Always two-digit numbering**: `01.`, `02.`, `03.` — never `1.`, `2.`.
+  Empty category → exactly
+  `00. .--- --- --- --- --- --- -_- --- --- --- --- --- ---.`
 * **🔴 Critical** — the focus is actively hurting users or the project now
   (exploitable vulnerability, real slowdown, broken UI state).
 * **🟡 Improvements** — recommended in-focus gains; top 3–5 only, ordered by
   value.
 * **🟢 Polish** — optional extras, max 3.
-* Two-digit numbering (`01.`). Empty category → exactly
-  `00. .--- --- --- --- --- --- -_- --- --- --- --- --- ---.`
 * Each item is **one short sentence** in plain maintainer language, optionally
   followed by a single indented `↳` evidence line with the exact path and
   location. Never more than two lines per item; put deeper detail in the plan,
@@ -379,6 +400,9 @@ Check: [typecheck + lint | build | manual verification]
   This is targeted improvement, not a project overhaul; if the work honestly
   needs more than 5 phases, say the scope is too big for `middle` and suggest
   narrowing the path or running `end`.
+* Every phase must be executable **now** — no conditional or speculative
+  phases ("only if components are added later"). If a fix depends on a future
+  decision, it is a 🟢 Polish note, not a phase.
 * Critical findings jump the queue and become Phase 1.
 * Phase names start with a verb and name the target: ✅ `Cache repeated user
   lookups in session.ts` ❌ `Improve performance`.
