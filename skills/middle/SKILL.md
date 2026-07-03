@@ -63,7 +63,7 @@ bar without touching anything else.
 0. 📊 overview      — score the whole scope (statistics only)
 
 1. ⚡ performance   — speed, efficiency, wasted work
-2. 🎨 ui-ux         — states, accessibility, consistency, feedback
+2. 🎨 ui-ux         — User, Interface - Experience
 3. 🗂️ tidy          — file order + comment hygiene
 4. 🔒 security      — input handling, secrets, unsafe patterns
 5. 🏗️ structure     — file/module organization within the scope
