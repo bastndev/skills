@@ -506,7 +506,7 @@ When all phases are complete:
 - ✅ Phase 1 ([name]) — [1-line summary] ([impact metric])
 - ✅ Phase 2 ([name]) — [1-line summary] ([impact metric])
 
-🟢 Would you like to implement the (optional) suggestions?
+Would you like to implement the (optional 🟢) suggestions?
 ```
 
 Rules for the health-delta block: include `🧪 Testing [x → y]` only when the project
@@ -522,24 +522,33 @@ suggestions?`. Handle the user's answer as follows:
 - **If the user declines** (no, no thanks, not now, etc.): close with exactly:
 
   ```text
-  ## Refactor Complete 🎉
+  Refactor Complete 🎉
   ```
 
   Do not reprint the health delta, the category bars, or the phase list.
 
-- **If the user accepts** (go, sí, dale, yes, proceed, etc.): treat the existing
-  `🟢 Suggestions (Optional)` as a new work package. Build a
-  `🗺️ Proposed Plan (Optional Suggestions)` using the same phase format and
-  one-phase-at-a-time authorization rules, then execute each phase with the
-  standard per-phase report. For the **last suggestion phase**, skip the separate
-  per-phase report and proceed directly to the minimal closing. After all
-  suggestion phases are complete, print only:
+- **If the user accepts** (go, sí, dale, yes, proceed, ok, ya, start, advances,
+  etc.): first classify the accepted suggestions by complexity, then act accordingly:
 
-  ```text
-  📊 Health — [before] / 100  →  [after] / 100   ▲ +[delta]
+  * **Simple suggestions** — low-risk changes that touch 1–2 files, need no
+    structural rework, and can be validated quickly (e.g., add a meta tag, add an
+    `aria-label`, add a preconnect hint). If all accepted suggestions are simple,
+    implement them immediately and automatically after the user confirms. Then
+    print only the minimal closing:
 
-  ## Refactor Complete 🎉
-  ```
+    ```text
+    📊 Health — [before] / 100  →  [after] / 100   ▲ +[delta]
+
+    Refactor Complete 🎉
+    ```
+
+  * **Complex suggestions** — changes that touch multiple files, need phased
+    execution, or have behavioral/structural implications (e.g., replace bare
+    `<audio>` / `<video>` elements with a styled player, refactor a design system).
+    Do **not** act alone. Build a `🗺️ Proposed Plan (Optional Suggestions)` using
+    the same phase format, present it, and wait for an explicit `go` before
+    executing one phase at a time. For the **last suggestion phase**, skip the
+    separate per-phase report and proceed directly to the minimal closing above.
 
   Do not print the full Final Summary or the optional-suggestions question again.
 
