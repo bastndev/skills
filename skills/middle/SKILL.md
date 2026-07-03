@@ -4,7 +4,7 @@ description: "Focused, on-demand project improver for active development. Option
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "2.3.0"
+  version: "2.3.1"
 ---
 
 # Improve / [Middle]
@@ -297,6 +297,11 @@ cannot: a constraint, a "why", a gotcha, units, an invariant. Apply in order:
   `// @ts-expect-error`, `# type: ignore`, `/* prettier-ignore */`) — they
   look like comments but change build, lint, or runtime behavior.
 
+**Failure symptoms are the most valuable why.** A comment that links a cause
+to an observable failure ("without this, the packaged build can't write
+`.f1/` — only `graphify-out/` shows up") must survive compression: shorten
+the words, never drop the symptom→cause link.
+
 **Ordering — standard shape, only where provably safe.** Move file content
 toward: imports → constants → types → main export → helpers, following the
 language/framework convention. Never move: side-effect imports
@@ -533,14 +538,24 @@ with only:
 ```text
 ✅ Tidy applied — path/file
 
-📊 [before] → [after] / 100
-Impact: [one line, e.g. −9 comment lines · comments now 1-line English · imports reordered]
-Dropped: [refused changes + why — omit if none]
+📊 [before] → [after] / 100   ▲ +[delta]
+
+Tidy Complete 🎉
 ```
 
-Score the file before and after with the normal rubric. Every lens guardrail
-still applies: untouchable comments, provably-safe ordering only, and the
-working-tree warning before writing.
+Rules:
+
+* Score the file before and after with the normal rubric; show `▲ +0`
+  honestly if nothing improved.
+* **No `Impact:` paragraph and never `Dropped: none`** — the diff is already
+  visible in the edit output. Add a single `Dropped:` line above the closing
+  **only** when a planned change was refused as unsafe, with the reason.
+* **Idempotent:** if the file is already tidy, change nothing and close with
+  exactly `✅ Nothing to tidy — path/file is already clean.` Never force
+  further compression on an already-tidied file — each extra pass only loses
+  meaning.
+* Every lens guardrail still applies: untouchable comments, provably-safe
+  ordering only, and the working-tree warning before writing.
 
 ### Final Summary
 
