@@ -4,7 +4,7 @@ description: "Focused, on-demand project improver for active development. Option
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "2.3.1"
+  version: "2.3.2"
 ---
 
 # Improve / [Middle]
@@ -533,27 +533,37 @@ unreferenced before reporting the phase complete.
 ### Direct mode (tidy 3, single file ≤ ~500 lines)
 
 No report, no `go`: execute the complete one-pass tidy immediately, then close
-with only:
+with:
 
 ```text
 ✅ Tidy applied — path/file
 
 📊 [before] → [after] / 100   ▲ +[delta]
 
+[optional: 2–4 short bullets of what was compressed/moved and what was preserved]
+
 Tidy Complete 🎉
 ```
 
 Rules:
 
+* **`Tidy Complete 🎉` is always the very last line of the response** —
+  nothing may come after it. Any explanation bullets go above it, between the
+  score and the closing.
 * Score the file before and after with the normal rubric; show `▲ +0`
   honestly if nothing improved.
 * **No `Impact:` paragraph and never `Dropped: none`** — the diff is already
   visible in the edit output. Add a single `Dropped:` line above the closing
   **only** when a planned change was refused as unsafe, with the reason.
-* **Idempotent:** if the file is already tidy, change nothing and close with
-  exactly `✅ Nothing to tidy — path/file is already clean.` Never force
-  further compression on an already-tidied file — each extra pass only loses
-  meaning.
+* **Idempotent:** if the file is already tidy, change nothing and reply with
+  this single line as the entire response — no explanation before or after:
+
+  ```text
+  path/file is clean ✅
+  ```
+
+  Never force further compression on an already-tidied file — each extra pass
+  only loses meaning.
 * Every lens guardrail still applies: untouchable comments, provably-safe
   ordering only, and the working-tree warning before writing.
 
