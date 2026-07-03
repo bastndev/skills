@@ -47,6 +47,7 @@ Every option is a number, so it's easy to call. `0` gives **statistics only**. E
 | #   | Option             | What it hunts                                          |
 | --- | ------------------ | ------------------------------------------------------ |
 | 0   | 📊 **overview**    | Scores the scope 0–100 + category bars — stats only    |
+| -   |  |     |
 | 1   | ⚡ **performance** | Wasted work, N+1 queries, waterfalls, heavy bundles    |
 | 2   | 🎨 **ui-ux**       | Missing states, accessibility, consistency, feedback   |
 | 3   | 🔒 **security**    | Secrets, unvalidated input, injection, missing authz   |
