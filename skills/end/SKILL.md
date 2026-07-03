@@ -4,7 +4,7 @@ description: "Audits, reviews, and refactors project architecture, code quality,
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "2.0.0"
+  version: "2.0.1"
 ---
 
 # Refactor Project / [End]
@@ -480,12 +480,12 @@ Remaining:
 Continue with Phase N+1?
 ```
 
-### 🎉 Final Summary
+### Final Summary 🎉
 
 When all phases are complete:
 
 ```markdown
-## 🎉 Refactor Complete
+## Refactor Complete 🎉
 
 📊 Health — [before] / 100  →  [after] / 100   ▲ +[delta]
 
