@@ -414,16 +414,24 @@ def cmd_plan(args) -> int:
 
     targets = find_targets(source, args.dir, args.file)
     work = args.work
-    work.mkdir(parents=True, exist_ok=True)
+    if work.exists():
+        # a plan supersedes any previous run — drop stale work products so an
+        # `apply` can never splice from an outdated plan
+        for stale in ["state.json", "jobs.json", "results.json"]:
+            (work / stale).unlink(missing_ok=True)
+        for stale in work.glob("partial-*.json"):
+            stale.unlink(missing_ok=True)
 
     counter = [0]
     def next_id():
         counter[0] += 1
         return counter[0]
 
-    state_targets = []
-    jobs_targets = []
-    summary = []
+    state_targets = []   # incremental splice plans
+    inc_targets = []     # incremental: translate blocks once per language
+    shared_blocks = None
+    direct = []          # full: model translates the whole file directly
+    up_to_date = []
 
     for tgt in targets:
         counter[0] = 0  # ids are per-file
@@ -436,42 +444,76 @@ def cmd_plan(args) -> int:
         jobs: list[dict] = []
         emit, mode = build_emit(new_slots, old_slots, tgt_slots, jobs, next_id,
                                 force_full=args.full)
+        if mode == "full":
+            # Direct translation: no block jobs, no splice plan. The model
+            # rewrites the whole file; `repair` then restores structure and
+            # `verify` guarantees nothing was dropped. For a baseline this is
+            # strictly cheaper than shipping every block through JSON.
+            direct.append({"file": str(tgt), "language": name, "rtl": rtl,
+                           "new_file": not tgt.exists()})
+        elif not jobs:
+            up_to_date.append(str(tgt))
+        else:
+            state_targets.append({"file": str(tgt), "emit": emit})
+            inc_targets.append({"file": str(tgt), "lang": code,
+                                "language": name, "rtl": rtl})
+            if shared_blocks is None:
+                # identical for every aligned target: jobs derive only from the
+                # old→new source diff, never from the target file
+                shared_blocks = jobs
 
-        state_targets.append({"file": str(tgt), "emit": emit})
-        if jobs:
-            jobs_targets.append({
-                "file": str(tgt), "lang": code, "language": name,
-                "rtl": rtl, "mode": mode, "blocks": jobs,
-            })
-        summary.append({"file": str(tgt), "lang": code, "mode": mode,
-                        "blocks": len(jobs)})
+    if inc_targets:
+        work.mkdir(parents=True, exist_ok=True)
+        (work / "state.json").write_text(
+            json.dumps({"source": str(source), "targets": state_targets},
+                       ensure_ascii=False, indent=2), encoding="utf-8")
+        (work / "jobs.json").write_text(
+            json.dumps({
+                "source": str(source),
+                "instructions": (
+                    "Translate every block's 'text' once per language in "
+                    "'targets'. Copy every substring in 'keep' (code, URLs, "
+                    "paths, placeholders, HTML) verbatim. No notes, no "
+                    "restructuring. Write results.json in this directory as "
+                    "{file: {id: translation}}. Do it yourself in this session "
+                    "— no subagents and no helper scripts. Only if the user "
+                    "explicitly asked for parallel agents: each agent writes "
+                    "partial-<lang>.json as {id: translation} and validates it "
+                    "with `python3 -m json.tool <file>`; then run the 'merge' "
+                    "command."
+                ),
+                "blocks": shared_blocks,
+                "targets": inc_targets,
+            }, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    (work / "state.json").write_text(
-        json.dumps({"source": str(source), "targets": state_targets},
-                   ensure_ascii=False, indent=2), encoding="utf-8")
-    (work / "jobs.json").write_text(
-        json.dumps({
-            "source": str(source),
-            "instructions": (
-                "Translate each block's 'text' into the file's 'language'. "
-                "Copy every substring in 'keep' (code, URLs, paths, placeholders, "
-                "HTML) verbatim. Do not add notes or change structure. "
-                "Write results to results.json as {file: {id: translation}} — or, "
-                "when splitting work across agents, one partial-<lang>.json per "
-                "language as {id: translation}, then run the 'merge' command. "
-                "Output must be valid JSON: escape double quotes inside "
-                "translations, and validate every file you write with "
-                "`python3 -m json.tool <file>` before finishing."
-            ),
-            "targets": jobs_targets,
-        }, ensure_ascii=False, indent=2), encoding="utf-8")
+    me = Path(__file__).resolve()
+    nxt = []
+    if direct:
+        nxt.append(
+            "For each file in translate_directly, ONE language at a time — no "
+            "subagents, no helper scripts: write the complete translated file "
+            "(translate prose only; copy code, URLs and HTML tags "
+            f"byte-for-byte), then run `python3 -B {me} repair --source "
+            f"{source} --file <that-file>` and fix only the lines it lists.")
+    if inc_targets:
+        nxt.append(
+            f"Translate the {len(shared_blocks)} block(s) in "
+            f"{work / 'jobs.json'} once per language in its 'targets', write "
+            f"{work / 'results.json'} as {{file: {{id: translation}}}}, then "
+            f"run `python3 -B {me} apply`.")
+    if not nxt:
+        nxt.append("Nothing to translate — every target is in sync.")
 
-    print(json.dumps({
-        "targets": len(targets),
-        "to_translate": [s for s in summary if s["blocks"]],
-        "up_to_date": [s["file"] for s in summary if not s["blocks"]],
-        "jobs_file": str(work / "jobs.json"),
-    }, ensure_ascii=False, indent=2))
+    out = {
+        "up_to_date": up_to_date,
+        "translate_directly": direct,
+        "incremental": [t["file"] for t in inc_targets],
+        "next": nxt,
+    }
+    if inc_targets:
+        out["incremental_blocks"] = len(shared_blocks)
+        out["jobs_file"] = str(work / "jobs.json")
+    print(json.dumps(out, ensure_ascii=False, indent=2))
     return 0
 
 
@@ -539,6 +581,11 @@ def cmd_merge(args) -> int:
 
 def cmd_apply(args) -> int:
     work = args.work
+    if not (work / "state.json").exists():
+        print("Nothing to apply — the plan produced no incremental targets.\n"
+              "Full-mode files are translated directly and checked with:\n"
+              "  repair --source <source> --file <target>")
+        return 0
     state = json.loads((work / "state.json").read_text(encoding="utf-8"))
     results_path = work / "results.json"
     results = json.loads(results_path.read_text(encoding="utf-8")) if results_path.exists() else {}
