@@ -284,13 +284,22 @@ def sig(slot: dict):
 # git baseline
 # --------------------------------------------------------------------------- #
 
-def git_old_source(source: Path, base: str) -> str | None:
-    """Return the committed text of `source` at `base`, or None if unavailable."""
+def _git_root(source: Path) -> str | None:
     try:
-        root = subprocess.run(
+        return subprocess.run(
             ["git", "-C", str(source.resolve().parent), "rev-parse", "--show-toplevel"],
             capture_output=True, text=True, check=True,
         ).stdout.strip()
+    except Exception:
+        return None
+
+
+def git_old_source(source: Path, base: str) -> str | None:
+    """Return the committed text of `source` at `base`, or None if unavailable."""
+    root = _git_root(source)
+    if root is None:
+        return None
+    try:
         rel = source.resolve().relative_to(Path(root))
         r = subprocess.run(
             ["git", "-C", root, "show", f"{base}:{rel.as_posix()}"],
@@ -299,6 +308,37 @@ def git_old_source(source: Path, base: str) -> str | None:
         if r.returncode != 0:
             return None
         return r.stdout
+    except Exception:
+        return None
+
+
+def git_sync_baseline(source: Path, targets: list[Path]) -> str | None:
+    """The source as of the oldest commit that last touched any target — i.e.
+    the source version the stalest translation was synced against. Diffing
+    from here covers multi-commit source edits and never re-offers blocks the
+    targets already incorporate."""
+    root = _git_root(source)
+    if root is None:
+        return None
+    try:
+        oldest = None
+        for t in targets:
+            if not t.exists():
+                continue
+            rel = t.resolve().relative_to(Path(root)).as_posix()
+            r = subprocess.run(
+                ["git", "-C", root, "log", "-1", "--format=%ct %H", "--", rel],
+                capture_output=True, text=True,
+            )
+            line = r.stdout.strip()
+            if r.returncode != 0 or not line:
+                continue
+            ts, commit = line.split()
+            if oldest is None or int(ts) < oldest[0]:
+                oldest = (int(ts), commit)
+        if oldest is None:
+            return None
+        return git_old_source(source, oldest[1])
     except Exception:
         return None
 
@@ -404,15 +444,21 @@ def cmd_plan(args) -> int:
     new_text = source.read_text(encoding="utf-8")
     new_slots = parse(new_text)
 
-    old_text = git_old_source(source, args.base)
-    if old_text is not None and old_text == new_text and args.base == "HEAD":
-        # edit already committed — compare against the previous commit instead
-        prev = git_old_source(source, "HEAD~1")
-        if prev is not None:
-            old_text = prev
-    old_slots = parse(old_text) if old_text is not None else None
-
     targets = find_targets(source, args.dir, args.file)
+
+    if args.base != "HEAD":
+        old_text = git_old_source(source, args.base)
+    else:
+        # default baseline: the source as the stalest target last saw it
+        old_text = git_sync_baseline(source, targets)
+        if old_text is None:
+            old_text = git_old_source(source, "HEAD")
+            if old_text is not None and old_text == new_text:
+                # edit already committed — compare against the previous commit
+                prev = git_old_source(source, "HEAD~1")
+                if prev is not None:
+                    old_text = prev
+    old_slots = parse(old_text) if old_text is not None else None
     work = args.work
     if work.exists():
         # a plan supersedes any previous run — drop stale work products so an
