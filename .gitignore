@@ -1,6 +1,10 @@
 .vscode/
 NOTES.md
 
+# Python bytecode cache (l10n-sync script)
+__pycache__/
+*.pyc
+
 # skills/start-astro/
 # skills/middle/
 test/test.md

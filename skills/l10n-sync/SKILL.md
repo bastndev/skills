@@ -41,15 +41,17 @@ or file to sync. Otherwise proceed — do not re-ask what the user already said.
 ## Workflow
 
 Let `SKILL` be this skill's directory and `WORK` a fresh temp dir
-(e.g. `/tmp/l10n-work`). Run from the project root.
+(e.g. `/tmp/l10n-work`). Run from the project root. Always invoke Python with
+`-B` so it never writes a `__pycache__/` next to the script.
 
 **1. Plan** — compute what changed:
 ```bash
-python3 "$SKILL/scripts/l10n.py" plan \
+python3 -B "$SKILL/scripts/l10n.py" plan \
   --source README.md \
   --dir public/docs \
   --work "$WORK"
-# or a single file:  --file public/docs/README_ar.md
+# or a single file:   --file public/docs/README_ar.md
+# force a clean re-baseline of every target:   --full
 ```
 This writes `WORK/jobs.json` (blocks to translate) and `WORK/state.json`
 (the splice plan). It prints which files need work and which are already
@@ -74,16 +76,27 @@ Translation rules:
 
 **3. Apply** — splice and verify:
 ```bash
-python3 "$SKILL/scripts/l10n.py" apply --work "$WORK"
+python3 -B "$SKILL/scripts/l10n.py" apply --work "$WORK"
 ```
 This writes every target file and runs the verifier. It reports, per file, slot
-parity and any lost invariants. If a file shows `issues`, fix those blocks in
-`results.json` (or re-run `plan` in `full` mode for that file) and `apply` again.
+parity, lost invariants, dropped/emptied table cells. If a file shows `issues`,
+fix those blocks in `results.json` (or re-run `plan --full` for that file) and
+`apply` again.
 
 You can also verify at any time without writing:
 ```bash
-python3 "$SKILL/scripts/l10n.py" verify --source README.md --dir public/docs
+python3 -B "$SKILL/scripts/l10n.py" verify --source README.md --dir public/docs
 ```
+
+**Repair** (no translation needed) — if a translated file has the *right
+structure* but lost verbatim content (a code cell, a link, a table cell got
+emptied — common when a weak model edited it by hand), restore just those parts
+from English while keeping every existing translation. Costs zero tokens:
+```bash
+python3 -B "$SKILL/scripts/l10n.py" repair --source README.md --dir public/docs
+```
+If a file has drifted structurally (different block count), repair reports it and
+you re-run `plan --full` for that file instead.
 
 ## Why nothing gets dropped
 

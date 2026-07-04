@@ -290,7 +290,7 @@ def git_old_source(source: Path, base: str) -> str | None:
 # planning
 # --------------------------------------------------------------------------- #
 
-def build_emit(new_slots, old_slots, tgt_slots, jobs, next_id):
+def build_emit(new_slots, old_slots, tgt_slots, jobs, next_id, force_full=False):
     """Return (emit_plan, mode). Appends translate jobs to `jobs`."""
     emit: list[dict] = []
 
@@ -314,7 +314,8 @@ def build_emit(new_slots, old_slots, tgt_slots, jobs, next_id):
             emit.append({"row": {"cells": cells}})
 
     aligned = (
-        old_slots is not None
+        not force_full
+        and old_slots is not None
         and tgt_slots is not None
         and len(tgt_slots) == len(old_slots)
         and all(a["k"] == b["k"] for a, b in zip(old_slots, tgt_slots))
@@ -416,7 +417,8 @@ def cmd_plan(args) -> int:
         else:
             tgt_slots = None
         jobs: list[dict] = []
-        emit, mode = build_emit(new_slots, old_slots, tgt_slots, jobs, next_id)
+        emit, mode = build_emit(new_slots, old_slots, tgt_slots, jobs, next_id,
+                                force_full=args.full)
 
         state_targets.append({"file": str(tgt), "emit": emit})
         if jobs:
@@ -514,8 +516,13 @@ def verify_pair(source: Path, target: Path) -> dict:
         issues.append(f"slot count {len(src)} vs {len(tgt)}")
         return {"ok": False, "src_slots": len(src), "tgt_slots": len(tgt), "issues": issues}
 
+    def cell_text(c: dict) -> str:
+        return c["en"] if c.get("t") == "tr" else c.get("v", "")
+
     untranslated = 0
     missing_inv = 0
+    lit_changed = 0   # a verbatim cell (code/link/emoji) that must match source but doesn't
+    emptied = 0       # a cell that had content in English but is blank in the target
     for a, b in zip(src, tgt):
         if a["k"] != b["k"]:
             issues.append(f"kind mismatch {a['k']}/{b['k']}")
@@ -534,13 +541,23 @@ def verify_pair(source: Path, target: Path) -> dict:
                 issues.append("table column count changed")
                 continue
             for ca, cb in zip(a["cells"], b["cells"]):
-                if ca.get("t") == "tr" and cb.get("t") == "tr":
+                bt = cell_text(cb)
+                if ca.get("t") == "tr":
                     for inv in ca["inv"]:
-                        if inv not in cb["en"]:
+                        if inv not in bt:
                             missing_inv += 1
+                    if ca["en"].strip() and not bt.strip():
+                        emptied += 1
+                else:  # verbatim cell — must be byte-identical across languages
+                    if ca.get("v", "").strip() and ca["v"] != bt:
+                        lit_changed += 1
 
     if missing_inv:
         issues.append(f"{missing_inv} invariant(s) (code/URL/placeholder) lost")
+    if lit_changed:
+        issues.append(f"{lit_changed} verbatim table cell(s) changed/dropped")
+    if emptied:
+        issues.append(f"{emptied} table cell(s) emptied")
     ok = not issues
     return {
         "ok": ok, "src_slots": len(src), "tgt_slots": len(tgt),
@@ -557,6 +574,60 @@ def cmd_verify(args) -> int:
 
 
 # --------------------------------------------------------------------------- #
+# repair — restore verbatim structure (code / links / table cells) from the
+# English source WITHOUT retranslating: keeps every existing translation, only
+# rewrites the parts that must be identical to English. Costs zero model tokens.
+# Requires the target to still line up slot-for-slot with the source; if it has
+# drifted structurally, use plan/apply instead.
+# --------------------------------------------------------------------------- #
+
+def repair_pair(source: Path, target: Path) -> dict:
+    src = parse(source.read_text(encoding="utf-8"))
+    tgt = parse(target.read_text(encoding="utf-8"))
+    if len(src) != len(tgt) or any(a["k"] != b["k"] for a, b in zip(src, tgt)):
+        return {"file": str(target), "repaired": False,
+                "issues": [f"not aligned with source ({len(src)} vs {len(tgt)} slots) "
+                           "— run plan/apply instead"]}
+
+    out: list[str] = []
+    fixes = 0
+    for a, b in zip(src, tgt):
+        if a["k"] == "v":
+            if a["lines"] != b["lines"]:
+                fixes += 1
+            out.extend(a["lines"])              # source verbatim wins
+        elif a["k"] == "x":
+            out.append(render_x(a["tpl"], b["en"]))   # keep translation, source structure
+        else:  # row
+            if len(a["cells"]) != len(b["cells"]):
+                return {"file": str(target), "repaired": False,
+                        "issues": ["table column count differs — run plan/apply instead"]}
+            cells = []
+            for ca, cb in zip(a["cells"], b["cells"]):
+                bt = cb["en"] if cb.get("t") == "tr" else cb.get("v", "")
+                if ca.get("t") == "tr":
+                    cells.append(bt)                        # keep translation
+                else:
+                    if ca.get("v", "") != bt:
+                        fixes += 1
+                    cells.append(ca["v"])                   # source verbatim wins
+            out.append("| " + " | ".join(cells) + " |")
+
+    target.write_text("\n".join(out), encoding="utf-8")
+    return {"file": str(target), "repaired": True, "fixes": fixes,
+            **verify_pair(source, target)}
+
+
+def cmd_repair(args) -> int:
+    targets = find_targets(args.source, args.dir, args.file)
+    report = [repair_pair(args.source, t) if t.exists()
+              else {"file": str(t), "repaired": False, "issues": ["missing"]}
+              for t in targets]
+    print(json.dumps({"repair": report}, ensure_ascii=False, indent=2))
+    return 0 if all(r.get("repaired") for r in report) else 2
+
+
+# --------------------------------------------------------------------------- #
 # cli
 # --------------------------------------------------------------------------- #
 
@@ -570,16 +641,19 @@ def main(argv: list[str]) -> int:
     g.add_argument("--dir", type=Path)
     g.add_argument("--file", type=Path, nargs="+")
     p.add_argument("--base", default="HEAD")
+    p.add_argument("--full", action="store_true",
+                   help="force a full retranslate of every target (re-baseline)")
     p.add_argument("--work", type=Path, required=True)
 
     p = sub.add_parser("apply")
     p.add_argument("--work", type=Path, required=True)
 
-    p = sub.add_parser("verify")
-    p.add_argument("--source", type=Path, default=Path("README.md"))
-    g = p.add_mutually_exclusive_group(required=True)
-    g.add_argument("--dir", type=Path)
-    g.add_argument("--file", type=Path, nargs="+")
+    for name in ("verify", "repair"):
+        p = sub.add_parser(name)
+        p.add_argument("--source", type=Path, default=Path("README.md"))
+        g = p.add_mutually_exclusive_group(required=True)
+        g.add_argument("--dir", type=Path)
+        g.add_argument("--file", type=Path, nargs="+")
 
     args = ap.parse_args(argv)
     if args.cmd == "plan":
@@ -588,6 +662,8 @@ def main(argv: list[str]) -> int:
         return cmd_apply(args)
     if args.cmd == "verify":
         return cmd_verify(args)
+    if args.cmd == "repair":
+        return cmd_repair(args)
     ap.error("unknown command")
     return 2
 
