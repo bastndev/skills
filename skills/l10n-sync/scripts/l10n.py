@@ -531,6 +531,7 @@ def cmd_merge(args) -> int:
         return 1
     jobs = json.loads(jobs_path.read_text(encoding="utf-8"))
     by_lang = {t["lang"]: t for t in jobs["targets"]}
+    all_ids = {str(b["id"]) for b in jobs["blocks"]}
 
     results: dict = {}
     report: list[dict] = []
@@ -554,8 +555,7 @@ def cmd_merge(args) -> int:
                                     "escaped as \\\")"})
             errors += 1
             continue
-        expected = {str(b["id"]) for b in t["blocks"]}
-        missing = sorted(expected - {str(k) for k in data}, key=int)
+        missing = sorted(all_ids - {str(k) for k in data}, key=int)
         if missing:
             report.append({"partial": part.name, "ok": False,
                            "error": f"missing block id(s): {', '.join(missing)}"})
@@ -655,8 +655,9 @@ def verify_pair(source: Path, target: Path) -> dict:
 
     if len(src) != len(tgt):
         return {"ok": False, "src_slots": len(src), "tgt_slots": len(tgt),
-                "issues": [f"slot count {len(src)} vs {len(tgt)} — structure drifted; "
-                           "re-run plan --full for this file"], "details": []}
+                "issues": [f"slot count {len(src)} vs {len(tgt)} — structure "
+                           "drifted; run repair (it realigns) for this file"],
+                "details": []}
 
     def cell_text(c: dict) -> str:
         return c["en"] if c.get("t") == "tr" else c.get("v", "")
@@ -720,6 +721,23 @@ def verify_pair(source: Path, target: Path) -> dict:
     }
 
 
+def _render_details(details: list[dict]) -> list[str]:
+    out = []
+    for d in details:
+        loc = f"line {d['line']}" + (f", col {d['col']}" if "col" in d else "")
+        if d["type"] == "invariant_lost":
+            out.append(f"      {loc}: keep `{d['expected']}` verbatim — it is missing")
+            out.append(f"        en : {d['en']}")
+            out.append(f"        got: {d['got']}")
+        elif d["type"] == "cell_emptied":
+            out.append(f"      {loc}: table cell emptied — should be: {d['expected']}")
+        elif d["type"] == "verbatim_cell_changed":
+            out.append(f"      {loc}: restore verbatim cell → {d['expected']}  (got: {d['got']})")
+        elif d["type"] == "verbatim_block_changed":
+            out.append(f"      {loc}: code/verbatim block changed → {d['expected']}")
+    return out
+
+
 def render_report(rows: list[dict]) -> str:
     """Human-readable, directly actionable report (no JSON parsing needed)."""
     out = []
@@ -731,18 +749,7 @@ def render_report(rows: list[dict]) -> str:
             out.append(f"  ✓ {name}{note}")
             continue
         out.append(f"  ✗ {name}  —  {'; '.join(r.get('issues', []))}")
-        for d in r.get("details", []):
-            loc = f"line {d['line']}" + (f", col {d['col']}" if "col" in d else "")
-            if d["type"] == "invariant_lost":
-                out.append(f"      {loc}: keep `{d['expected']}` verbatim — it is missing")
-                out.append(f"        en : {d['en']}")
-                out.append(f"        got: {d['got']}")
-            elif d["type"] == "cell_emptied":
-                out.append(f"      {loc}: table cell emptied — should be: {d['expected']}")
-            elif d["type"] == "verbatim_cell_changed":
-                out.append(f"      {loc}: restore verbatim cell → {d['expected']}  (got: {d['got']})")
-            elif d["type"] == "verbatim_block_changed":
-                out.append(f"      {loc}: code/verbatim block changed → {d['expected']}")
+        out.extend(_render_details(r.get("details", [])))
     return "\n".join(out) if out else "  (no files)"
 
 
@@ -767,40 +774,108 @@ def cmd_verify(args) -> int:
 # drifted structurally, use plan/apply instead.
 # --------------------------------------------------------------------------- #
 
+def _kind_sig(slots: list[dict]) -> list[tuple]:
+    """Translation-stable signature for aligning target slots with source
+    slots: kinds, templates, verbatim lines, literal cells, and invariants —
+    exactly the content a correct translation must carry over unchanged.
+    Invariants are compared as sets: reordering them within a sentence is
+    legitimate translation, not drift."""
+    sig = []
+    for s in slots:
+        if s["k"] == "v":
+            sig.append(("v", tuple(s["lines"])))
+        elif s["k"] == "x":
+            t = s["tpl"]
+            sig.append(("x", t.get("type", ""), t.get("marker", ""),
+                        t.get("indent", ""), frozenset(s["inv"])))
+        else:
+            sig.append(("row", tuple(
+                c["v"] if c.get("t") == "lit" else ("tr", frozenset(c["inv"]))
+                for c in s["cells"])))
+    return sig
+
+
 def repair_pair(source: Path, target: Path) -> dict:
     src = parse(source.read_text(encoding="utf-8"))
     tgt = parse(target.read_text(encoding="utf-8"))
-    if len(src) != len(tgt) or any(a["k"] != b["k"] for a, b in zip(src, tgt)):
-        return {"file": str(target), "repaired": False,
-                "issues": [f"not aligned with source ({len(src)} vs {len(tgt)} slots) "
-                           "— run plan/apply instead"]}
+
+    # Pair source slots with target slots by structure. A translation that
+    # dropped or invented a block still repairs: missing slots are filled from
+    # English (and reported so the model translates just those lines), extra
+    # slots are discarded.
+    pairs: list[tuple[dict, dict | None]] = []
+    dropped = 0
+    if _kind_sig(src) == _kind_sig(tgt):
+        pairs = list(zip(src, tgt))
+    else:
+        sm = difflib.SequenceMatcher(None, _kind_sig(src), _kind_sig(tgt),
+                                     autojunk=False)
+        if sm.ratio() < 0.5:
+            return {"file": str(target), "repaired": False,
+                    "issues": [f"target shares too little structure with the "
+                               f"source ({len(src)} vs {len(tgt)} blocks) — "
+                               "retranslate this file"]}
+        for tag, i1, i2, j1, j2 in sm.get_opcodes():
+            if tag == "equal":
+                pairs.extend(zip(src[i1:i2], tgt[j1:j2]))
+            else:
+                pairs.extend((src[k], None) for k in range(i1, i2))
+                dropped += j2 - j1
 
     out: list[str] = []
     fixes = 0
-    for a, b in zip(src, tgt):
+    untranslated: list[int] = []   # lines left in English — translate in place
+    line = 1
+    for a, b in pairs:
+        at = line
+        line += len(a["lines"]) if a["k"] == "v" else 1
+        if b is None:                       # slot missing in target
+            fixes += 1
+            if a["k"] == "v":
+                out.extend(a["lines"])      # verbatim: English IS correct
+            elif a["k"] == "x":
+                out.append(render_x(a["tpl"], a["en"]))
+                untranslated.append(at)
+            else:
+                out.append("| " + " | ".join(
+                    c["v"] if c.get("t") == "lit" else c["en"]
+                    for c in a["cells"]) + " |")
+                untranslated.append(at)
+            continue
         if a["k"] == "v":
             if a["lines"] != b["lines"]:
                 fixes += 1
             out.extend(a["lines"])              # source verbatim wins
         elif a["k"] == "x":
-            out.append(render_x(a["tpl"], b["en"]))   # keep translation, source structure
-        else:  # row
-            if len(a["cells"]) != len(b["cells"]):
-                return {"file": str(target), "repaired": False,
-                        "issues": ["table column count differs — run plan/apply instead"]}
+            txt = b["en"]
+            if not txt.strip():
+                txt = a["en"]
+                fixes += 1
+                untranslated.append(at)
+            out.append(render_x(a["tpl"], txt))  # keep translation, source structure
+        else:  # row — cell counts match by signature construction
             cells = []
+            refilled = False
             for ca, cb in zip(a["cells"], b["cells"]):
                 bt = cb["en"] if cb.get("t") == "tr" else cb.get("v", "")
                 if ca.get("t") == "tr":
-                    cells.append(bt)                        # keep translation
+                    if bt.strip():
+                        cells.append(bt)            # keep translation
+                    else:
+                        cells.append(ca["en"])      # refill emptied cell
+                        fixes += 1
+                        refilled = True
                 else:
                     if ca.get("v", "") != bt:
                         fixes += 1
-                    cells.append(ca["v"])                   # source verbatim wins
+                    cells.append(ca["v"])           # source verbatim wins
+            if refilled:
+                untranslated.append(at)
             out.append("| " + " | ".join(cells) + " |")
 
     target.write_text("\n".join(out), encoding="utf-8")
     return {"file": str(target), "repaired": True, "fixes": fixes,
+            "dropped_extra_blocks": dropped, "untranslated_lines": untranslated,
             **verify_pair(source, target)}
 
 
@@ -809,8 +884,31 @@ def cmd_repair(args) -> int:
     report = [repair_pair(args.source, t) if t.exists()
               else {"file": str(t), "repaired": False, "issues": ["missing"]}
               for t in targets]
-    print(json.dumps({"repair": report}, ensure_ascii=False, indent=2))
-    return 0 if all(r.get("repaired") for r in report) else 2
+    ok = all(r.get("repaired") for r in report)
+    if args.json:
+        print(json.dumps({"repair": report}, ensure_ascii=False, indent=2))
+        return 0 if ok else 2
+    for r in report:
+        name = Path(r["file"]).name
+        if not r.get("repaired"):
+            print(f"  ✗ {name}  —  {'; '.join(r.get('issues', []))}")
+            continue
+        bits = []
+        if r.get("fixes"):
+            bits.append(f"{r['fixes']} structural part(s) restored")
+        if r.get("dropped_extra_blocks"):
+            bits.append(f"{r['dropped_extra_blocks']} extra block(s) dropped")
+        mark = "✓" if r.get("ok") else "✗"
+        print(f"  {mark} {name}  —  " + (", ".join(bits) if bits else "already clean"))
+        if r.get("untranslated_lines"):
+            print("      still ENGLISH — translate these lines in place: "
+                  + ", ".join(str(n) for n in r["untranslated_lines"]))
+        if not r.get("ok"):
+            for ln in _render_details(r.get("details", [])):
+                print(ln)
+    print("\n" + ("All files repaired." if ok
+                  else "Some files could not be repaired (see above)."))
+    return 0 if ok else 2
 
 
 # --------------------------------------------------------------------------- #
@@ -829,13 +927,13 @@ def main(argv: list[str]) -> int:
     p.add_argument("--base", default="HEAD")
     p.add_argument("--full", action="store_true",
                    help="force a full retranslate of every target (re-baseline)")
-    p.add_argument("--work", type=Path, required=True)
+    p.add_argument("--work", type=Path, default=Path(".l10n-work"))
 
     p = sub.add_parser("merge")
-    p.add_argument("--work", type=Path, required=True)
+    p.add_argument("--work", type=Path, default=Path(".l10n-work"))
 
     p = sub.add_parser("apply")
-    p.add_argument("--work", type=Path, required=True)
+    p.add_argument("--work", type=Path, default=Path(".l10n-work"))
     p.add_argument("--json", action="store_true", help="machine-readable output")
 
     for name in ("verify", "repair"):
