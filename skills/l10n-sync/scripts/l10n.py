@@ -74,7 +74,11 @@ def lang_of(suffix: str) -> tuple[str, str, bool]:
 # Every slot maps to one or more output lines, so reassembly is exact.
 
 CODE_RE = re.compile(r"`[^`]+`")
-URL_RE = re.compile(r"(?:https?://|mailto:|www\.)\S+")
+# URL stops at real delimiters (quote, backtick, paren, angle bracket, bracket,
+# whitespace) — NOT greedy \S+, which used to swallow trailing sentence
+# punctuation and adjacent HTML tags and produce false "invariant lost" reports.
+URL_RE = re.compile(r"(?:https?://|mailto:|www\.)[^\s\"'`)<>\]]+")
+_URL_TRAIL = ".,;:!?"
 PLACEHOLDER_RE = re.compile(r"\{[a-zA-Z0-9_]+\}|%[sdifx]|\$\{[^}]+\}")
 HTML_RE = re.compile(r"</?[a-zA-Z][^>]*>")
 IMG_RE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
@@ -85,19 +89,31 @@ LETTER_RE = re.compile(r"[^\W\d_]", re.UNICODE)
 _STRIP_FOR_TEST = [IMG_RE, LINK_RE, CODE_RE, URL_RE, PLACEHOLDER_RE, HTML_RE]
 
 
-def _has_translatable(text: str) -> bool:
-    stripped = text
+def _strip_invariants(text: str) -> str:
     for pat in _STRIP_FOR_TEST:
-        stripped = pat.sub(" ", stripped)
-    return LETTER_RE.search(stripped) is not None
+        text = pat.sub(" ", text)
+    return text
+
+
+def _has_translatable(text: str) -> bool:
+    return LETTER_RE.search(_strip_invariants(text)) is not None
+
+
+def _prose_words(text: str) -> int:
+    """Word count of the visible prose only (invariants stripped)."""
+    return len([w for w in _strip_invariants(text).split() if LETTER_RE.search(w)])
 
 
 def _invariants(text: str) -> list[str]:
-    """Distinctive substrings that MUST survive translation unchanged."""
+    """Distinctive substrings that MUST survive translation unchanged.
+    Kept precise on purpose: only code spans, URL cores, placeholders, HTML tags,
+    and link targets — never trailing sentence punctuation (which is localized)."""
     found: list[str] = []
-    for pat in (CODE_RE, URL_RE, PLACEHOLDER_RE, HTML_RE):
-        found += pat.findall(text)
-    found += LINK_TARGET_RE.findall(text)  # link/image URLs
+    found += CODE_RE.findall(text)
+    found += [u.rstrip(_URL_TRAIL) for u in URL_RE.findall(text)]
+    found += PLACEHOLDER_RE.findall(text)
+    found += HTML_RE.findall(text)
+    found += LINK_TARGET_RE.findall(text)  # link/image targets ( [txt](THIS) )
     # de-dup preserving order
     seen, out = set(), []
     for f in found:
@@ -499,58 +515,87 @@ def cmd_apply(args) -> int:
         v = verify_pair(source, target) if target.exists() else {"error": "not written"}
         report.append({"file": file, "wrote": wrote, "blanks": blanks, **v})
 
-    print(json.dumps({"applied": report}, ensure_ascii=False, indent=2))
-    return 0 if all(r.get("ok") for r in report) else 2
+    ok = all(r.get("ok") for r in report)
+    if getattr(args, "json", False):
+        print(json.dumps({"applied": report}, ensure_ascii=False, indent=2))
+    else:
+        wrote_n = sum(1 for r in report if r.get("wrote"))
+        print(f"Applied to {wrote_n}/{len(report)} file(s).\n")
+        print(render_report(report))
+        print("\n" + ("All files OK." if ok else
+                      "Some files need fixing — edit those blocks and re-run apply."))
+    return 0 if ok else 2
 
 
 # --------------------------------------------------------------------------- #
 # verify
 # --------------------------------------------------------------------------- #
 
+def _snip(text: str, n: int = 90) -> str:
+    text = " ".join(text.split())
+    return text if len(text) <= n else text[:n] + "…"
+
+
 def verify_pair(source: Path, target: Path) -> dict:
     src = parse(source.read_text(encoding="utf-8"))
     tgt = parse(target.read_text(encoding="utf-8"))
-    issues = []
+    issues: list[str] = []
+    details: list[dict] = []   # actionable: what to fix and where
 
     if len(src) != len(tgt):
-        issues.append(f"slot count {len(src)} vs {len(tgt)}")
-        return {"ok": False, "src_slots": len(src), "tgt_slots": len(tgt), "issues": issues}
+        return {"ok": False, "src_slots": len(src), "tgt_slots": len(tgt),
+                "issues": [f"slot count {len(src)} vs {len(tgt)} — structure drifted; "
+                           "re-run plan --full for this file"], "details": []}
 
     def cell_text(c: dict) -> str:
         return c["en"] if c.get("t") == "tr" else c.get("v", "")
 
     untranslated = 0
-    missing_inv = 0
-    lit_changed = 0   # a verbatim cell (code/link/emoji) that must match source but doesn't
-    emptied = 0       # a cell that had content in English but is blank in the target
+    missing_inv = lit_changed = emptied = 0
+    line = 1
     for a, b in zip(src, tgt):
+        at = line
+        line += len(a["lines"]) if a["k"] == "v" else 1
         if a["k"] != b["k"]:
             issues.append(f"kind mismatch {a['k']}/{b['k']}")
             continue
         if a["k"] == "v":
             if a["lines"] != b["lines"]:
-                issues.append("verbatim block changed (code/blank drift)")
+                details.append({"line": at, "type": "verbatim_block_changed",
+                                "expected": _snip("\\n".join(a["lines"])),
+                                "got": _snip("\\n".join(b["lines"]))})
         elif a["k"] == "x":
             for inv in a["inv"]:
                 if inv not in b["en"]:
                     missing_inv += 1
-            if a["en"].strip() and a["en"] == b["en"] and _has_translatable(a["en"]):
+                    details.append({"line": at, "type": "invariant_lost",
+                                    "expected": inv, "en": _snip(a["en"]),
+                                    "got": _snip(b["en"])})
+            # soft hint: real prose (>=3 visible words) left identical to English.
+            # single words (nav names, brand headings) are intentionally the same.
+            if a["en"] == b["en"] and _prose_words(a["en"]) >= 3:
                 untranslated += 1
         else:  # row
             if len(a["cells"]) != len(b["cells"]):
-                issues.append("table column count changed")
+                issues.append(f"table column count changed (line {at})")
                 continue
-            for ca, cb in zip(a["cells"], b["cells"]):
+            for idx, (ca, cb) in enumerate(zip(a["cells"], b["cells"])):
                 bt = cell_text(cb)
                 if ca.get("t") == "tr":
                     for inv in ca["inv"]:
                         if inv not in bt:
                             missing_inv += 1
+                            details.append({"line": at, "type": "invariant_lost",
+                                            "col": idx, "expected": inv,
+                                            "en": _snip(ca["en"]), "got": _snip(bt)})
                     if ca["en"].strip() and not bt.strip():
                         emptied += 1
-                else:  # verbatim cell — must be byte-identical across languages
-                    if ca.get("v", "").strip() and ca["v"] != bt:
-                        lit_changed += 1
+                        details.append({"line": at, "type": "cell_emptied",
+                                        "col": idx, "expected": _snip(ca["en"])})
+                elif ca.get("v", "").strip() and ca["v"] != bt:
+                    lit_changed += 1
+                    details.append({"line": at, "type": "verbatim_cell_changed",
+                                    "col": idx, "expected": ca["v"], "got": bt})
 
     if missing_inv:
         issues.append(f"{missing_inv} invariant(s) (code/URL/placeholder) lost")
@@ -558,19 +603,49 @@ def verify_pair(source: Path, target: Path) -> dict:
         issues.append(f"{lit_changed} verbatim table cell(s) changed/dropped")
     if emptied:
         issues.append(f"{emptied} table cell(s) emptied")
-    ok = not issues
     return {
-        "ok": ok, "src_slots": len(src), "tgt_slots": len(tgt),
-        "possibly_untranslated": untranslated, "issues": issues,
+        "ok": not issues, "src_slots": len(src), "tgt_slots": len(tgt),
+        "possibly_untranslated": untranslated, "issues": issues, "details": details,
     }
+
+
+def render_report(rows: list[dict]) -> str:
+    """Human-readable, directly actionable report (no JSON parsing needed)."""
+    out = []
+    for r in rows:
+        name = Path(r["file"]).name
+        if r.get("ok"):
+            note = "" if not r.get("possibly_untranslated") else \
+                f"  ({r['possibly_untranslated']} line(s) same as English — check if intended)"
+            out.append(f"  ✓ {name}{note}")
+            continue
+        out.append(f"  ✗ {name}  —  {'; '.join(r.get('issues', []))}")
+        for d in r.get("details", []):
+            loc = f"line {d['line']}" + (f", col {d['col']}" if "col" in d else "")
+            if d["type"] == "invariant_lost":
+                out.append(f"      {loc}: keep `{d['expected']}` verbatim — it is missing")
+                out.append(f"        en : {d['en']}")
+                out.append(f"        got: {d['got']}")
+            elif d["type"] == "cell_emptied":
+                out.append(f"      {loc}: table cell emptied — should be: {d['expected']}")
+            elif d["type"] == "verbatim_cell_changed":
+                out.append(f"      {loc}: restore verbatim cell → {d['expected']}  (got: {d['got']})")
+            elif d["type"] == "verbatim_block_changed":
+                out.append(f"      {loc}: code/verbatim block changed → {d['expected']}")
+    return "\n".join(out) if out else "  (no files)"
 
 
 def cmd_verify(args) -> int:
     targets = find_targets(args.source, args.dir, args.file)
     report = [{"file": str(t), **(verify_pair(args.source, t) if t.exists()
-              else {"ok": False, "issues": ["missing"]})} for t in targets]
-    print(json.dumps({"verify": report}, ensure_ascii=False, indent=2))
-    return 0 if all(r.get("ok") for r in report) else 2
+              else {"ok": False, "issues": ["missing"], "details": []})} for t in targets]
+    ok = all(r.get("ok") for r in report)
+    if args.json:
+        print(json.dumps({"verify": report}, ensure_ascii=False, indent=2))
+    else:
+        print(render_report(report))
+        print("\n" + ("All files OK." if ok else "Some files need fixing (see above)."))
+    return 0 if ok else 2
 
 
 # --------------------------------------------------------------------------- #
@@ -647,6 +722,7 @@ def main(argv: list[str]) -> int:
 
     p = sub.add_parser("apply")
     p.add_argument("--work", type=Path, required=True)
+    p.add_argument("--json", action="store_true", help="machine-readable output")
 
     for name in ("verify", "repair"):
         p = sub.add_parser(name)
@@ -654,6 +730,7 @@ def main(argv: list[str]) -> int:
         g = p.add_mutually_exclusive_group(required=True)
         g.add_argument("--dir", type=Path)
         g.add_argument("--file", type=Path, nargs="+")
+        p.add_argument("--json", action="store_true", help="machine-readable output")
 
     args = ap.parse_args(argv)
     if args.cmd == "plan":
