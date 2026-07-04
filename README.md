@@ -55,6 +55,7 @@ Listed in the natural order you'd reach for them — **Start** something new (or
 | **[skrapi](./skills/skrapi/README.md)**               | _Start_ — Point it at a project you admire and it maps how that codebase is built into a fixed `SKRAPI/` folder of focused Markdown — architecture, dependencies, and paste-ready prompts — so you can borrow the patterns that fit your own project before you start. Works on any stack (web, mobile, extension, library, monorepo); every description is verified against real code, never guessed from a package name. Multilingual output (🇪🇸 ES · 🇺🇸 EN · 🇨🇳 ZH).<br><br>→ [Full documentation](./skills/skrapi/README.md)                                                                  |
 | **[middle](./skills/middle/README.md)**               | _Middle_ — Numbered, on-demand improvers for active development. `0` scores your project or folder with a 0–100 health overview and points at the weakest area; `1–7` each qualify one dimension (⚡ performance · 🎨 ui-ux · 🗂️ tidy · 🔒 security · 🏗️ structure · 🧹 cleanup · 🧩 quality), report evidence-backed findings, and propose a correction plan — executed phase by phase only when you say `go`.<br><br>→ [Full documentation](./skills/middle/README.md)                                                                  |
 | **[end](./skills/end/README.md)**                     | _End_ — Understands your project end-to-end. Delivers a clear diagnosis (confirmed bugs, risks, opportunities, technical debt) with concrete references, recommends the right architecture direction for _this_ codebase, and builds an ordered execution plan. Every change happens in an isolated, reviewable phase — it only proceeds when you say `go`, `start`, or `proceed`, and no files are touched during analysis.<br><br>→ [Full documentation & examples](./skills/end/README.md) |
+| **[l10n-sync](./skills/l10n-sync/README.md)**         | _Utility_ — The disciplined, token-efficient localization skill. Syncs translated assets with the English source of truth without full-file retranslation. Ensures invariants (code, HTML) and exact structures are preserved across 11 languages.<br><br>→ [Full documentation](./skills/l10n-sync/README.md) |
 
 > **Note:** Each skill ships with its own detailed README. The root page gives the high-level overview; dive into `./skills/<skill>/README.md` for deep usage, report examples, and guarantees.
 
@@ -68,6 +69,7 @@ npx skills add bastndev/skills --skill start-astro     # Start  — scaffold an 
 npx skills add bastndev/skills --skill skrapi          # Start  — study & document any codebase
 npx skills add bastndev/skills --skill middle          # Middle — score & improve one dimension
 npx skills add bastndev/skills --skill end             # End    — audit & safely refactor
+npx skills add bastndev/skills --skill l10n-sync       # Utility — sync localized assets safely
 ```
 
 ## How the End Skill Works
@@ -90,6 +92,7 @@ The full internal specification lives in [skills/end/SKILL.md](./skills/end/SKIL
 - **Start** — `start-package` (scaffold), `start-astro` (Astro scaffold) and `skrapi` (study an existing codebase) ship today; more `start-*` scaffolders are on the way.
 - **Middle** — `middle` ships today (health overview + six numbered focus improvers); deeper per-focus tooling is planned.
 - **End** — `end` ships today; more runtimes, additional specialized refactoring modes, and utilities are planned.
+- **Utility** — `l10n-sync` ships today for disciplined, token-efficient workspace localization.
 
 Each skill ships with its own dedicated documentation (like the current [End – Refactor Project](./skills/end/README.md)).
 
