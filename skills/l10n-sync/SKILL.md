@@ -3,7 +3,7 @@ name: l10n-sync
 description: Keep translated README files in sync with the English README.md. Propagates only what changed in the English source into each README_<LANG>.md, preserving tables, code, and links — cheaply and without dropping anything. Use when the user asks to translate, localize, sync, or update a README / docs folder, or invokes this skill.
 metadata:
   author: bastndev
-  version: "2.0.0"
+  version: "2.1.0"
 ---
 
 # l10n-sync
@@ -74,6 +74,20 @@ Translation rules:
 - If a `mode` is `full`, you're establishing a baseline for a new or drifted file —
   translate every block. If `incremental`, you only see the changed blocks.
 
+**2b. Large jobs — parallelize, validate, merge.** When the plan is big (e.g. a
+full re-baseline of many languages), split the languages across parallel agents.
+Each agent writes one `WORK/partial-<lang>.json` shaped `{"1": "…", "2": "…"}`
+and **must** run `python3 -m json.tool "$WORK/partial-<lang>.json"` before
+finishing — a translation containing an unescaped `"` is the classic failure,
+and one broken partial stalls the whole run. Then combine them:
+```bash
+python3 -B "$SKILL/scripts/l10n.py" merge --work "$WORK"
+```
+`merge` validates every partial (JSON parses, no block ids missing, no unknown
+language) and writes `results.json` only when all are clean. If it flags a
+partial, have that agent rewrite just that file and re-run `merge` — never
+hand-patch broken JSON with ad-hoc scripts.
+
 **3. Apply** — splice and verify:
 ```bash
 python3 -B "$SKILL/scripts/l10n.py" apply --work "$WORK"
@@ -96,6 +110,7 @@ note is a soft hint, not an error; ignore it unless a line really was skipped.
 You can verify at any time without writing:
 ```bash
 python3 -B "$SKILL/scripts/l10n.py" verify --source README.md --dir public/docs
+# prints the same readable report; add --json if you need to parse it
 ```
 
 **Repair** (no translation needed) — if a translated file has the *right

@@ -257,12 +257,13 @@ def render_x(tpl: dict, text: str) -> str:
 
 
 def render_row(cells: list[dict], lookup) -> str:
+    # emit-plan cells are {"lit": text} or {"id": job_id} (see build_emit)
     out = []
     for c in cells:
-        if c.get("t") == "lit" or "id" not in c:
-            out.append(c.get("v", ""))
-        else:
+        if "id" in c:
             out.append(lookup(c["id"]))
+        else:
+            out.append(c.get("lit", ""))
     return "| " + " | ".join(out) + " |"
 
 
@@ -455,7 +456,12 @@ def cmd_plan(args) -> int:
                 "Translate each block's 'text' into the file's 'language'. "
                 "Copy every substring in 'keep' (code, URLs, paths, placeholders, "
                 "HTML) verbatim. Do not add notes or change structure. "
-                "Write results to results.json as {file: {id: translation}}."
+                "Write results to results.json as {file: {id: translation}} — or, "
+                "when splitting work across agents, one partial-<lang>.json per "
+                "language as {id: translation}, then run the 'merge' command. "
+                "Output must be valid JSON: escape double quotes inside "
+                "translations, and validate every file you write with "
+                "`python3 -m json.tool <file>` before finishing."
             ),
             "targets": jobs_targets,
         }, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -467,6 +473,64 @@ def cmd_plan(args) -> int:
         "jobs_file": str(work / "jobs.json"),
     }, ensure_ascii=False, indent=2))
     return 0
+
+
+# --------------------------------------------------------------------------- #
+# merge — combine per-language partial-<lang>.json files (written by parallel
+# translation agents) into results.json. Validates every partial first, so one
+# agent's malformed JSON is reported precisely instead of stalling the run.
+# --------------------------------------------------------------------------- #
+
+def cmd_merge(args) -> int:
+    work = args.work
+    jobs_path = work / "jobs.json"
+    if not jobs_path.exists():
+        print(json.dumps({"error": f"no jobs.json in {work} — run plan first"}))
+        return 1
+    jobs = json.loads(jobs_path.read_text(encoding="utf-8"))
+    by_lang = {t["lang"]: t for t in jobs["targets"]}
+
+    results: dict = {}
+    report: list[dict] = []
+    errors = 0
+    seen: set[str] = set()
+    for part in sorted(work.glob("partial-*.json")):
+        lang = part.stem[len("partial-"):]
+        t = by_lang.get(lang)
+        if t is None:
+            report.append({"partial": part.name, "ok": False,
+                           "error": f"no planned target with lang '{lang}'"})
+            errors += 1
+            continue
+        seen.add(lang)
+        try:
+            data = json.loads(part.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            report.append({"partial": part.name, "ok": False,
+                           "error": f"invalid JSON: {e} — rewrite this file "
+                                    "(double quotes inside translations must be "
+                                    "escaped as \\\")"})
+            errors += 1
+            continue
+        expected = {str(b["id"]) for b in t["blocks"]}
+        missing = sorted(expected - {str(k) for k in data}, key=int)
+        if missing:
+            report.append({"partial": part.name, "ok": False,
+                           "error": f"missing block id(s): {', '.join(missing)}"})
+            errors += 1
+            continue
+        results[t["file"]] = {str(k): str(v) for k, v in data.items()}
+        report.append({"partial": part.name, "ok": True,
+                       "file": t["file"], "blocks": len(data)})
+
+    missing_partials = sorted(set(by_lang) - seen)
+    ok = not errors and not missing_partials
+    if ok:
+        (work / "results.json").write_text(
+            json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps({"merged": report, "missing_partials": missing_partials,
+                      "results_written": ok}, ensure_ascii=False, indent=2))
+    return 0 if ok else 2
 
 
 # --------------------------------------------------------------------------- #
@@ -720,6 +784,9 @@ def main(argv: list[str]) -> int:
                    help="force a full retranslate of every target (re-baseline)")
     p.add_argument("--work", type=Path, required=True)
 
+    p = sub.add_parser("merge")
+    p.add_argument("--work", type=Path, required=True)
+
     p = sub.add_parser("apply")
     p.add_argument("--work", type=Path, required=True)
     p.add_argument("--json", action="store_true", help="machine-readable output")
@@ -735,6 +802,8 @@ def main(argv: list[str]) -> int:
     args = ap.parse_args(argv)
     if args.cmd == "plan":
         return cmd_plan(args)
+    if args.cmd == "merge":
+        return cmd_merge(args)
     if args.cmd == "apply":
         return cmd_apply(args)
     if args.cmd == "verify":
