@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/logo.webp" width="180" />
 </p>
 
-<h1 align="center">[Início] / Meio / [Fim]</h1>
+<h1 align="center">[Start] / Middle / [End]</h1>
 
 <p align="center">
   <a href="https://github.com/bastndev/skills/blob/main/public/docs/README_ES.md">Español 🇪🇸</a> |
@@ -15,13 +15,13 @@
   <a href="https://github.com/bastndev/skills/blob/main/public/docs/README_RU.md">Русский 🇷🇺</a> |
   <a href="https://github.com/bastndev/skills/blob/main/public/docs/README_VI.md">Tiếng Việt 🇻🇳</a> |
   <a href="https://github.com/bastndev/skills/blob/main/public/docs/README_HI.md">हिन्दी 🇮🇳</a> |
-  <a href="https://github.com/bastndev/skills/blob/main/public/docs/README_AR.md">العربية 🇸🇦</a>
+  <a href="https://github.com/bastndev/skills/blob/main/public/docs/README_AR.md">العربية 🇸🇦</a><span>...</span>
 </p>
 
 <br>
 
 <p align="center">
-  Inicie novos projetos com confiança. Refine-os e fortaleça-os iterativamente à medida que crescem. Realize refatorações profundas e seguras quando a arquitetura precisar evoluir.
+  Inicie novos projetos com confiança. Refine e fortaleça iterativamente à medida que crescem. Realize refatorações profundas e seguras quando a arquitetura precisar evoluir.
 </p>
 
 <p align="center">
@@ -36,60 +36,65 @@ npx skills add bastndev/skills
 
 <br>
 
-## As Três Fases
+## As três fases
 
-| Fase | Propósito | Principais Recursos | Exemplos de Skills | Status |
+| Fase | Propósito | Capacidades-chave | Skills de exemplo | Status |
 | ---------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------ |
-| **Start** (Início) | Iniciar um projeto — estruturar um novo ou aprender com um existente | Crie estruturas e configurações prontas para produção a partir do commit #1. Ou analise a arquitetura e os pacotes de uma base de código existente e documente-a, para que você possa reutilizar os padrões que funcionam em seu próprio projeto. | `start-package`, `start-astro`, `skrapi`       | ㅤㅤ✅ |
-| **Middle** (Meio) | Melhoria contínua e polimento | Melhore a UI/UX, reforce a segurança, aumente o desempenho, limpe a lógica e elimine código morto durante o desenvolvimento ativo. | Aprimoradores focados (A definir) | Planejado |
-| **End** (Fim) | Auditoria, diagnóstico e refatoração segura | Análise completa de arquitetura e qualidade. Descobertas categorizadas com evidências no nível do arquivo. Plano em fases priorizado e executado **apenas com aprovação explícita**. Preserva o comportamento. Suporte a múltiplos runtimes. | `end` | ㅤㅤ✅ |
+| **Start** | Iniciar um projeto — criar um novo ou aprender de um existente | Crie estruturas e configurações prontas para produção desde o commit #1. Ou analise a arquitetura e pacotes de um codebase existente e documente o que funciona, para reutilizar no seu próprio projeto. | `start-package`, `start-astro`, `skrapi` | ㅤㅤ✅ |
+| **Middle** | Melhoria contínua e acabamento | Avalie o projeto (visão geral de saúde 0–100), então melhore **uma dimensão por vez** — desempenho, UI/UX, organização (ordem de arquivos + higiene de comentários), segurança, estrutura, limpeza ou qualidade de código — com um plano focado executado apenas quando você digitar `go`. | `middle` | ㅤㅤ✅ |
+| **End** | Auditoria, diagnóstico e refatoração segura | Análise completa de arquitetura e qualidade. Constatações categorizadas com evidências no nível de arquivo. Plano por fases priorizado executado **apenas com aprovação explícita**. Preservação de comportamento. Suporte multi-runtime. | `end` | ㅤㅤ✅ |
 
-## Skills Disponíveis
+## Skills disponíveis
 
-Listados na ordem natural em que você os usaria — **Start** (Inicie) algo novo (ou estude uma base de código existente como inspiração), refine-o no **Middle** (Meio) e fortaleça-o no **End** (Fim).
+Listadas na ordem natural em que você as usaria — **Comece** algo novo (ou estude um codebase existente para inspiração), refine no **Meio**, e fortaleça no **Fim**.
 
 | Skill | Descrição |
 | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **[start-package](../../skills/start-package/README.md)** | _Start_ (Início) — Estrutura um pacote TypeScript **dual ESM + CJS** publicável com declarações de tipo empacotadas, um build `tsup` sem configuração e o TypeScript fixado na versão `5.x` para que seja compilado de forma limpa tanto na CLI quanto no editor. Gera `package.json`, `tsconfig.json`, configuração do tsup, um teste de fumaça e configurações `.vscode`, e em seguida instala, compila e verifica.<br><br>→ [Documentação completa](../../skills/start-package/README.md) |
-| **[start-astro](../../skills/start-astro/README.md)** | _Start_ (Início) — Estrutura um novo projeto Astro usando o template `minimal`, sobreposto com uma arquitetura limpa e **escalável** — pronto para crescer de um portfólio para um aplicativo completo. Configura imediatamente um layout compartilhado, cabeçalho, rodapé, páginas, alternador de tema claro/escuro, View Transitions nativas, alias de caminho e Coleções de Conteúdo (Content Collections).<br><br>→ [Documentação completa](../../skills/start-astro/README.md) |
-| **[skrapi](../../skills/skrapi/README.md)**               | _Start_ (Início) — Aponte-o para um projeto que você admira e ele mapeará como essa base de código é construída em uma pasta `SKRAPI/` fixa de Markdown focado — arquitetura, dependências e prompts prontos para colar — para que você possa emprestar os padrões que se adequam ao seu próprio projeto antes de começar. Funciona em qualquer stack (web, mobile, extensão, biblioteca, monorepo); toda descrição é verificada com código real, nunca adivinhada pelo nome de um pacote. Saída multilíngue (🇪🇸 ES · 🇺🇸 EN · 🇨🇳 ZH).<br><br>→ [Documentação completa](../../skills/skrapi/README.md) |
-| **[end](../../skills/end/README.md)**                     | _End_ (Fim) — Entende seu projeto de ponta a ponta. Fornece um diagnóstico claro (bugs confirmados, riscos, oportunidades, dívida técnica) com referências concretas, recomenda a direção de arquitetura correta para _esta_ base de código e constrói um plano de execução ordenado. Cada alteração ocorre em uma fase isolada e revisável — ela só prossegue quando você diz `go`, `start` ou `proceed`, e nenhum arquivo é tocado durante a análise.<br><br>→ [Documentação completa e exemplos](../../skills/end/README.md) |
+| **[start-package](./skills/start-package/README.md)** | _Start_ — Gera um pacote TypeScript **dual ESM + CJS** publicável com declarações de tipo empacotadas, uma compilação `tsup` sem configuração e TypeScript fixado em `5.x` para compilar limpo tanto no CLI quanto no editor. Gera `package.json`, `tsconfig.json`, configuração do tsup, um teste de fumaça e configurações `.vscode`, depois instala, compila e verifica.<br><br>→ [Documentação completa](./skills/start-package/README.md) |
+| **[start-astro](./skills/start-astro/README.md)** | _Start_ — Gera um novo projeto Astro usando o template `minimal`, sobreposto com uma arquitetura limpa e **escalável** — pronto para crescer de um portfólio para um app completo. Configura um layout compartilhado, header, footer, páginas, alternância de tema claro/escuro, View Transitions nativas, alias de caminho e Content Collections prontos para uso.<br><br>→ [Documentação completa](./skills/start-astro/README.md) |
+| **[skrapi](./skills/skrapi/README.md)** | _Start_ — Aponte para um projeto que você admira e ele mapeia como esse codebase é construído em uma pasta fixa `SKRAPI/` de Markdown focado — arquitetura, dependências e prompts prontos para colar — para que você possa pegar os padrões que se encaixam no seu projeto antes de começar. Funciona em qualquer stack (web, mobile, extensão, biblioteca, monorepo); cada descrição é verificada contra o código real, nunca adivinhada pelo nome do pacote. Saída multilíngue (🇪🇸 ES · 🇺🇸 EN · 🇨🇳 ZH).<br><br>→ [Documentação completa](./skills/skrapi/README.md) |
+| **[middle](./skills/middle/README.md)** | _Middle_ — Melhoradores numerados sob demanda para desenvolvimento ativo. `0` avalia seu projeto ou pasta com uma visão geral de saúde 0–100 e aponta a área mais fraca; `1–7` qualifica cada um uma dimensão (⚡ desempenho · 🎨 ui-ux · 🗂️ organização · 🔒 segurança · 🏗️ estrutura · 🧹 limpeza · 🧩 qualidade), relata constatações baseadas em evidências e propõe um plano de correção — executado fase por fase apenas quando você digita `go`.<br><br>→ [Documentação completa](./skills/middle/README.md) |
+| **[end](./skills/end/README.md)** | _End_ — Entende seu projeto de ponta a ponta. Fornece um diagnóstico claro (bugs confirmados, riscos, oportunidades, dívida técnica) com referências concretas, recomenda a direção arquitetônica correta para _este_ codebase e constrói um plano de execução ordenado. Cada mudança acontece em uma fase isolada e revisável — só prossegue quando você digita `go`, `start` ou `proceed`, e nenhum arquivo é tocado durante a análise.<br><br>→ [Documentação completa e exemplos](./skills/end/README.md) |
+| **[l10n-sync](./skills/l10n-sync/README.md)** | _Utility_ — A skill disciplinada e eficiente em tokens para localização. Sincroniza assets traduzidos com a fonte inglesa sem retradução de arquivo completo. Garante invariantes (código, HTML) e estruturas exatas preservadas em 11 idiomas.<br><br>→ [Documentação completa](./skills/l10n-sync/README.md) |
 
-> **Nota:** Cada skill vem com seu próprio README detalhado. A página raiz dá uma visão geral de alto nível; mergulhe em `./skills/<skill>/README.md` para um uso profundo, exemplos de relatórios e garantias.
+> **Nota:** Cada skill vem com seu próprio README detalhado. A página raiz fornece a visão geral de alto nível; aprofunde-se em `./skills/<skill>/README.md` para uso detalhado, exemplos de relatórios e garantias.
 
 ## Instalação
 
-Cada skill é instalada da mesma forma — escolha a que você precisa:
+Cada skill é instalada da mesma maneira — escolha a que você precisa:
 
 ```bash
-npx skills add bastndev/skills --skill start-package   # Start (Início) — estrutura um pacote TS npm
-npx skills add bastndev/skills --skill start-astro     # Start (Início) — estrutura um projeto Astro
-npx skills add bastndev/skills --skill skrapi          # Start (Início) — estuda e documenta qualquer base de código
-npx skills add bastndev/skills --skill end             # End (Fim) — audita e refatora com segurança
+npx skills add bastndev/skills --skill start-package   # Start  — scaffold a TS npm package
+npx skills add bastndev/skills --skill start-astro     # Start  — scaffold an Astro project
+npx skills add bastndev/skills --skill skrapi          # Start  — study & document any codebase
+npx skills add bastndev/skills --skill middle          # Middle — score & improve one dimension
+npx skills add bastndev/skills --skill end             # End    — audit & safely refactor
+npx skills add bastndev/skills --skill l10n-sync       # Utility — sync localized assets safely
 ```
 
-## Como a Skill "End" funciona
+## Como a skill End funciona
 
-`end` é a skill mais madura da suíte. Veja seu fluxo de trabalho de ponta a ponta:
+`end` é a skill mais madura da suíte. Aqui está seu fluxo de trabalho completo:
 
-1. **Análise primeiro** — Mapeia os pontos de entrada e entende o projeto. **Nenhum arquivo é modificado.**
-2. **Relatório estruturado** — Descobertas claras categorizadas em Bugs (com severidade), Dívidas/Riscos e Sugestões, além de uma visão geral de saúde pontuada, uma recomendação de arquitetura e um plano ordenado — tudo apoiado por referências concretas de arquivos e linhas.
-3. **Você autoriza cada fase** — Executa **exatamente uma fase** por vez. Após cada fase, você obtém um resumo preciso das mudanças, validações realizadas e a lista de fases restantes.
-4. **Controle total e segurança** — Nunca cria testes se o projeto não tiver nenhum. Nunca adiciona dependências ou altera o gerenciador de pacotes sem permissão. Respeita o seu trabalho não comitado (uncommitted) e sempre preserva o comportamento atual, a menos que corrija um bug justificado.
+1. **Análise primeiro** — Mapeia pontos de entrada e entende o projeto. **Nenhum arquivo é modificado.**
+2. **Relatório estruturado** — Constatações claras categorizadas em Bugs (com severidade), Dívida/Riscos e Sugestões, mais uma visão geral de saúde pontuada, uma recomendação arquitetônica e um plano ordenado — todos apoiados por referências concretas de arquivo + linha.
+3. **Você autoriza cada fase** — Executa **exatamente uma fase** por vez. Após cada fase, você recebe um resumo preciso das mudanças, validações realizadas e a lista de fases restantes.
+4. **Controle total e segurança** — Nunca cria testes se o projeto não tinha. Nunca adiciona dependências ou muda o gerenciador de pacotes sem permissão. Respeita seu trabalho não commitado e sempre preserva o comportamento atual, a menos que corrija um bug justificado.
 
-Para conhecer o fluxo de trabalho completo, os formatos exatos de relatórios (incluyendo os blocos de fechamento necessários), as regras de decisão de arquitetura e todas as garantias de segurança, leia a documentação dedicada da skill:
+Para o fluxo completo, formatos exatos de relatório (incluindo os blocos de fechamento obrigatórios), regras de decisão arquitetônica e todas as garantias de segurança, leia a documentação dedicada da skill:
 
-→ **[End – Refatorar Projeto](../../skills/end/README.md)**
+→ **[End – Refactor Project](./skills/end/README.md)**
 
-A especificação interna completa encontra-se em [skills/end/SKILL.md](../../skills/end/SKILL.md).
+A especificação interna completa está em [skills/end/SKILL.md](./skills/end/SKILL.md).
 
 ## Roteiro
 
-- **Start** (Início) — `start-package` (estruturação), `start-astro` (estruturador Astro) e `skrapi` (estudo de uma base de código existente) já estão disponíveis; mais ferramentas de estruturação `start-*` estão a caminho.
-- **Middle** (Meio) — aprimoradores focados sob demanda (desempenho, segurança, UX, remoção de código morto) estão planejados.
-- **End** (Fim) — `end` já está disponível; mais ambientes de execução, modos adicionais de refatoração especializados e utilitários estão planejados.
+- **Start** — `start-package` (scaffold), `start-astro` (scaffold Astro) e `skrapi` (estudar um codebase existente) disponíveis hoje; mais geradores `start-*` estão a caminho.
+- **Middle** — `middle` disponível hoje (visão geral de saúde + seis melhoradores numerados); ferramentas mais profundas por dimensão estão planejadas.
+- **End** — `end` disponível hoje; mais runtimes, modos de refatoração especializados adicionais e utilitários estão planejados.
+- **Utility** — `l10n-sync` disponível hoje para localização disciplinada e eficiente em tokens.
 
-Cada skill vem com sua própria documentação dedicada (como o atual [End – Refatorar Projeto](../../skills/end/README.md)).
+Cada skill vem com sua própria documentação dedicada (como o atual [End – Refactor Project](./skills/end/README.md)).
 
 ---
 
@@ -97,11 +102,11 @@ Cada skill vem com sua própria documentação dedicada (como o atual [End – R
 
 <div align="center">
   <p align="center">
-  <sub>Construído para desenvolvedores que desejam que seus agentes de IA ajam com a disciplina de um engenheiro sênior.</sub>
+  <sub>Feito para desenvolvedores que querem que seus agentes de IA atuem com a disciplina de um engenheiro sênior.</sub>
 </p>
 
-_Se você encontrar algum bug ou tiver comentários, sinta-se à vontade para [abrir uma issue](https://github.com/bastndev/skills/issues/new)._
+_Se você encontrar bugs ou tiver feedback, sinta-se à vontade para [abrir um issue](https://github.com/bastndev/skills/issues/new)._
 
-<sub>Feito no 🇵🇪 por <a href="https://gohit.xyz">Gohit X</a> · Licenciado sob <a href="https://github.com/bastndev/skills/blob/main/LICENSE">`MIT`</a></sub>
+<sub>Feito em 🇵🇪 por <a href="https://gohit.xyz">Gohit X</a> · Licenciado sob <a href="https://github.com/bastndev/skills/blob/main/LICENSE">`MIT`</a></sub>
 
 </div>

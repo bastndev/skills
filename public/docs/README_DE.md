@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/logo.webp" width="180" />
 </p>
 
-<h1 align="center">[Start] / Mitte / [Ende]</h1>
+<h1 align="center">[Start] / Middle / [End]</h1>
 
 <p align="center">
   <a href="https://github.com/bastndev/skills/blob/main/public/docs/README_ES.md">Español 🇪🇸</a> |
@@ -15,13 +15,13 @@
   <a href="https://github.com/bastndev/skills/blob/main/public/docs/README_RU.md">Русский 🇷🇺</a> |
   <a href="https://github.com/bastndev/skills/blob/main/public/docs/README_VI.md">Tiếng Việt 🇻🇳</a> |
   <a href="https://github.com/bastndev/skills/blob/main/public/docs/README_HI.md">हिन्दी 🇮🇳</a> |
-  <a href="https://github.com/bastndev/skills/blob/main/public/docs/README_AR.md">العربية 🇸🇦</a>
+  <a href="https://github.com/bastndev/skills/blob/main/public/docs/README_AR.md">العربية 🇸🇦</a><span>...</span>
 </p>
 
 <br>
 
 <p align="center">
-  Starten Sie neue Projekte mit Zuversicht. Verfeinern und härten Sie diese iterativ, während sie wachsen. Führen Sie tiefgreifende, sichere Refactorings durch, wenn sich die Architektur weiterentwickeln muss.
+  Starten Sie neue Projekte mit Zuversicht. Verfeinern und festigen Sie sie iterativ, während sie wachsen. Führen Sie tiefe, sichere Refactorings durch, wenn sich die Architektur weiterentwickeln muss.
 </p>
 
 <p align="center">
@@ -38,58 +38,63 @@ npx skills add bastndev/skills
 
 ## Die drei Phasen
 
-| Phase | Zweck | Schlüsselfähigkeiten | Beispiel-Skills | Status |
+| Phase | Zweck | Hauptfunktionen | Beispiel-Skills | Status |
 | ---------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------ |
-| **Start** | Ein Projekt beginnen — neues erstellen oder aus einem bestehenden lernen | Erstellen Sie produktionsreife Strukturen und Konfigurationen ab Commit #1. Oder analysieren Sie die Architektur & Pakete einer bestehenden Codebasis und dokumentieren Sie diese, um funktionierende Muster in Ihrem Projekt wiederzuverwenden. | `start-package`, `start-astro`, `skrapi`       | ㅤㅤ✅ |
-| **Middle** (Mitte)| Kontinuierliche Verbesserung & Feinschliff | Verbessern Sie UI/UX, härten Sie die Sicherheit, steigern Sie die Leistung, bereinigen Sie die Logik und entfernen Sie toten Code während der aktiven Entwicklung. | Gezielte Verbesserer (TBD) | Geplant |
-| **End** (Ende)| Audit, Diagnose & sicheres Refactoring | Vollständige Architektur- & Qualitätsanalyse. Kategorisierte Erkenntnisse mit Belegen auf Dateiebene. Priorisierter, phasenweiser Plan, der **nur mit expliziter Genehmigung** ausgeführt wird. Verhaltensbewahrend. Multi-Runtime-Unterstützung. | `end` | ㅤㅤ✅ |
+| **Start** | Ein Projekt beginnen — neu starten oder von einem bestehenden lernen | Erstellen Sie ab Commit #1 produktionsreife Strukturen und Konfigurationen. Oder analysieren Sie die Architektur & Pakete eines bestehenden Codebasis und dokumentieren Sie diese, damit Sie das Funktionierende in Ihrem eigenen Projekt wiederverwenden können. | `start-package`, `start-astro`, `skrapi` | ㅤㅤ✅ |
+| **Middle** | Kontinuierliche Verbesserung & Veredelung | Bewerten Sie das Projekt (0–100 Gesundheitsüberblick), dann verbessern Sie **eine Dimension nach der anderen** — Leistung, UI/UX, Aufgeräumtheit (Dateireihenfolge + Kommentar-Hygiene), Sicherheit, Struktur, Bereinigung oder Codequalität — mit einem fokussierten Plan, der nur bei Eingabe von `go` ausgeführt wird. | `middle` | ㅤㅤ✅ |
+| **End** | Audit, Diagnose & sicheres Refactoring | Vollständige Architektur- & Qualitätsanalyse. Klassifizierte Ergebnisse mit dateispezifischen Belegen. Priorisierter Phasenplan, der **nur mit ausdrücklicher Genehmigung** ausgeführt wird. Verhaltenserhaltend. Multi-Runtime-Unterstützung. | `end` | ㅤㅤ✅ |
 
 ## Verfügbare Skills
 
-Aufgelistet in der natürlichen Reihenfolge, in der Sie sie benötigen — **Start** (Starten) Sie etwas Neues (oder studieren Sie eine bestehende Codebasis als Inspiration), verfeinern Sie es in der **Middle** (Mitte) und härten Sie es am **End** (Ende).
+In der natürlichen Reihenfolge, in der Sie sie brauchen — **Starten** Sie etwas Neues (oder studieren Sie eine bestehende Codebasis als Inspiration), verfeinern Sie es in der **Mitte** und festigen Sie es am **Ende**.
 
 | Skill | Beschreibung |
 | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **[start-package](../../skills/start-package/README.md)** | _Start_ — Erstellt ein veröffentlichbares **duales ESM + CJS** TypeScript-Paket mit gebündelten Typdeklarationen, einem Zero-Config `tsup`-Build und auf `5.x` fixiertem TypeScript, sodass es sowohl im CLI als auch im Editor sauber kompiliert. Generiert `package.json`, `tsconfig.json`, tsup-Konfiguration, einen Smoke-Test und `.vscode`-Einstellungen und führt dann Installation, Build und Überprüfung durch.<br><br>→ [Vollständige Dokumentation](../../skills/start-package/README.md) |
-| **[start-astro](../../skills/start-astro/README.md)** | _Start_ — Erstellt ein neues Astro-Projekt mit der Vorlage `minimal`, überlagert mit einer sauberen, **skalierbaren** Architektur — bereit, von einem Portfolio zu einer vollständigen App zu wachsen. Richtet standardmäßig ein gemeinsames Layout, Kopf- und Fußzeile, Seiten, Hell-/Dunkel-Theme-Umschalter, native View Transitions, Pfad-Alias und Content Collections ein.<br><br>→ [Vollständige Dokumentation](../../skills/start-astro/README.md) |
-| **[skrapi](../../skills/skrapi/README.md)**               | _Start_ — Richten Sie es auf ein Projekt, das Sie bewundern, und es bildet ab, wie diese Codebasis aufgebaut ist, in einem festen `SKRAPI/`-Ordner mit fokussiertem Markdown — Architektur, Abhängigkeiten und einfügefertige Prompts — damit Sie die für Ihr eigenes Projekt passenden Muster übernehmen können, bevor Sie beginnen. Funktioniert mit jedem Stack (Web, Mobile, Erweiterung, Bibliothek, Monorepo); jede Beschreibung wird an echtem Code verifiziert, niemals nur anhand eines Paketnamens erraten. Mehrsprachige Ausgabe (🇪🇸 ES · 🇺🇸 EN · 🇨🇳 ZH).<br><br>→ [Vollständige Dokumentation](../../skills/skrapi/README.md) |
-| **[end](../../skills/end/README.md)**                     | _End_ (Ende) — Versteht Ihr Projekt von A bis Z. Liefert eine klare Diagnose (bestätigte Bugs, Risiken, Chancen, technische Schulden) mit konkreten Referenzen, empfiehlt die richtige Architekturrichtung für _diese_ Codebasis und erstellt einen geordneten Ausführungsplan. Jede Änderung erfolgt in einer isolierten, überprüfbaren Phase — sie wird nur fortgesetzt, wenn Sie `go`, `start` oder `proceed` sagen, und während der Analyse werden keine Dateien berührt.<br><br>→ [Vollständige Dokumentation & Beispiele](../../skills/end/README.md) |
+| **[start-package](./skills/start-package/README.md)** | _Start_ — Erstellt ein veröffentlichbares **duales ESM + CJS** TypeScript-Paket mit gebündelten Typlarkearungen, einem konfigurationsfreien `tsup`-Build und TypeScript auf `5.x` fixiert, damit es sowohl in der CLI als auch im Editor sauber erstellt wird. Generiert `package.json`, `tsconfig.json`, tsup-Konfiguration, einen Rauchtest und `.vscode`-Einstellungen, installiert dann, baut und verifiziert.<br><br>→ [Vollständige Dokumentation](./skills/start-package/README.md) |
+| **[start-astro](./skills/start-astro/README.md)** | _Start_ — Erstellt ein neues Astro-Projekt mit der `minimal`-Vorlage, ergänzt um eine saubere, **skalierbare** Architektur — bereit zum Wachstum von einem Portfolio zu einer vollständigen App. Richtet ein gemeinsames Layout, Header, Footer, Seiten, Hell/Dunkel-Thema-Umschaltung, native View Transitions, Pfad-Alias und Content Collections out of the box ein.<br><br>→ [Vollständige Dokumentation](./skills/start-astro/README.md) |
+| **[skrapi](./skills/skrapi/README.md)** | _Start_ — Richten Sie es auf ein Projekt, das Sie bewundern, und es kartiert, wie dieser Code in einen festen `SKRAPI/`-Ordner aus fokussiertem Markdown gebaut ist — Architektur, Abhängigkeiten und kopierfertige Prompts — damit Sie die Muster übernehmen können, die zu Ihrem Projekt passen, bevor Sie beginnen. Funktioniert mit jedem Stack (Web, Mobile, Erweiterung, Bibliothek, Monorepo); jede Beschreibung wird anhand des echten Codes überprüft, nie geraten. Mehrsprachige Ausgabe (🇪🇸 ES · 🇺🇸 EN · 🇨🇳 ZH).<br><br>→ [Vollständige Dokumentation](./skills/skrapi/README.md) |
+| **[middle](./skills/middle/README.md)** | _Middle_ — Nummerierte, bedarfsorientierte Verbesserer für aktive Entwicklung. `0` bewertet Ihr Projekt oder Ihren Ordner mit einem 0–100 Gesundheitsüberblick und zeigt auf den schwächsten Bereich; `1–7` qualifizieren jeweils eine Dimension (⚡ Leistung · 🎨 UI/UX · 🗂️ Aufgeräumtheit · 🔒 Sicherheit · 🏗️ Struktur · 🧹 Bereinigung · 🧩 Qualität), berichten evidenzgestützte Ergebnisse und schlagen einen Korrekturplan vor — Phase für Phase nur bei Eingabe von `go` ausgeführt.<br><br>→ [Vollständige Dokumentation](./skills/middle/README.md) |
+| **[end](./skills/end/README.md)** | _End_ — Versteht Ihr Projekt von Anfang bis Ende. Liefert eine klare Diagnose (bestätigte Bugs, Risiken, Möglichkeiten, technische Schulden) mit konkreten Referenzen, empfiehlt die richtige Architekturrichtung für _diese_ Codebasis und erstellt einen geordneten Ausführungsplan. Jede Änderung erfolgt in einer isolierten, überprüfbaren Phase — sie wird nur bei Eingabe von `go`, `start` oder `proceed` ausgeführt, und keine Dateien werden während der Analyse berührt.<br><br>→ [Vollständige Dokumentation & Beispiele](./skills/end/README.md) |
+| **[l10n-sync](./skills/l10n-sync/README.md)** | _Utility_ — Der disziplinierte, token-effiziente Lokalisierungsskill. Synchronisierte übersetzte Assets mit der englischen Quelle der Wahrheit ohne vollständige Neuübersetzung. Stellt sicher, dass Invarianten (Code, HTML) und exakte Strukturen über 11 Sprachen erhalten bleiben.<br><br>→ [Vollständige Dokumentation](./skills/l10n-sync/README.md) |
 
-> **Hinweis:** Jeder Skill verfügt über eine eigene detaillierte README. Die Startseite gibt einen Überblick; vertiefen Sie sich in `./skills/<skill>/README.md` für genaue Nutzung, Berichtbeispiele und Garantien.
+> **Hinweis:** Jeder Skill wird mit einer eigenen detaillierten README ausgeliefert. Die Hauptseite gibt den Überblick; tauchen Sie in `./skills/<skill>/README.md` für tiefe Nutzung, Berichtsbeispiele und Garantien ein.
 
 ## Installation
 
-Jeder Skill wird auf die gleiche Weise installiert — wählen Sie den aus, den Sie benötigen:
+Jeder Skill wird auf dieselbe Weise installiert — wählen Sie den, den Sie brauchen:
 
 ```bash
-npx skills add bastndev/skills --skill start-package   # Start — TS-npm-Paket erstellen
-npx skills add bastndev/skills --skill start-astro     # Start — Astro-Projekt erstellen
-npx skills add bastndev/skills --skill skrapi          # Start — Jede Codebasis studieren & dokumentieren
-npx skills add bastndev/skills --skill end             # End   — Audit & sicheres Refactoring
+npx skills add bastndev/skills --skill start-package   # Start  — scaffold a TS npm package
+npx skills add bastndev/skills --skill start-astro     # Start  — scaffold an Astro project
+npx skills add bastndev/skills --skill skrapi          # Start  — study & document any codebase
+npx skills add bastndev/skills --skill middle          # Middle — score & improve one dimension
+npx skills add bastndev/skills --skill end             # End    — audit & safely refactor
+npx skills add bastndev/skills --skill l10n-sync       # Utility — sync localized assets safely
 ```
 
-## Wie der "End" Skill funktioniert
+## So funktioniert der End-Skill
 
-`end` ist der ausgereifteste Skill der Suite. Hier ist sein durchgehender Workflow:
+`end` ist der reifste Skill in der Suite. Hier sein Workflow von Anfang bis Ende:
 
-1. **Zuerst Analyse** — Kartografiert Einstiegspunkte und versteht das Projekt. **Es werden null Dateien modifiziert.**
-2. **Strukturierter Bericht** — Klare Erkenntnisse kategorisiert in Bugs (mit Schweregrad), Schulden/Risiken und Vorschläge, plus eine bewertete Gesundheitsübersicht, eine Architekturempfehlung und ein geordneter Plan — alles unterstützt durch konkrete Datei- + Zeilenreferenzen.
-3. **Sie autorisieren jede Phase** — Er führt **genau eine Phase** auf einmal aus. Nach jeder Phase erhalten Sie eine genaue Zusammenfassung der Änderungen, durchgeführten Validierungen und die Liste der verbleibenden Phasen.
-4. **Volle Kontrolle & Sicherheit** — Erstellt niemals Tests, wenn das Projekt keine hatte. Fügt niemals ohne Erlaubnis Abhängigkeiten hinzu oder wechselt den Paketmanager. Respektiert Ihre nicht committete Arbeit und bewahrt immer das aktuelle Verhalten, es sei denn, ein gerechtfertigter Bug wird behoben.
+1. **Zuerst Analyse** — Kartiert Einstiegspunkte und versteht das Projekt. **Keine Dateien werden geändert.**
+2. **Strukturierter Bericht** — Klare Ergebnisse, klassifiziert in Bugs (mit Schweregrad), Schulden/Risiken und Vorschläge, plus ein bewerteter Gesundheitsüberblick, eine Architektur-Empfehlung und ein geordneter Plan — alle untermauert durch konkrete Datei + Zeilen-Referenzen.
+3. **Sie genehmigen jede Phase** — Es wird **genau eine Phase** gleichzeitig ausgeführt. Nach jeder Phase erhalten Sie eine präzise Zusammenfassung der Änderungen, durchgeführte Validierungen und die Liste der verbleibenden Phasen.
+4. **Volle Kontrolle & Sicherheit** — Erstellt nie Tests, wenn das Projekt keine hatte. Fügt keine Abhängigkeiten hinzu oder ändert den Paketmanager ohne Genehmigung. Respektiert Ihre uncommitted Arbeit und bewahrt immer das aktuelle Verhalten, es sei denn, ein gerechtfertigter Bug wird behoben.
 
-Lesen Sie die dedizierte Skill-Dokumentation für den vollständigen Workflow, genaue Berichtsformate (einschließlich der erforderlichen Abschlussblöcke), Architektur-Entscheidungsregeln und alle Sicherheitsgarantien:
+Den vollständigen Workflow, exakte Berichtsformate (einschließlich der erforderlichen Abschlussblöcke), Architektur-Entscheidungsregeln und alle Sicherheitsgarantien finden Sie in der speziellen Skill-Dokumentation:
 
-→ **[End – Refactor Project](../../skills/end/README.md)**
+→ **[End – Refactor Project](./skills/end/README.md)**
 
-Die vollständige interne Spezifikation finden Sie in [skills/end/SKILL.md](../../skills/end/SKILL.md).
+Die vollständige interne Spezifikation findet sich in [skills/end/SKILL.md](./skills/end/SKILL.md).
 
 ## Roadmap
 
-- **Start** — `start-package` (Gerüstbau), `start-astro` (Astro-Gerüstbau) und `skrapi` (Studium einer bestehenden Codebasis) sind heute verfügbar; weitere `start-*`-Scaffolder sind in Arbeit.
-- **Middle** — fokussierte, On-Demand-Verbesserer (Leistung, Sicherheit, UX, Entfernung von totem Code) sind geplant.
-- **End** — `end` ist heute verfügbar; weitere Runtimes, zusätzliche spezialisierte Refactoring-Modi und Dienstprogramme sind geplant.
+- **Start** — `start-package` (Scaffold), `start-astro` (Astro-Scaffold) und `skrapi` (bestehende Codebasis studieren) sind heute verfügbar; weitere `start-*`-Generatoren sind auf dem Weg.
+- **Middle** — `middle` ist heute verfügbar (Gesundheitsüberblick + sechs nummerierte Fokus-Verbesserer); tiefere pro-Fokus-Werkzeuge sind geplant.
+- **End** — `end` ist heute verfügbar; weitere Laufzeiten, zusätzliche spezialisierte Refactoring-Modi und Utilities sind geplant.
+- **Utility** — `l10n-sync` ist heute für disziplinierte, token-effiziente Workspace-Lokalisierung verfügbar.
 
-Jeder Skill verfügt über seine eigene dedizierte Dokumentation (wie das aktuelle [End – Refactor Project](../../skills/end/README.md)).
+Jeder Skill wird mit eigener Dokumentation ausgeliefert (wie das aktuelle [End – Refactor Project](./skills/end/README.md)).
 
 ---
 
@@ -97,10 +102,10 @@ Jeder Skill verfügt über seine eigene dedizierte Dokumentation (wie das aktuel
 
 <div align="center">
   <p align="center">
-  <sub>Gebaut für Entwickler, die möchten, dass ihre KI-Agenten mit der Disziplin eines Senior-Engineers handeln.</sub>
+  <sub>Entwickelt für Entwickler, die wollen, dass ihre KI-Agenten mit der Disziplin eines Senior Engineers handeln.</sub>
 </p>
 
-_Wenn Sie Fehler finden oder Feedback haben, können Sie gerne ein [Issue eröffnen](https://github.com/bastndev/skills/issues/new)._
+_Wenn Sie Fehler finden oder Feedback haben, zögern Sie nicht, ein [Issue zu eröffnen](https://github.com/bastndev/skills/issues/new)._
 
 <sub>Hergestellt in 🇵🇪 von <a href="https://gohit.xyz">Gohit X</a> · Lizenziert unter <a href="https://github.com/bastndev/skills/blob/main/LICENSE">`MIT`</a></sub>
 
