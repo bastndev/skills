@@ -3,7 +3,7 @@ name: l10n-sync
 description: Keep translations in sync with their English source — README_<LANG>.md files from README.md, and VS Code package.nls.<lang>.json bundles from package.nls.json. Propagates only what changed, preserving tables, code, links, and placeholders. Use when the user asks to translate, localize, sync, or update a README, docs folder, or nls/l10n JSON bundles, or invokes this skill.
 metadata:
   author: bastndev
-  version: "3.1.0"
+  version: "3.1.1"
 ---
 
 # l10n-sync
@@ -14,7 +14,8 @@ sync with it:
 - **Markdown** — `README.md` → the existing `README_<LANG>.md` files.
 - **JSON bundles** — `package.nls.json` (project root) → the existing
   `package.nls.<lang>.json` siblings. Any flat `X.json` → `X.<lang>.json`
-  works the same way.
+  family works the same way — e.g. VS Code's modern
+  `l10n/bundle.l10n.json` → `l10n/bundle.l10n.<lang>.json`.
 
 The script does all structure work (parsing, diffing, splicing, repairing,
 verifying); you do only the translation. `plan` picks the mode per file,
@@ -55,8 +56,10 @@ automatically:
   different `.md` as the base. Resolve `@mentions` to plain paths first.
 - **nls / JSON bundles**: if the request mentions "nls" or names a `.json`,
   source = `package.nls.json` at the project root (or the exact `.json` the
-  user named). Targets are its existing `package.nls.<lang>.json` siblings —
-  discovered automatically, no `--dir` needed.
+  user named); if it mentions "l10n bundles", source =
+  `l10n/bundle.l10n.json`. Targets are the source's existing
+  `<source>.<lang>.json` siblings — discovered automatically, no `--dir`
+  needed.
 - **Target** (markdown): a folder (e.g. `public/docs/`) → every existing
   `README_<LANG>.md` in it; a named file → just that file (create it if
   missing — the user asked for it). Language comes from the filename suffix
@@ -128,8 +131,10 @@ block ids in `jobs.json` ARE the JSON keys; write
 guaranteed valid syntax, escaping, and source key order; keys removed from
 the source disappear from every target automatically. Brand-like values
 (e.g. `"displayName": "F1"`) legitimately stay identical — the "same as
-English" note is a hint, not an error. `repair`/`verify` work the same as
-for markdown:
+English" note is a hint, not an error. Values that are not plain strings
+(e.g. bundle.l10n's `{"message": …, "comment": …}` form) are copied
+verbatim, never translated. `repair`/`verify` work the same as for
+markdown:
 ```bash
 python3 -B "$SKILL/scripts/l10n.py" verify --source package.nls.json
 ```
