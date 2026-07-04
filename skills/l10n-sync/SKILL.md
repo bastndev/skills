@@ -13,16 +13,22 @@ Keep this workspace's translated assets in sync with the English source of truth
 
 ## When to run
 
-The user invokes this skill (e.g. via `/skill`) or asks in natural language to translate / sync / update README or nls files. The skill ALWAYS starts by asking in chat:
+The user invokes this skill (e.g. via `/skill`) or asks in natural language to translate / sync / update README or nls files.
 
-> Which source file should I sync?
-> - A `.md` file (e.g. `src/my-plus/my-smart/assets/skills/default/README.md`) → mirrors into `docs/{lang}/README.md`
-> - `package.nls.json` → syncs all `package.nls.{lang}.json`
-> - `l10n/bundle.l10n.en.json` (or the English source) → syncs all `l10n/bundle.l10n.{lang}.json`
->
-> Reply with the path (or "all" to do every kind).
+**Resolve `@mentions` from the user's message FIRST** (see `references/mention-syntax.md`):
+- `@<file>.md` → English source for workflow A.
+- `@<folder>/` → target directory for the `.md` mirror (overrides the default `public/docs/`).
+- `@package.nls.json` → workflow B.
+- `@l10n/` or `@bundle.l10n.en.json` → workflow C.
 
-Do NOT proceed until the user answers. Do NOT guess the source file. Do NOT scan unrelated files.
+**If the message already names a source AND (for `.md`) a target dir, proceed directly — do NOT ask again.** Only ask in chat when something is missing or ambiguous:
+
+- ".md" workflow but no `@file.md` source given → ask once: "Which English `.md` should I mirror? (the workspace has several READMEs)"
+- ".md" workflow, source given, but no target dir and `public/docs/` does not exist → ask once: "Which folder should the mirrors go into? (default: `public/docs/`)"
+- Ambiguous nls source (e.g. no `bundle.l10n.en.json` and the canonical English source is unclear) → ask once.
+- User says "all" → run A, B, C in order. For A you still need a source path — ask once if not given.
+
+Do NOT scan unrelated files. Do NOT guess the source file. Do NOT re-ask what the user already said.
 
 ## Supported languages
 
@@ -66,7 +72,10 @@ Map (code → label, used only for the chat summary):
 ### A. `.md` mirror
 
 Source: `path/to/README.md` (English canonical).
-Targets: `docs/{lang}/README.md` for each supported lang.
+Targets: `<target_dir>/{lang}/README.md` for each supported lang — where `<target_dir>` is:
+1. the folder the user named via `@<folder>/` if present, else
+2. `public/docs/` if it exists in the workspace, else
+3. `docs/` (created on first run).
 
 1. Run the extractor on the **English** source:
    ```bash
@@ -82,7 +91,7 @@ Targets: `docs/{lang}/README.md` for each supported lang.
    python3 future-skill/scripts/extract_reassemble.py reassemble \
      --source path/to/README.md \
      --payload future-skill/scripts/.work/payload.{lang}.json \
-     --out docs/{lang}/README.md
+     --out <target_dir>/{lang}/README.md
    ```
 5. Verify with the script's `check` subcommand (line-count parity + "untranslated" detector). If it reports blanks, translate the missing IDs and re-run `reassemble`.
 
@@ -160,7 +169,8 @@ If `python3` is missing or the script fails, fall back to manual mode but KEEP T
 ## References
 
 - `references/langs.md` — language code → label map and RTL notes.
-- `references/file-kinds.md` — how to detect which workflow to run from the source path.
+- `references/file-kinds.md` — how to detect which workflow to run from the source path + target dir resolution.
+- `references/mention-syntax.md` — how to resolve `@path` tokens from the user's message.
 - `references/reassembly-spec.md` — exact rules the reassembler follows (heading/list/table/code handling).
 - `references/batching.md` — how to batch multiple languages into one LLM call.
 - `scripts/extract_reassemble.py` — the extractor / reassembler / checker.
