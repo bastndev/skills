@@ -78,12 +78,22 @@ Translation rules:
 ```bash
 python3 -B "$SKILL/scripts/l10n.py" apply --work "$WORK"
 ```
-This writes every target file and runs the verifier. It reports, per file, slot
-parity, lost invariants, dropped/emptied table cells. If a file shows `issues`,
-fix those blocks in `results.json` (or re-run `plan --full` for that file) and
-`apply` again.
+This writes every target file and runs the verifier, printing a **readable,
+already-located report** — for every problem it gives the line, the exact token
+to keep, and the English vs. translated text. **Do NOT write your own scripts to
+hunt for problems — the report already tells you what and where.** Add `--json`
+if you want structured output instead.
 
-You can also verify at any time without writing:
+**Fixing an issue** (only the files the report marks `✗`):
+- `invariant_lost` (a `` `code` ``/URL/placeholder/tag got altered) → open that
+  file at the given line and correct just that token, or fix the block in
+  `results.json` and re-run `apply`.
+- `table cell emptied` / `verbatim table cell changed` → run `repair` (below).
+- `slot count … drifted` → re-run `plan --full` for that file.
+Then re-run `apply` (or `verify`) — it should go all `✓`. A "same as English"
+note is a soft hint, not an error; ignore it unless a line really was skipped.
+
+You can verify at any time without writing:
 ```bash
 python3 -B "$SKILL/scripts/l10n.py" verify --source README.md --dir public/docs
 ```
