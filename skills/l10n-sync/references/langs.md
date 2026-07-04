@@ -1,17 +1,33 @@
-# Language map
+# Filename-suffix → language map
 
-| code   | label            | rtl   | notes                                           |
-|--------|------------------|-------|-------------------------------------------------|
-| es     | Español          | no    |                                                 |
-| zh-cn  | 中文             | no    | Use Simplified Chinese.                          |
-| de     | Deutsch          | no    |                                                 |
-| fr     | Français         | no    |                                                 |
-| ja     | 日本語           | no    |                                                 |
-| ko     | 한국어            | no    |                                                 |
-| pt-br  | Português (Brasil)| no    | Brazilian Portuguese.                           |
-| ru     | Русский          | no    |                                                 |
-| vi     | Tiếng Việt       | no    |                                                 |
-| hi     | हिन्दी            | no    |                                                 |
-| ar     | العربية          | yes   | RTL prose; keep placeholders/URLs LTR. No bidi markers unless source has them. |
+The language is read from the filename suffix: `README_<SUFFIX>.md`. The suffix
+is matched case-insensitively (`README_AR.md`, `readme_ar.md`, `README-ar.md`
+all → Arabic). This map is **extensible and non-gating**: files drive the sync,
+not this list. To support a new language the user just creates the file — if its
+suffix isn't below, the script still processes it and asks you to infer the
+language from the code.
 
-The `code` is the only value used in file paths and JSON keys. The `label` is used only in the user-facing chat summary (with the flag emoji).
+| suffix        | language              | rtl |
+|---------------|-----------------------|-----|
+| ar            | Arabic                | yes |
+| de            | German                | no  |
+| es            | Spanish               | no  |
+| fr            | French                | no  |
+| hi            | Hindi                 | no  |
+| ja            | Japanese              | no  |
+| ko            | Korean                | no  |
+| pt            | Portuguese            | no  |
+| pt-br         | Brazilian Portuguese  | no  |
+| ru            | Russian               | no  |
+| vi            | Vietnamese            | no  |
+| zh / zh-cn    | Simplified Chinese    | no  |
+| zh-tw         | Traditional Chinese   | no  |
+| it, nl, tr, pl, id, th, uk, cs, ro, el, sv, da, fi, no, hu, bn, ta, ms, fil | (as named) | no |
+| he, fa, ur    | Hebrew / Persian / Urdu | yes |
+
+The authoritative copy of this map lives in `scripts/l10n.py` (`LANG_NAMES`,
+`RTL`). Add rows there when you add rows here.
+
+**RTL languages** (`ar`, `he`, `fa`, `ur`): write natural right-to-left prose,
+keep code / URLs / placeholders left-to-right, and add no bidi control marks
+unless the English source already has them.
