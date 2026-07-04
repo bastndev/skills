@@ -14,7 +14,7 @@
 
 ---
 
-Keep this workspace's translated assets in sync with the English source of truth — *without* burning tokens on full-file retranslation and *without* letting the model drop tables, code, or keys.
+Keep this workspace's translated assets in sync with the English source of truth — *without* burning tokens on retranslating what didn't change, and *without* letting the model drop tables, code, links, or keys.
 
 <p align="center">
   <a href="https://skills.sh/bastndev/skills">
@@ -28,23 +28,55 @@ Keep this workspace's translated assets in sync with the English source of truth
 npx skills add bastndev/skills --skill l10n-sync
 ```
 
-## Supported Workflows
+## Supported Sources
 
-- **`.md` mirror**: Mirrors a canonical English `.md` into per-language `docs/{lang}/` copies.
-- **`package.nls.json`**: Syncs all `package.nls.{lang}.json`.
-- **`l10n/bundle.l10n.en.json`**: Syncs all `l10n/bundle.l10n.{lang}.json` (or uses the English source as fallback).
+| Source (English)       | Synced targets                  |
+| ---------------------- | ------------------------------- |
+| `README.md`            | every existing `README_<LANG>.md` next to it (e.g. `public/docs/`) |
+| `package.nls.json`     | every existing `package.nls.<lang>.json` sibling |
+| `l10n/bundle.l10n.json`| every existing `l10n/bundle.l10n.<lang>.json` sibling |
+
+Any flat `X.json` → `X.<lang>.json` family works the same way. Targets are
+discovered automatically — the skill **never invents filenames or languages**;
+it only writes to files that already exist (or one the user names explicitly).
+
+## How It Works
+
+A bundled Python script (`scripts/l10n.py`) owns all the structure; the model
+only translates. Two modes, chosen automatically per file:
+
+- **Incremental** — the normal case. A git delta finds the blocks that changed
+  in the English source; the model translates *only those*, and the script
+  splices them back into the exact same positions. A 3-line edit costs
+  3 blocks × N languages, not a retranslation.
+- **Full** — first translation or a drifted file. The model translates the
+  whole file naturally, then `repair` restores anything structural at zero
+  token cost and reports any line left in English.
+
+Every run ends with `verify`: a located, actionable report (line/key, exact
+token, English vs. translated) — never a guessing game.
 
 ## Supported Languages
 
-es 🇪🇸, zh-cn 🇨🇳, de 🇩🇪, fr 🇫🇷, ja 🇯🇵, ko 🇰🇷, pt-br 🇧🇷, ru 🇷🇺, vi 🇻🇳, hi 🇮🇳, ar 🇸🇦
+**Any language whose file exists.** The sync is driven by your files, not by a
+fixed list — create `README_TR.md` or `package.nls.it.json` and it gets synced.
+The suffix → language map (`ar`, `es`, `pt-br`, `zh-cn`, …) lives in
+[`references/langs.md`](./references/langs.md) and is extensible, non-gating.
 
 ## Guarantees
 
-- ✅ **English is the source of truth.** Never edits the English file during sync.
-- ✅ **Token discipline.** The model NEVER sees the full markdown or bundles — only the translatable strings as a flat list.
-- ✅ **Never translates invariants.** Code spans, frontmatter, URLs, and HTML are preserved verbatim.
-- ✅ **Preserves structure.** Translated files keep exact heading hierarchy, list markers, and table structures.
-- ✅ **One translation pass per language.**
+- ✅ **English is the source of truth.** The English file is never edited
+  during a sync.
+- ✅ **Token discipline.** Incremental syncs send the model only the changed
+  blocks — never the whole file. Baselines cost the same as translating
+  directly, with verification on top.
+- ✅ **Invariants survive.** Code spans, URLs, HTML tags, and placeholders
+  (`{0}`, `%s`) are preserved verbatim and checked by `verify`.
+- ✅ **Structure preserved.** Headings, list markers, and tables are
+  reconstructed cell by cell; JSON targets are written by the script itself —
+  valid syntax, correct escaping, source key order, removed keys pruned.
+- ✅ **Zero-token repair.** `repair` restores verbatim content and realigns
+  drifted files without retranslating a single word.
 
 ---
 
