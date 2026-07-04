@@ -3,7 +3,7 @@ name: l10n-sync
 description: Keep translated README files in sync with the English README.md. Propagates only what changed in the English source into each README_<LANG>.md, preserving tables, code, and links — cheaply and without dropping anything. Use when the user asks to translate, localize, sync, or update a README / docs folder, or invokes this skill.
 metadata:
   author: bastndev
-  version: "3.0.0"
+  version: "3.0.1"
 ---
 
 # l10n-sync
@@ -136,9 +136,14 @@ full translation converges in one pass plus the few line fixes it lists.
 
 ## Output to the user
 
-Post one short table in chat — nothing else. Do not dump file contents.
+On success post EXACTLY this, in the user's language: one intro line, the
+table, nothing after it. **No "details:" section, no bullet lists, no
+explanations, no per-file commentary, no file contents.** The table IS the
+report.
 
 ```
+Ready 🎉 — localization complete:
+
 | file             | lang | mode        | blocks | status |
 |------------------|------|-------------|--------|--------|
 | README_ES.md     | es   | incremental | 6      | ✅     |
@@ -146,7 +151,8 @@ Post one short table in chat — nothing else. Do not dump file contents.
 | README_DE.md     | de   | full        | —      | ✅ created |
 ```
 
-Flag any file whose verify reported `issues` (e.g. `⚠ 1 invariant lost — fixing`).
+Add extra lines ONLY for problems: one line per file whose verify reported
+`issues` (e.g. `⚠ README_AR.md: 1 invariant lost — fixed`).
 
 ## Fallback
 
