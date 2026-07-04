@@ -284,13 +284,22 @@ def sig(slot: dict):
 # git baseline
 # --------------------------------------------------------------------------- #
 
-def git_old_source(source: Path, base: str) -> str | None:
-    """Return the committed text of `source` at `base`, or None if unavailable."""
+def _git_root(source: Path) -> str | None:
     try:
-        root = subprocess.run(
+        return subprocess.run(
             ["git", "-C", str(source.resolve().parent), "rev-parse", "--show-toplevel"],
             capture_output=True, text=True, check=True,
         ).stdout.strip()
+    except Exception:
+        return None
+
+
+def git_old_source(source: Path, base: str) -> str | None:
+    """Return the committed text of `source` at `base`, or None if unavailable."""
+    root = _git_root(source)
+    if root is None:
+        return None
+    try:
         rel = source.resolve().relative_to(Path(root))
         r = subprocess.run(
             ["git", "-C", root, "show", f"{base}:{rel.as_posix()}"],
@@ -299,6 +308,37 @@ def git_old_source(source: Path, base: str) -> str | None:
         if r.returncode != 0:
             return None
         return r.stdout
+    except Exception:
+        return None
+
+
+def git_sync_baseline(source: Path, targets: list[Path]) -> str | None:
+    """The source as of the oldest commit that last touched any target — i.e.
+    the source version the stalest translation was synced against. Diffing
+    from here covers multi-commit source edits and never re-offers blocks the
+    targets already incorporate."""
+    root = _git_root(source)
+    if root is None:
+        return None
+    try:
+        oldest = None
+        for t in targets:
+            if not t.exists():
+                continue
+            rel = t.resolve().relative_to(Path(root)).as_posix()
+            r = subprocess.run(
+                ["git", "-C", root, "log", "-1", "--format=%ct %H", "--", rel],
+                capture_output=True, text=True,
+            )
+            line = r.stdout.strip()
+            if r.returncode != 0 or not line:
+                continue
+            ts, commit = line.split()
+            if oldest is None or int(ts) < oldest[0]:
+                oldest = (int(ts), commit)
+        if oldest is None:
+            return None
+        return git_old_source(source, oldest[1])
     except Exception:
         return None
 
@@ -404,26 +444,40 @@ def cmd_plan(args) -> int:
     new_text = source.read_text(encoding="utf-8")
     new_slots = parse(new_text)
 
-    old_text = git_old_source(source, args.base)
-    if old_text is not None and old_text == new_text and args.base == "HEAD":
-        # edit already committed — compare against the previous commit instead
-        prev = git_old_source(source, "HEAD~1")
-        if prev is not None:
-            old_text = prev
-    old_slots = parse(old_text) if old_text is not None else None
-
     targets = find_targets(source, args.dir, args.file)
+
+    if args.base != "HEAD":
+        old_text = git_old_source(source, args.base)
+    else:
+        # default baseline: the source as the stalest target last saw it
+        old_text = git_sync_baseline(source, targets)
+        if old_text is None:
+            old_text = git_old_source(source, "HEAD")
+            if old_text is not None and old_text == new_text:
+                # edit already committed — compare against the previous commit
+                prev = git_old_source(source, "HEAD~1")
+                if prev is not None:
+                    old_text = prev
+    old_slots = parse(old_text) if old_text is not None else None
     work = args.work
-    work.mkdir(parents=True, exist_ok=True)
+    if work.exists():
+        # a plan supersedes any previous run — drop stale work products so an
+        # `apply` can never splice from an outdated plan
+        for stale in ["state.json", "jobs.json", "results.json"]:
+            (work / stale).unlink(missing_ok=True)
+        for stale in work.glob("partial-*.json"):
+            stale.unlink(missing_ok=True)
 
     counter = [0]
     def next_id():
         counter[0] += 1
         return counter[0]
 
-    state_targets = []
-    jobs_targets = []
-    summary = []
+    state_targets = []   # incremental splice plans
+    inc_targets = []     # incremental: translate blocks once per language
+    shared_blocks = None
+    direct = []          # full: model translates the whole file directly
+    up_to_date = []
 
     for tgt in targets:
         counter[0] = 0  # ids are per-file
@@ -436,42 +490,76 @@ def cmd_plan(args) -> int:
         jobs: list[dict] = []
         emit, mode = build_emit(new_slots, old_slots, tgt_slots, jobs, next_id,
                                 force_full=args.full)
+        if mode == "full":
+            # Direct translation: no block jobs, no splice plan. The model
+            # rewrites the whole file; `repair` then restores structure and
+            # `verify` guarantees nothing was dropped. For a baseline this is
+            # strictly cheaper than shipping every block through JSON.
+            direct.append({"file": str(tgt), "language": name, "rtl": rtl,
+                           "new_file": not tgt.exists()})
+        elif not jobs:
+            up_to_date.append(str(tgt))
+        else:
+            state_targets.append({"file": str(tgt), "emit": emit})
+            inc_targets.append({"file": str(tgt), "lang": code,
+                                "language": name, "rtl": rtl})
+            if shared_blocks is None:
+                # identical for every aligned target: jobs derive only from the
+                # old→new source diff, never from the target file
+                shared_blocks = jobs
 
-        state_targets.append({"file": str(tgt), "emit": emit})
-        if jobs:
-            jobs_targets.append({
-                "file": str(tgt), "lang": code, "language": name,
-                "rtl": rtl, "mode": mode, "blocks": jobs,
-            })
-        summary.append({"file": str(tgt), "lang": code, "mode": mode,
-                        "blocks": len(jobs)})
+    if inc_targets:
+        work.mkdir(parents=True, exist_ok=True)
+        (work / "state.json").write_text(
+            json.dumps({"source": str(source), "targets": state_targets},
+                       ensure_ascii=False, indent=2), encoding="utf-8")
+        (work / "jobs.json").write_text(
+            json.dumps({
+                "source": str(source),
+                "instructions": (
+                    "Translate every block's 'text' once per language in "
+                    "'targets'. Copy every substring in 'keep' (code, URLs, "
+                    "paths, placeholders, HTML) verbatim. No notes, no "
+                    "restructuring. Write results.json in this directory as "
+                    "{file: {id: translation}}. Do it yourself in this session "
+                    "— no subagents and no helper scripts. Only if the user "
+                    "explicitly asked for parallel agents: each agent writes "
+                    "partial-<lang>.json as {id: translation} and validates it "
+                    "with `python3 -m json.tool <file>`; then run the 'merge' "
+                    "command."
+                ),
+                "blocks": shared_blocks,
+                "targets": inc_targets,
+            }, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    (work / "state.json").write_text(
-        json.dumps({"source": str(source), "targets": state_targets},
-                   ensure_ascii=False, indent=2), encoding="utf-8")
-    (work / "jobs.json").write_text(
-        json.dumps({
-            "source": str(source),
-            "instructions": (
-                "Translate each block's 'text' into the file's 'language'. "
-                "Copy every substring in 'keep' (code, URLs, paths, placeholders, "
-                "HTML) verbatim. Do not add notes or change structure. "
-                "Write results to results.json as {file: {id: translation}} — or, "
-                "when splitting work across agents, one partial-<lang>.json per "
-                "language as {id: translation}, then run the 'merge' command. "
-                "Output must be valid JSON: escape double quotes inside "
-                "translations, and validate every file you write with "
-                "`python3 -m json.tool <file>` before finishing."
-            ),
-            "targets": jobs_targets,
-        }, ensure_ascii=False, indent=2), encoding="utf-8")
+    me = Path(__file__).resolve()
+    nxt = []
+    if direct:
+        nxt.append(
+            "For each file in translate_directly, ONE language at a time — no "
+            "subagents, no helper scripts: write the complete translated file "
+            "(translate prose only; copy code, URLs and HTML tags "
+            f"byte-for-byte), then run `python3 -B {me} repair --source "
+            f"{source} --file <that-file>` and fix only the lines it lists.")
+    if inc_targets:
+        nxt.append(
+            f"Translate the {len(shared_blocks)} block(s) in "
+            f"{work / 'jobs.json'} once per language in its 'targets', write "
+            f"{work / 'results.json'} as {{file: {{id: translation}}}}, then "
+            f"run `python3 -B {me} apply`.")
+    if not nxt:
+        nxt.append("Nothing to translate — every target is in sync.")
 
-    print(json.dumps({
-        "targets": len(targets),
-        "to_translate": [s for s in summary if s["blocks"]],
-        "up_to_date": [s["file"] for s in summary if not s["blocks"]],
-        "jobs_file": str(work / "jobs.json"),
-    }, ensure_ascii=False, indent=2))
+    out = {
+        "up_to_date": up_to_date,
+        "translate_directly": direct,
+        "incremental": [t["file"] for t in inc_targets],
+        "next": nxt,
+    }
+    if inc_targets:
+        out["incremental_blocks"] = len(shared_blocks)
+        out["jobs_file"] = str(work / "jobs.json")
+    print(json.dumps(out, ensure_ascii=False, indent=2))
     return 0
 
 
@@ -489,6 +577,7 @@ def cmd_merge(args) -> int:
         return 1
     jobs = json.loads(jobs_path.read_text(encoding="utf-8"))
     by_lang = {t["lang"]: t for t in jobs["targets"]}
+    all_ids = {str(b["id"]) for b in jobs["blocks"]}
 
     results: dict = {}
     report: list[dict] = []
@@ -512,8 +601,7 @@ def cmd_merge(args) -> int:
                                     "escaped as \\\")"})
             errors += 1
             continue
-        expected = {str(b["id"]) for b in t["blocks"]}
-        missing = sorted(expected - {str(k) for k in data}, key=int)
+        missing = sorted(all_ids - {str(k) for k in data}, key=int)
         if missing:
             report.append({"partial": part.name, "ok": False,
                            "error": f"missing block id(s): {', '.join(missing)}"})
@@ -539,6 +627,11 @@ def cmd_merge(args) -> int:
 
 def cmd_apply(args) -> int:
     work = args.work
+    if not (work / "state.json").exists():
+        print("Nothing to apply — the plan produced no incremental targets.\n"
+              "Full-mode files are translated directly and checked with:\n"
+              "  repair --source <source> --file <target>")
+        return 0
     state = json.loads((work / "state.json").read_text(encoding="utf-8"))
     results_path = work / "results.json"
     results = json.loads(results_path.read_text(encoding="utf-8")) if results_path.exists() else {}
@@ -608,8 +701,9 @@ def verify_pair(source: Path, target: Path) -> dict:
 
     if len(src) != len(tgt):
         return {"ok": False, "src_slots": len(src), "tgt_slots": len(tgt),
-                "issues": [f"slot count {len(src)} vs {len(tgt)} — structure drifted; "
-                           "re-run plan --full for this file"], "details": []}
+                "issues": [f"slot count {len(src)} vs {len(tgt)} — structure "
+                           "drifted; run repair (it realigns) for this file"],
+                "details": []}
 
     def cell_text(c: dict) -> str:
         return c["en"] if c.get("t") == "tr" else c.get("v", "")
@@ -673,6 +767,23 @@ def verify_pair(source: Path, target: Path) -> dict:
     }
 
 
+def _render_details(details: list[dict]) -> list[str]:
+    out = []
+    for d in details:
+        loc = f"line {d['line']}" + (f", col {d['col']}" if "col" in d else "")
+        if d["type"] == "invariant_lost":
+            out.append(f"      {loc}: keep `{d['expected']}` verbatim — it is missing")
+            out.append(f"        en : {d['en']}")
+            out.append(f"        got: {d['got']}")
+        elif d["type"] == "cell_emptied":
+            out.append(f"      {loc}: table cell emptied — should be: {d['expected']}")
+        elif d["type"] == "verbatim_cell_changed":
+            out.append(f"      {loc}: restore verbatim cell → {d['expected']}  (got: {d['got']})")
+        elif d["type"] == "verbatim_block_changed":
+            out.append(f"      {loc}: code/verbatim block changed → {d['expected']}")
+    return out
+
+
 def render_report(rows: list[dict]) -> str:
     """Human-readable, directly actionable report (no JSON parsing needed)."""
     out = []
@@ -684,18 +795,7 @@ def render_report(rows: list[dict]) -> str:
             out.append(f"  ✓ {name}{note}")
             continue
         out.append(f"  ✗ {name}  —  {'; '.join(r.get('issues', []))}")
-        for d in r.get("details", []):
-            loc = f"line {d['line']}" + (f", col {d['col']}" if "col" in d else "")
-            if d["type"] == "invariant_lost":
-                out.append(f"      {loc}: keep `{d['expected']}` verbatim — it is missing")
-                out.append(f"        en : {d['en']}")
-                out.append(f"        got: {d['got']}")
-            elif d["type"] == "cell_emptied":
-                out.append(f"      {loc}: table cell emptied — should be: {d['expected']}")
-            elif d["type"] == "verbatim_cell_changed":
-                out.append(f"      {loc}: restore verbatim cell → {d['expected']}  (got: {d['got']})")
-            elif d["type"] == "verbatim_block_changed":
-                out.append(f"      {loc}: code/verbatim block changed → {d['expected']}")
+        out.extend(_render_details(r.get("details", [])))
     return "\n".join(out) if out else "  (no files)"
 
 
@@ -720,40 +820,108 @@ def cmd_verify(args) -> int:
 # drifted structurally, use plan/apply instead.
 # --------------------------------------------------------------------------- #
 
+def _kind_sig(slots: list[dict]) -> list[tuple]:
+    """Translation-stable signature for aligning target slots with source
+    slots: kinds, templates, verbatim lines, literal cells, and invariants —
+    exactly the content a correct translation must carry over unchanged.
+    Invariants are compared as sets: reordering them within a sentence is
+    legitimate translation, not drift."""
+    sig = []
+    for s in slots:
+        if s["k"] == "v":
+            sig.append(("v", tuple(s["lines"])))
+        elif s["k"] == "x":
+            t = s["tpl"]
+            sig.append(("x", t.get("type", ""), t.get("marker", ""),
+                        t.get("indent", ""), frozenset(s["inv"])))
+        else:
+            sig.append(("row", tuple(
+                c["v"] if c.get("t") == "lit" else ("tr", frozenset(c["inv"]))
+                for c in s["cells"])))
+    return sig
+
+
 def repair_pair(source: Path, target: Path) -> dict:
     src = parse(source.read_text(encoding="utf-8"))
     tgt = parse(target.read_text(encoding="utf-8"))
-    if len(src) != len(tgt) or any(a["k"] != b["k"] for a, b in zip(src, tgt)):
-        return {"file": str(target), "repaired": False,
-                "issues": [f"not aligned with source ({len(src)} vs {len(tgt)} slots) "
-                           "— run plan/apply instead"]}
+
+    # Pair source slots with target slots by structure. A translation that
+    # dropped or invented a block still repairs: missing slots are filled from
+    # English (and reported so the model translates just those lines), extra
+    # slots are discarded.
+    pairs: list[tuple[dict, dict | None]] = []
+    dropped = 0
+    if _kind_sig(src) == _kind_sig(tgt):
+        pairs = list(zip(src, tgt))
+    else:
+        sm = difflib.SequenceMatcher(None, _kind_sig(src), _kind_sig(tgt),
+                                     autojunk=False)
+        if sm.ratio() < 0.5:
+            return {"file": str(target), "repaired": False,
+                    "issues": [f"target shares too little structure with the "
+                               f"source ({len(src)} vs {len(tgt)} blocks) — "
+                               "retranslate this file"]}
+        for tag, i1, i2, j1, j2 in sm.get_opcodes():
+            if tag == "equal":
+                pairs.extend(zip(src[i1:i2], tgt[j1:j2]))
+            else:
+                pairs.extend((src[k], None) for k in range(i1, i2))
+                dropped += j2 - j1
 
     out: list[str] = []
     fixes = 0
-    for a, b in zip(src, tgt):
+    untranslated: list[int] = []   # lines left in English — translate in place
+    line = 1
+    for a, b in pairs:
+        at = line
+        line += len(a["lines"]) if a["k"] == "v" else 1
+        if b is None:                       # slot missing in target
+            fixes += 1
+            if a["k"] == "v":
+                out.extend(a["lines"])      # verbatim: English IS correct
+            elif a["k"] == "x":
+                out.append(render_x(a["tpl"], a["en"]))
+                untranslated.append(at)
+            else:
+                out.append("| " + " | ".join(
+                    c["v"] if c.get("t") == "lit" else c["en"]
+                    for c in a["cells"]) + " |")
+                untranslated.append(at)
+            continue
         if a["k"] == "v":
             if a["lines"] != b["lines"]:
                 fixes += 1
             out.extend(a["lines"])              # source verbatim wins
         elif a["k"] == "x":
-            out.append(render_x(a["tpl"], b["en"]))   # keep translation, source structure
-        else:  # row
-            if len(a["cells"]) != len(b["cells"]):
-                return {"file": str(target), "repaired": False,
-                        "issues": ["table column count differs — run plan/apply instead"]}
+            txt = b["en"]
+            if not txt.strip():
+                txt = a["en"]
+                fixes += 1
+                untranslated.append(at)
+            out.append(render_x(a["tpl"], txt))  # keep translation, source structure
+        else:  # row — cell counts match by signature construction
             cells = []
+            refilled = False
             for ca, cb in zip(a["cells"], b["cells"]):
                 bt = cb["en"] if cb.get("t") == "tr" else cb.get("v", "")
                 if ca.get("t") == "tr":
-                    cells.append(bt)                        # keep translation
+                    if bt.strip():
+                        cells.append(bt)            # keep translation
+                    else:
+                        cells.append(ca["en"])      # refill emptied cell
+                        fixes += 1
+                        refilled = True
                 else:
                     if ca.get("v", "") != bt:
                         fixes += 1
-                    cells.append(ca["v"])                   # source verbatim wins
+                    cells.append(ca["v"])           # source verbatim wins
+            if refilled:
+                untranslated.append(at)
             out.append("| " + " | ".join(cells) + " |")
 
     target.write_text("\n".join(out), encoding="utf-8")
     return {"file": str(target), "repaired": True, "fixes": fixes,
+            "dropped_extra_blocks": dropped, "untranslated_lines": untranslated,
             **verify_pair(source, target)}
 
 
@@ -762,8 +930,31 @@ def cmd_repair(args) -> int:
     report = [repair_pair(args.source, t) if t.exists()
               else {"file": str(t), "repaired": False, "issues": ["missing"]}
               for t in targets]
-    print(json.dumps({"repair": report}, ensure_ascii=False, indent=2))
-    return 0 if all(r.get("repaired") for r in report) else 2
+    ok = all(r.get("repaired") for r in report)
+    if args.json:
+        print(json.dumps({"repair": report}, ensure_ascii=False, indent=2))
+        return 0 if ok else 2
+    for r in report:
+        name = Path(r["file"]).name
+        if not r.get("repaired"):
+            print(f"  ✗ {name}  —  {'; '.join(r.get('issues', []))}")
+            continue
+        bits = []
+        if r.get("fixes"):
+            bits.append(f"{r['fixes']} structural part(s) restored")
+        if r.get("dropped_extra_blocks"):
+            bits.append(f"{r['dropped_extra_blocks']} extra block(s) dropped")
+        mark = "✓" if r.get("ok") else "✗"
+        print(f"  {mark} {name}  —  " + (", ".join(bits) if bits else "already clean"))
+        if r.get("untranslated_lines"):
+            print("      still ENGLISH — translate these lines in place: "
+                  + ", ".join(str(n) for n in r["untranslated_lines"]))
+        if not r.get("ok"):
+            for ln in _render_details(r.get("details", [])):
+                print(ln)
+    print("\n" + ("All files repaired." if ok
+                  else "Some files could not be repaired (see above)."))
+    return 0 if ok else 2
 
 
 # --------------------------------------------------------------------------- #
@@ -782,13 +973,13 @@ def main(argv: list[str]) -> int:
     p.add_argument("--base", default="HEAD")
     p.add_argument("--full", action="store_true",
                    help="force a full retranslate of every target (re-baseline)")
-    p.add_argument("--work", type=Path, required=True)
+    p.add_argument("--work", type=Path, default=Path(".l10n-work"))
 
     p = sub.add_parser("merge")
-    p.add_argument("--work", type=Path, required=True)
+    p.add_argument("--work", type=Path, default=Path(".l10n-work"))
 
     p = sub.add_parser("apply")
-    p.add_argument("--work", type=Path, required=True)
+    p.add_argument("--work", type=Path, default=Path(".l10n-work"))
     p.add_argument("--json", action="store_true", help="machine-readable output")
 
     for name in ("verify", "repair"):
