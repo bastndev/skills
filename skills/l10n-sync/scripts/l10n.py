@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""l10n-sync — propagate English README.md edits into README_<LANG>.md translations.
+"""l10n-sync — propagate English source edits into per-language translations.
+
+Two source formats:
+  * Markdown:  README.md          -> README_<LANG>.md          (structure engine)
+  * JSON:      package.nls.json   -> package.nls.<lang>.json   (flat key/value)
 
 Division of labor:
   * The MODEL translates natural language. It only ever sees the blocks that
@@ -418,6 +422,13 @@ def attach_raw_lines(slots: list[dict], text: str) -> list[dict]:
 def find_targets(source: Path, dir_: Path | None, files: list[Path] | None) -> list[Path]:
     if files:
         return files
+    if source.suffix.lower() == ".json":
+        # X.json -> existing siblings X.<lang>.json (dir defaults to X's folder)
+        base = source.name[:-len(".json")]
+        pat = re.compile(re.escape(base) + r"\..+\.json$", re.IGNORECASE)
+        search = dir_ if dir_ is not None else source.parent
+        return [f for f in sorted(search.glob("*.json"))
+                if f.name != source.name and pat.match(f.name)]
     targets = []
     src_name = source.name
     for f in sorted(dir_.glob("*.md")):
@@ -429,6 +440,10 @@ def find_targets(source: Path, dir_: Path | None, files: list[Path] | None) -> l
 
 
 def suffix_of(target: Path, source: Path) -> str:
+    if source.suffix.lower() == ".json":
+        base = source.name[:-len(".json")]
+        m = re.match(re.escape(base) + r"\.(.+)\.json$", target.name, re.IGNORECASE)
+        return m.group(1) if m else target.stem
     m = re.match(r"^" + re.escape(source.stem) + r"[_-](.+)$", target.stem, re.IGNORECASE)
     if m:
         return m.group(1)
@@ -442,9 +457,16 @@ def cmd_plan(args) -> int:
         print(json.dumps({"error": f"source not found: {source}"}))
         return 1
     new_text = source.read_text(encoding="utf-8")
-    new_slots = parse(new_text)
-
     targets = find_targets(source, args.dir, args.file)
+
+    work = args.work
+    if work.exists():
+        # a plan supersedes any previous run — drop stale work products so an
+        # `apply` can never splice from an outdated plan
+        for stale in ["state.json", "jobs.json", "results.json"]:
+            (work / stale).unlink(missing_ok=True)
+        for stale in work.glob("partial-*.json"):
+            stale.unlink(missing_ok=True)
 
     if args.base != "HEAD":
         old_text = git_old_source(source, args.base)
@@ -458,15 +480,12 @@ def cmd_plan(args) -> int:
                 prev = git_old_source(source, "HEAD~1")
                 if prev is not None:
                     old_text = prev
+
+    if source.suffix.lower() == ".json":
+        return plan_json(source, new_text, old_text, targets, work, args)
+
+    new_slots = parse(new_text)
     old_slots = parse(old_text) if old_text is not None else None
-    work = args.work
-    if work.exists():
-        # a plan supersedes any previous run — drop stale work products so an
-        # `apply` can never splice from an outdated plan
-        for stale in ["state.json", "jobs.json", "results.json"]:
-            (work / stale).unlink(missing_ok=True)
-        for stale in work.glob("partial-*.json"):
-            stale.unlink(missing_ok=True)
 
     counter = [0]
     def next_id():
@@ -601,7 +620,8 @@ def cmd_merge(args) -> int:
                                     "escaped as \\\")"})
             errors += 1
             continue
-        missing = sorted(all_ids - {str(k) for k in data}, key=int)
+        missing = sorted(all_ids - {str(k) for k in data},
+                         key=lambda k: (len(k), k))
         if missing:
             report.append({"partial": part.name, "ok": False,
                            "error": f"missing block id(s): {', '.join(missing)}"})
@@ -635,6 +655,8 @@ def cmd_apply(args) -> int:
     state = json.loads((work / "state.json").read_text(encoding="utf-8"))
     results_path = work / "results.json"
     results = json.loads(results_path.read_text(encoding="utf-8")) if results_path.exists() else {}
+    if state.get("format") == "json":
+        return _apply_finish(apply_json_targets(state, results), args)
     source = Path(state["source"])
 
     report = []
@@ -672,6 +694,10 @@ def cmd_apply(args) -> int:
         v = verify_pair(source, target) if target.exists() else {"error": "not written"}
         report.append({"file": file, "wrote": wrote, "blanks": blanks, **v})
 
+    return _apply_finish(report, args)
+
+
+def _apply_finish(report: list[dict], args) -> int:
     ok = all(r.get("ok") for r in report)
     if getattr(args, "json", False):
         print(json.dumps({"applied": report}, ensure_ascii=False, indent=2))
@@ -770,7 +796,10 @@ def verify_pair(source: Path, target: Path) -> dict:
 def _render_details(details: list[dict]) -> list[str]:
     out = []
     for d in details:
-        loc = f"line {d['line']}" + (f", col {d['col']}" if "col" in d else "")
+        if "key" in d:
+            loc = f'key "{d["key"]}"'
+        else:
+            loc = f"line {d['line']}" + (f", col {d['col']}" if "col" in d else "")
         if d["type"] == "invariant_lost":
             out.append(f"      {loc}: keep `{d['expected']}` verbatim — it is missing")
             out.append(f"        en : {d['en']}")
@@ -781,6 +810,12 @@ def _render_details(details: list[dict]) -> list[str]:
             out.append(f"      {loc}: restore verbatim cell → {d['expected']}  (got: {d['got']})")
         elif d["type"] == "verbatim_block_changed":
             out.append(f"      {loc}: code/verbatim block changed → {d['expected']}")
+        elif d["type"] == "key_missing":
+            out.append(f"      {loc}: missing — add a translation of: {d['expected']}")
+        elif d["type"] == "key_extra":
+            out.append(f"      {loc}: not in the source — removed on repair/apply")
+        elif d["type"] == "verbatim_value_changed":
+            out.append(f"      {loc}: must stay exactly {d['expected']}  (got: {d['got']})")
     return out
 
 
@@ -800,8 +835,10 @@ def render_report(rows: list[dict]) -> str:
 
 
 def cmd_verify(args) -> int:
+    pair = (verify_pair_json if args.source.suffix.lower() == ".json"
+            else verify_pair)
     targets = find_targets(args.source, args.dir, args.file)
-    report = [{"file": str(t), **(verify_pair(args.source, t) if t.exists()
+    report = [{"file": str(t), **(pair(args.source, t) if t.exists()
               else {"ok": False, "issues": ["missing"], "details": []})} for t in targets]
     ok = all(r.get("ok") for r in report)
     if args.json:
@@ -926,8 +963,10 @@ def repair_pair(source: Path, target: Path) -> dict:
 
 
 def cmd_repair(args) -> int:
+    pair = (repair_pair_json if args.source.suffix.lower() == ".json"
+            else repair_pair)
     targets = find_targets(args.source, args.dir, args.file)
-    report = [repair_pair(args.source, t) if t.exists()
+    report = [pair(args.source, t) if t.exists()
               else {"file": str(t), "repaired": False, "issues": ["missing"]}
               for t in targets]
     ok = all(r.get("repaired") for r in report)
@@ -947,7 +986,7 @@ def cmd_repair(args) -> int:
         mark = "✓" if r.get("ok") else "✗"
         print(f"  {mark} {name}  —  " + (", ".join(bits) if bits else "already clean"))
         if r.get("untranslated_lines"):
-            print("      still ENGLISH — translate these lines in place: "
+            print("      still ENGLISH — translate in place: "
                   + ", ".join(str(n) for n in r["untranslated_lines"]))
         if not r.get("ok"):
             for ln in _render_details(r.get("details", [])):
@@ -955,6 +994,270 @@ def cmd_repair(args) -> int:
     print("\n" + ("All files repaired." if ok
                   else "Some files could not be repaired (see above)."))
     return 0 if ok else 2
+
+
+# --------------------------------------------------------------------------- #
+# JSON engine — flat string bundles like VS Code's package.nls.json.
+# Source `X.json` syncs its existing siblings `X.<lang>.json`. The JSON keys
+# are the block ids, and the script always writes the target files itself
+# (valid syntax, correct escaping) — so BOTH full and incremental runs use the
+# block pipeline; there is no hand-written target JSON, ever.
+# --------------------------------------------------------------------------- #
+
+def load_bundle(path: Path):
+    """(dict, error) — error is None when the file is a JSON object."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        return None, f"invalid JSON: {e}"
+    if not isinstance(data, dict):
+        return None, "not a JSON object"
+    return data, None
+
+
+def _bundle_translatable(v) -> bool:
+    return isinstance(v, str) and _has_translatable(v)
+
+
+def plan_json(source: Path, new_text: str, old_text: str | None,
+              targets: list[Path], work: Path, args) -> int:
+    try:
+        new = json.loads(new_text)
+    except json.JSONDecodeError as e:
+        print(json.dumps({"error": f"source is not valid JSON: {e}"}))
+        return 1
+    if not isinstance(new, dict):
+        print(json.dumps({"error": "source is not a JSON object"}))
+        return 1
+    old = None
+    if old_text is not None:
+        try:
+            o = json.loads(old_text)
+            old = o if isinstance(o, dict) else None
+        except json.JSONDecodeError:
+            old = None
+
+    translatable = {k: v for k, v in new.items() if _bundle_translatable(v)}
+    plan_targets, up_to_date = [], []
+    union: dict[str, bool] = {}   # ordered set of keys any target needs
+
+    for tgt in targets:
+        code, name, rtl = lang_of(suffix_of(tgt, source))
+        tdata = None
+        if tgt.exists():
+            tdata, _err = load_bundle(tgt)
+        if args.full or old is None or tdata is None:
+            needs, mode = list(translatable), "full"
+        else:
+            needs = [k for k, v in translatable.items()
+                     if old.get(k) != v
+                     or not isinstance(tdata.get(k), str)
+                     or not tdata[k].strip()]
+            mode = "full" if len(needs) == len(translatable) else "incremental"
+        # a target can be current on translations yet still stale: keys removed
+        # from the source, or verbatim values the source changed
+        stale = tdata is not None and (
+            any(k not in new for k in tdata)
+            or any(not _bundle_translatable(v) and tdata.get(k) != v
+                   for k, v in new.items()))
+        if not needs:
+            if not stale:
+                up_to_date.append(str(tgt))
+                continue
+            mode = "cleanup"    # rewrite only — no translation needed
+        for k in needs:
+            union[k] = True
+        plan_targets.append({"file": str(tgt), "lang": code, "language": name,
+                             "rtl": rtl, "mode": mode, "needs": needs})
+
+    if plan_targets:
+        work.mkdir(parents=True, exist_ok=True)
+        (work / "state.json").write_text(
+            json.dumps({"source": str(source), "format": "json",
+                        "targets": plan_targets}, ensure_ascii=False, indent=2),
+            encoding="utf-8")
+        (work / "jobs.json").write_text(
+            json.dumps({
+                "source": str(source),
+                "instructions": (
+                    "Translate every block's 'text' once per language in "
+                    "'targets' — the ids are the JSON keys. Copy every "
+                    "substring in 'keep' verbatim. Write results.json in this "
+                    "directory as {file: {key: translation}}. NEVER edit the "
+                    "target .json files by hand — `apply` writes them with "
+                    "valid syntax and escaping. Do it yourself in this session "
+                    "— no subagents and no helper scripts. Only if the user "
+                    "explicitly asked for parallel agents: each agent writes "
+                    "partial-<lang>.json and validates it with `python3 -m "
+                    "json.tool <file>`; then run the 'merge' command."
+                ),
+                "blocks": [{"id": k, "text": new[k], "keep": _invariants(new[k])}
+                           for k in union],
+                "targets": [{k: t[k] for k in ("file", "lang", "language", "rtl")}
+                            for t in plan_targets],
+            }, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    me = Path(__file__).resolve()
+    nxt = []
+    if plan_targets and union:
+        nxt.append(
+            f"Translate the {len(union)} block(s) in {work / 'jobs.json'} once "
+            "per language in its 'targets' (ids are the JSON keys), write "
+            f"{work / 'results.json'} as {{file: {{key: translation}}}}, then "
+            f"run `python3 -B {me} apply`. Never edit the target .json files "
+            "by hand.")
+    elif plan_targets:
+        nxt.append(
+            f"No translation needed — run `python3 -B {me} apply` to prune "
+            "removed keys and refresh verbatim values.")
+    else:
+        nxt.append("Nothing to translate — every target is in sync.")
+
+    out = {
+        "up_to_date": up_to_date,
+        "translate_directly": [],
+        "incremental": [{"file": t["file"], "mode": t["mode"],
+                         "blocks": len(t["needs"])} for t in plan_targets],
+        "next": nxt,
+    }
+    if plan_targets:
+        out["jobs_file"] = str(work / "jobs.json")
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
+def apply_json_targets(state: dict, results: dict) -> list[dict]:
+    source = Path(state["source"])
+    src, err = load_bundle(source)
+    if err:
+        return [{"file": t["file"], "wrote": False, "ok": False,
+                 "issues": [f"source: {err}"], "details": []}
+                for t in state["targets"]]
+    report = []
+    for t in state["targets"]:
+        file = t["file"]
+        res = results.get(file, {})
+        needs = t["needs"]
+        target = Path(file)
+        if needs and not res:
+            report.append({"file": file, "wrote": False, "blanks": needs,
+                           "ok": False,
+                           "issues": ["no translations in results.json"],
+                           "details": []})
+            continue
+        tdata = {}
+        if target.exists():
+            d, _e = load_bundle(target)
+            tdata = d or {}
+        out, blanks = {}, []
+        for k, v in src.items():
+            prev = tdata.get(k)
+            keep_prev = isinstance(prev, str) and prev.strip()
+            if k in needs:
+                tv = res.get(k, "")
+                if isinstance(tv, str) and tv.strip():
+                    out[k] = tv
+                else:
+                    blanks.append(k)
+                    out[k] = prev if keep_prev else v
+            elif _bundle_translatable(v):
+                out[k] = prev if keep_prev else v
+            else:
+                out[k] = v          # verbatim value: source wins
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(out, ensure_ascii=False, indent=2) + "\n",
+                          encoding="utf-8")
+        report.append({"file": file, "wrote": True, "blanks": blanks,
+                       **verify_pair_json(source, target)})
+    return report
+
+
+def verify_pair_json(source: Path, target: Path) -> dict:
+    src, err = load_bundle(source)
+    if err:
+        return {"ok": False, "issues": [f"source: {err}"], "details": []}
+    tgt, err = load_bundle(target)
+    if err:
+        return {"ok": False, "issues": [err], "details": []}
+
+    issues, details = [], []
+    untranslated = lost = changed = 0
+    missing = [k for k in src if k not in tgt]
+    extra = [k for k in tgt if k not in src]
+    for k, v in src.items():
+        tv = tgt.get(k)
+        if tv is None:
+            details.append({"key": k, "type": "key_missing",
+                            "expected": _snip(str(v))})
+            continue
+        if not _bundle_translatable(v):
+            if tv != v:
+                changed += 1
+                details.append({"key": k, "type": "verbatim_value_changed",
+                                "expected": _snip(str(v)), "got": _snip(str(tv))})
+            continue
+        if not isinstance(tv, str):
+            changed += 1
+            details.append({"key": k, "type": "verbatim_value_changed",
+                            "expected": _snip(v), "got": _snip(str(tv))})
+            continue
+        for inv in _invariants(v):
+            if inv not in tv:
+                lost += 1
+                details.append({"key": k, "type": "invariant_lost",
+                                "expected": inv, "en": _snip(v),
+                                "got": _snip(tv)})
+        if tv == v and _prose_words(v) >= 3:
+            untranslated += 1
+    for k in extra:
+        details.append({"key": k, "type": "key_extra"})
+
+    if missing:
+        issues.append(f"{len(missing)} key(s) missing")
+    if extra:
+        issues.append(f"{len(extra)} extra key(s) not in source")
+    if lost:
+        issues.append(f"{lost} invariant(s) (code/URL/placeholder) lost")
+    if changed:
+        issues.append(f"{changed} verbatim value(s) changed")
+    return {"ok": not issues, "possibly_untranslated": untranslated,
+            "issues": issues, "details": details}
+
+
+def repair_pair_json(source: Path, target: Path) -> dict:
+    src, err = load_bundle(source)
+    if err:
+        return {"file": str(target), "repaired": False,
+                "issues": [f"source: {err}"]}
+    tgt, err = load_bundle(target)
+    if err:
+        return {"file": str(target), "repaired": False,
+                "issues": [f"{err} — retranslate it (apply writes the JSON; "
+                           "never write target .json by hand)"]}
+
+    out = {}
+    fixes = 0
+    untranslated: list[str] = []   # keys refilled with English
+    for k, v in src.items():
+        tv = tgt.get(k)
+        if not _bundle_translatable(v):
+            if tv != v:
+                fixes += 1
+            out[k] = v                          # verbatim value: source wins
+        elif (not isinstance(tv, str) or not tv.strip()
+              or any(inv not in tv for inv in _invariants(v))):
+            out[k] = v                          # English refill, flagged
+            fixes += 1
+            untranslated.append(k)
+        else:
+            out[k] = tv                         # keep translation
+    dropped = sum(1 for k in tgt if k not in src)
+
+    target.write_text(json.dumps(out, ensure_ascii=False, indent=2) + "\n",
+                      encoding="utf-8")
+    return {"file": str(target), "repaired": True, "fixes": fixes,
+            "dropped_extra_blocks": dropped, "untranslated_lines": untranslated,
+            **verify_pair_json(source, target)}
 
 
 # --------------------------------------------------------------------------- #
@@ -967,7 +1270,7 @@ def main(argv: list[str]) -> int:
 
     p = sub.add_parser("plan")
     p.add_argument("--source", type=Path, default=Path("README.md"))
-    g = p.add_mutually_exclusive_group(required=True)
+    g = p.add_mutually_exclusive_group()
     g.add_argument("--dir", type=Path)
     g.add_argument("--file", type=Path, nargs="+")
     p.add_argument("--base", default="HEAD")
@@ -985,12 +1288,17 @@ def main(argv: list[str]) -> int:
     for name in ("verify", "repair"):
         p = sub.add_parser(name)
         p.add_argument("--source", type=Path, default=Path("README.md"))
-        g = p.add_mutually_exclusive_group(required=True)
+        g = p.add_mutually_exclusive_group()
         g.add_argument("--dir", type=Path)
         g.add_argument("--file", type=Path, nargs="+")
         p.add_argument("--json", action="store_true", help="machine-readable output")
 
     args = ap.parse_args(argv)
+    if (args.cmd in ("plan", "verify", "repair")
+            and not args.dir and not args.file
+            and args.source.suffix.lower() != ".json"):
+        # .json sources default to siblings of the source; markdown must say where
+        ap.error("--dir or --file is required for a markdown source")
     if args.cmd == "plan":
         return cmd_plan(args)
     if args.cmd == "merge":

@@ -1,8 +1,9 @@
 # Filename-suffix → language map
 
-The language is read from the filename suffix: `README_<SUFFIX>.md`. The suffix
-is matched case-insensitively (`README_AR.md`, `readme_ar.md`, `README-ar.md`
-all → Arabic). This map is **extensible and non-gating**: files drive the sync,
+The language is read from the filename suffix: `README_<SUFFIX>.md`, or for
+JSON bundles `package.nls.<suffix>.json` (VS Code locale codes like `pt-br`,
+`zh-cn` are rows in this same map). The suffix is matched case-insensitively
+(`README_AR.md`, `readme_ar.md`, `README-ar.md` all → Arabic). This map is **extensible and non-gating**: files drive the sync,
 not this list. To support a new language the user just creates the file — if its
 suffix isn't below, the script still processes it and asks you to infer the
 language from the code.

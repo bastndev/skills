@@ -1,17 +1,24 @@
 ---
 name: l10n-sync
-description: Keep translated README files in sync with the English README.md. Propagates only what changed in the English source into each README_<LANG>.md, preserving tables, code, and links — cheaply and without dropping anything. Use when the user asks to translate, localize, sync, or update a README / docs folder, or invokes this skill.
+description: Keep translations in sync with their English source — README_<LANG>.md files from README.md, and VS Code package.nls.<lang>.json bundles from package.nls.json. Propagates only what changed, preserving tables, code, links, and placeholders. Use when the user asks to translate, localize, sync, or update a README, docs folder, or nls/l10n JSON bundles, or invokes this skill.
 metadata:
   author: bastndev
-  version: "3.0.1"
+  version: "3.1.0"
 ---
 
 # l10n-sync
 
-One English `README.md` is the source of truth; this skill keeps every
-`README_<LANG>.md` in sync with it. The script does all structure work
-(parsing, diffing, splicing, repairing, verifying); you do only the
-translation. `plan` picks the mode per file, automatically:
+One English source of truth per format; this skill keeps its translations in
+sync with it:
+
+- **Markdown** — `README.md` → the existing `README_<LANG>.md` files.
+- **JSON bundles** — `package.nls.json` (project root) → the existing
+  `package.nls.<lang>.json` siblings. Any flat `X.json` → `X.<lang>.json`
+  works the same way.
+
+The script does all structure work (parsing, diffing, splicing, repairing,
+verifying); you do only the translation. `plan` picks the mode per file,
+automatically:
 
 - **incremental** — the file is structurally in sync and only some English
   blocks changed: you translate just those blocks. This is the normal case
@@ -46,12 +53,16 @@ translation. `plan` picks the mode per file, automatically:
 
 - **Source** = `README.md` at the project root, unless the user names a
   different `.md` as the base. Resolve `@mentions` to plain paths first.
-- **Target**: a folder (e.g. `public/docs/`) → every existing
+- **nls / JSON bundles**: if the request mentions "nls" or names a `.json`,
+  source = `package.nls.json` at the project root (or the exact `.json` the
+  user named). Targets are its existing `package.nls.<lang>.json` siblings —
+  discovered automatically, no `--dir` needed.
+- **Target** (markdown): a folder (e.g. `public/docs/`) → every existing
   `README_<LANG>.md` in it; a named file → just that file (create it if
   missing — the user asked for it). Language comes from the filename suffix
-  (`README_AR.md` → Arabic).
-- If both are missing, ask once which folder or file to sync. Otherwise
-  proceed — do not re-ask what the user already said.
+  (`README_AR.md` → Arabic, `package.nls.pt-br.json` → Brazilian Portuguese).
+- If the request names neither a source, folder, file, nor "nls", ask once.
+  Otherwise proceed — do not re-ask what the user already said.
 
 ## Workflow
 
@@ -61,6 +72,7 @@ Let `SKILL` be this skill's directory. Run everything from the project root.
 ```bash
 python3 -B "$SKILL/scripts/l10n.py" plan --source README.md --dir public/docs
 # single file:  --file public/docs/README_ar.md
+# nls bundles:  --source package.nls.json     (targets found next to it)
 # force a re-baseline of every target (only if the user asks):  --full
 ```
 It prints `up_to_date`, `translate_directly` (full mode), `incremental`, and
@@ -107,6 +119,20 @@ python3 -B "$SKILL/scripts/l10n.py" apply
 The report is already located — line, exact token, English vs. translated.
 Fix exactly what it lists (edit `results.json` or the file) and re-run
 `apply`. Do not hunt for problems with your own scripts.
+
+**2c. JSON bundles (`package.nls.json`)** — always the block pipeline, for
+both full and incremental runs; there is no direct-write mode for JSON. The
+block ids in `jobs.json` ARE the JSON keys; write
+`.l10n-work/results.json` as `{file: {key: translation}}`, then run `apply`.
+**Never edit the target `.json` files by hand** — `apply` writes them with
+guaranteed valid syntax, escaping, and source key order; keys removed from
+the source disappear from every target automatically. Brand-like values
+(e.g. `"displayName": "F1"`) legitimately stay identical — the "same as
+English" note is a hint, not an error. `repair`/`verify` work the same as
+for markdown:
+```bash
+python3 -B "$SKILL/scripts/l10n.py" verify --source package.nls.json
+```
 
 **Parallel agents — only if the user explicitly asked for them.** Group
 languages into at most 3–4 agents; each writes
