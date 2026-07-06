@@ -66,6 +66,7 @@ Example:
 3. Generate a phased refactoring plan.
 4. Wait for `go`.
 5. Execute **one phase**, validate it, stop, and wait again.
+   (Say `run all phases` to execute the whole plan, with a report after each phase.)
 
 ## Guarantees
 

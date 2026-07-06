@@ -4,7 +4,7 @@ description: "Audits, reviews, and refactors project architecture, code quality,
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "2.1.0"
+  version: "2.2.0"
 ---
 
 # Refactor Project / [End]
@@ -59,6 +59,9 @@ each section per its template; do not redefine formats here.
   file. Instead: read all entry points and front-door files, the 5 largest files
   by line count, all shared/protocol/types files, and 2–3 representative files
   per major directory. List unread areas explicitly in `Review Scope:`.
+  Sampling is for detecting problems, not for planning fixes: before a finding
+  in a sampled area becomes a plan phase, read the files that phase will touch
+  in full.
 
 ### 2. What to ignore
 
@@ -217,20 +220,31 @@ Bug hierarchy: Critical bugs jump the queue and become Phase 1. Non-critical
 bugs attach to the phase for their area. Every bug appears in the plan exactly
 once, at the phase where it will be fixed.
 
-Keep the visible plan compact. Prefer 2–5 phases. Allow up to 8 when there are 5
-or more independent findings — each extra phase must map to a specific finding.
-Never add phases just to fill space. Each phase must be actionable, safe to
-execute independently, and tied to a finding or architecture decision. Do not
-turn optional suggestions into phases unless they unlock the main refactor or
-the user explicitly asked for them.
+Let the findings set the phase count — never a habit or a fixed number. Keep
+each phase compact, and size the plan to the scope:
+
+* Single file or trivially small scope: exactly one phase (two only when a
+  critical bug deserves its own step).
+* Most scopes: 2–5 phases.
+* Large scope (more than 50 source files): up to 10 phases when the findings
+  justify them. Never exceed 10 — when findings outnumber the cap, group
+  same-area findings into one phase instead.
+
+Every phase must be actionable, safe to execute independently, and tied to a
+finding or architecture decision **shown in the report** — never to one the
+user cannot see. In reverse, every 🔴 bug and every displayed 🟡 Debt/Risk must
+be covered by a phase, unless it is report-only by rule (e.g., missing tests)
+or deliberately deferred with a one-line reason. While under the cap, do not
+compress independent findings into one oversized phase to keep the plan short,
+and never add phases only to fill space. Do not turn optional suggestions into
+phases unless they unlock the main refactor or the user explicitly asked for
+them.
 
 Every phase must be executable **now** — no conditional or speculative phases
 ("only if components are added later"). If a fix depends on a future decision,
 it is a Suggestion, not a phase. No phase may rework lines a previous phase
 already wrote: every line is edited at most once per refactor, always from its
-original form — rewriting a rewrite loses information each pass. For a
-single-file or trivially small scope, use exactly one phase (two only when a
-critical bug deserves its own step).
+original form — rewriting a rewrite loses information each pass.
 
 Phase names must name the specific target, not the category. ✅ Extract voice
 helpers from main.ts ✅ Fix CliAgentOption duplication in tab.ts ❌ Improve
@@ -258,10 +272,24 @@ that phase is already summarized there. The workflow is:
 1. Analyze. 2. Build the ordered plan. 3. Wait for authorization. 4. Execute
 the first pending phase only. 5. Stop and report. 6. Wait before the next phase.
 
-Before each phase: confirm the exact phase, check available project scripts,
-detect the package manager, and identify the safest validation commands.
-During each phase: stay within the authorized scope, preserve current behavior,
-and run available validations after the change.
+**Continuous run — explicit opt-in only.** If the user explicitly authorizes
+the whole plan in one go (`run all`, `all phases`, `continue until done`,
+`don't stop`, or a clear equivalent), execute the phases in order without
+waiting between them: after each phase print its per-phase report, omit the
+`Continue with Phase N+1?` line, and go straight into the next phase. The last
+phase still skips its separate report and ends in the `🎉 Final Summary`. Stop
+and wait for the user the moment a validation fails or a planned change is
+dropped as unsafe. A plain `go`, `start`, or `proceed` is **not** a continuous
+run — it authorizes exactly one phase.
+
+Before each phase: confirm the exact phase, re-read the files the phase will
+touch, check available project scripts, detect the package manager, and
+identify the safest validation commands. During each phase: stay within the
+authorized scope, preserve current behavior, and run available validations
+after the change. Scale validation to the change: prefer the narrowest command
+that covers the touched files (affected package or workspace typecheck, lint,
+build); run repo-wide builds only when shared foundations changed or on the
+final phase.
 
 For pure move or extract phases, confirm the relocated code is logic-identical
 (a behavior-preserving move, not a rewrite) and that the validation gate passed
@@ -279,6 +307,13 @@ them — modify only the authorized area.
 Dependencies: do not add dependencies, change the package manager, or modify
 lockfiles unless explicitly authorized (or required by an authorized dep/PM
 change). Prefer improving existing code over adding packages.
+
+Plan persistence: never write the plan to a file on your own initiative. Only
+when the user explicitly asks to save the plan, write the `🗺️ Proposed Plan`
+plus a phase-status checklist to one Markdown file (default `refactor-plan.md`
+at the project root) — that request itself authorizes creating this one file —
+and update its checkboxes as phases complete, so a future session can resume
+the refactor mid-plan.
 
 ### 13. Scope discipline
 
@@ -371,8 +406,10 @@ Rules:
 * If a category has no items, write exactly `00. .--- --- --- --- --- --- -_- --- --- --- --- --- ---.`
 * **🔴 Bugs** contains confirmed incorrect behavior only. Add `critical` or
   `non-critical` only when a real bug is listed.
-* **🟡 Debt / Risks** shows only the top 3–5 items, ordered by practical
-  refactor value.
+* **🟡 Debt / Risks** shows only the top items, ordered by practical refactor
+  value: 3–5 for most scopes, up to 8 for a large scope (more than 50 source
+  files). Any Debt/Risk planned as a phase must be listed here — phases never
+  reference findings the report does not show.
 * **🟢 Suggestions (Optional)** shows max 3 optional improvements.
 * Each item must be one short sentence. Prefer simple maintainer-facing language
   over file paths unless a path is necessary to avoid ambiguity.
@@ -476,8 +513,10 @@ Rules:
 * Mark new files with `(new)` and deleted files with `(delete)`.
 * Omit ordering explanations by default. Add `Why:` only when the order would
   otherwise be surprising.
-* Do not exceed 8 phases. Keep to 2–5 unless 5+ independent findings (or
-  critical bugs) require more — each extra phase must map to a specific finding.
+* Phase count follows `Plan ordering & phases`: 2–5 for most scopes, up to 10
+  for a large scope (more than 50 source files) — each phase mapped to a
+  displayed finding. Do not settle on 3–4 out of habit when the findings
+  justify more.
 * Do not include optional suggestions unless they are part of the recommended
   refactor path.
 
@@ -523,6 +562,10 @@ Continue with Phase N+1?
 Skip this separate per-phase report for the **last phase of the main refactor
 plan**; that phase is already summarized in `What was done` inside the
 `🎉 Final Summary`.
+
+In an explicitly authorized continuous run, still print this report after each
+phase, but omit the `Continue with Phase N+1?` line and proceed directly to
+the next phase.
 
 ### Final Summary 🎉
 
@@ -600,6 +643,9 @@ suggestions?`. Handle the user's answer as follows:
   `dale`) → execute Phase 1 only, report, wait.
 * **Approval after a phase report** (`continue`, `next`, `go`, `green light`)
   → execute the next pending phase only, report, wait.
+* **"go, run all phases" / "continue until done"** → continuous run: execute
+  every phase in order with a report after each, stopping only if a validation
+  fails or a change is dropped.
 
 ## Philosophy
 
