@@ -46,7 +46,7 @@ Every analysis starts with a project health score.
 Example:
 
 ```text
-📊 my-project Health Overview — 74 / 100
+📊 my-project Health Overview — 74 / 100 🟢
 
 🔴 Bugs 1    🟡 Debt/Risks 3    🟢 Suggestions 2
 

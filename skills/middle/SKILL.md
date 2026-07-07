@@ -4,7 +4,7 @@ description: "Focused, on-demand project improver for active development. Option
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "2.3.2"
+  version: "2.3.3"
 ---
 
 # Improve / [Middle]
@@ -120,9 +120,8 @@ worth running next.
 name, written **without square brackets**: the manifest name (`package.json`
 `name`, `Cargo.toml` `[package].name`, etc.) or, if none, the root folder
 name. The skill is global; nothing about it is tied to any one project. Keep the rest of
-the title shape exact. If existing tests are present, insert
-`🧪 Testing [x/10]` before Documentation; if no test structure exists, omit
-the bar entirely (never `0/10`).
+the title shape exact. There is no Testing bar — never insert `🧪 Testing`;
+test gaps belong in Debt/Risks or Suggestions only.
 
 After the block, add:
 

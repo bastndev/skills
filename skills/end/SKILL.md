@@ -4,7 +4,7 @@ description: "Audits, reviews, and refactors project architecture, code quality,
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "2.2.0"
+  version: "2.3.0"
 ---
 
 # Refactor Project / [End]
@@ -189,20 +189,29 @@ the project clearly benefits.
 ### 10. Health score
 
 Score the project 0–100 plus visible categories 0–10: Architecture,
-Maintainability, Performance, Security, and Documentation. Be honest and
-conservative; do not invent issues to justify a low score. If an area cannot be
-judged from the authorized scope, say so and score only on available evidence.
+Maintainability, Performance, Security, and Documentation. Add a UI/UX category
+only when the authorized scope contains user-facing UI code (components,
+screens, webviews, styles); omit it for CLIs, libraries, and APIs. Judge UI/UX
+only on what the code shows — loading/error/empty states, user feedback,
+accessibility basics, consistency — never on visual aesthetics you cannot see.
+Be honest and conservative; do not invent issues to justify a low score. If an
+area cannot be judged from the authorized scope, say so and score only on
+available evidence.
 
 Calibrate against these anchors so scores are consistent across projects —
 greenfield/no debt: 85–92; maintained production codebase: 62–80; legacy system
 with known debt: 40–62. Do not score above 80 if there are 3+ Debt/Risk items,
 or above 90 if any Debt/Risk exists.
 
-Include a Testing score only when the authorized scope contains an existing test
-structure or test files. If no test folder or test files exist, omit Testing from
-the health overview and do not assign `0/10`; there is nothing to rate. Missing
-tests may still be mentioned as Debt/Risks when relevant, but do not lower the
-overall health score solely because no test structure exists.
+Every 0–100 score maps to a band. Print the band emoji right after the score
+wherever a 0–100 score appears (Health Overview title and Final Summary lines);
+a boundary score belongs to the higher band (80 = ⭐):
+
+0–40 🚨 · 40–60 🔴 · 60–70 🟡 · 70–80 🟢 · 80–90 ⭐ · 90–100 🏆
+
+There is no Testing category — never score tests and never print a `🧪 Testing`
+line. Test gaps (missing tests, unwired runners) belong in Debt/Risks or
+Suggestions only, and they never raise or lower any score.
 
 Record the analysis-time score as the **baseline**. After all phases are complete,
 re-score the project with the same rubric and caps to produce the **post-refactor**
@@ -330,17 +339,22 @@ items there that you already reported as findings.
 Write the Project Understanding, findings, plan outcomes, and explanations in
 the language the user is using (Spanish request → Spanish report). The fixed
 structure never translates: emoji, section titles, category labels, decision
-lines, phase line keys (`Outcome`, `Files`, `Check`), and the closing lines
-stay exactly as defined.
+lines, phase line keys (`Outcome`, `Files`, `Check`), report keys (`Checks`,
+`Impact`, `Note`, `Dropped`, `Remaining`), and the closing lines stay exactly
+as defined.
 
 ---
 
 ## Report Format
 
+Every template below already begins with its own title line. Print each title
+exactly once — never add a Markdown heading or a second title line above a
+block whose first line is the title.
+
 ### 📊 Health Overview
 
 ```text
-📊 my-project Health Overview — [score] / 100
+📊 my-project Health Overview — [score] / 100 [band emoji]
 
 🔴 Bugs [n]    🟡 Debt/Risks [n]    🟢 Suggestions [n]
 
@@ -355,8 +369,8 @@ stay exactly as defined.
 name, written **without square brackets**: the manifest name (`package.json`
 `name`, `Cargo.toml` `[package].name`, etc.) or, if none, the root folder
 name. Do not add the project type. Keep the rest of the title shape exact.
-If existing tests are present, insert `🧪 Testing           [x/10]` before
-Documentation.
+If the scope contains user-facing UI code, insert `🎨 UI/UX             [x/10]`
+between Performance and Security. Never insert a `🧪 Testing` line.
 
 ### 🔍 Project Understanding
 
@@ -484,9 +498,10 @@ whole project. Mark moves or extractions with `# was ...` or `# extracted from
 
 ### 🗺️ Proposed Plan
 
-Use this compact display format. Do not add long `Goal`, `Affected files`, or
-`Why now` paragraphs. The phase title explains the action; `Outcome` explains
-the value.
+Use this compact display format. The template's first line is the only title —
+never print a second `🗺️ Proposed Plan` line or a Markdown heading above it.
+Do not add long `Goal`, `Affected files`, or `Why now` paragraphs. The phase
+title explains the action; `Outcome` explains the value.
 
 ```text
 🗺️ Proposed Plan
@@ -538,19 +553,17 @@ covered by the operating rules.
 
 ### ✅ Per-Phase Report
 
-After completing a phase, report and then wait for confirmation:
+After completing a phase, report and then wait for confirmation. Keep it
+compact: the diff is the record of what changed — do not list changed files or
+per-file explanations, and write no prose before or after the template:
 
 ```text
 ✅ Phase N complete — [phase name]
 
-Changed files:
-- `path/file` — what changed and why
-
-Validations:
-- [command or method] — [passed | failed | not run + reason]
-
-Impact: [metric, e.g. main.ts 1305 → 741 lines, +1 module]
-Dropped: [planned change not applied — reason] (omit this line when nothing was dropped)
+Checks: [✅ command · ✅ command · manual — not run]
+Impact: [one metric, e.g. main.ts 1305 → 741 lines, +1 module]
+Note: [one line, only for a deviation — e.g. an unplanned file] (omit otherwise)
+Dropped: [planned change not applied — reason] (omit when nothing was dropped)
 
 Remaining:
 - Phase N+1 — [name]
@@ -558,6 +571,10 @@ Remaining:
 
 Continue with Phase N+1?
 ```
+
+If any check fails or a planned change is dropped, compactness ends for that
+report: expand it with the failing output and the affected files, then stop
+and wait — even in a continuous run.
 
 Skip this separate per-phase report for the **last phase of the main refactor
 plan**; that phase is already summarized in `What was done` inside the
@@ -574,7 +591,7 @@ When all phases are complete:
 ```markdown
 ## Refactor Complete 🎉
 
-📊 Health — [before] / 100  →  [after] / 100   ▲ +[delta]
+📊 Health — [before] / 100  →  [after] / 100   ▲ +[delta] [band emoji]
 
 🏗️ Architecture      [x → y]
 🧩 Maintainability   [x → y]
@@ -589,10 +606,14 @@ When all phases are complete:
 Would you like to implement the (optional 🟢) suggestions?
 ```
 
-Rules for the health-delta block: include `🧪 Testing [x → y]` only when the project
-has an existing test structure (same condition as the Health Overview). Show the
-same number on both sides when a category did not change (e.g. `7 → 7`). Show
-`▲ +0` honestly if nothing improved.
+Rules for the health-delta block: the band emoji is the **after**-score's band.
+Include `🎨 UI/UX [x → y]` only when the Health Overview included UI/UX; never
+include a `🧪 Testing` line. Show the same number on both sides when a category
+did not change (e.g. `7 → 7`). Show `▲ +0` honestly if nothing improved. Print
+the summary exactly as templated, with no prose before the
+`## Refactor Complete 🎉` heading; between the phase list and the closing
+question you may add at most one short `Note:` line (e.g., a manual check worth
+running), nothing else.
 
 ### Optional Suggestions follow-up
 
@@ -617,7 +638,7 @@ suggestions?`. Handle the user's answer as follows:
     print only the minimal closing:
 
     ```text
-    📊 Health — [before] / 100  →  [after] / 100   ▲ +[delta]
+    📊 Health — [before] / 100  →  [after] / 100   ▲ +[delta] [band emoji]
 
     Refactor Complete 🎉
     ```
