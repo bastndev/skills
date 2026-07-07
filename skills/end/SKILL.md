@@ -344,8 +344,8 @@ stay exactly as defined.
 
 🔴 Bugs [n]    🟡 Debt/Risks [n]    🟢 Suggestions [n]
 
-🏗️ Architecture     [x/10]
-🧩 Maintainability  [x/10]
+🏗️ Architecture      [x/10]
+🧩 Maintainability   [x/10]
 ⚡ Performance       [x/10]
 🔒 Security          [x/10]
 📚 Documentation     [x/10]
@@ -576,8 +576,8 @@ When all phases are complete:
 
 📊 Health — [before] / 100  →  [after] / 100   ▲ +[delta]
 
-🏗️ Architecture     [x → y]
-🧩 Maintainability  [x → y]
+🏗️ Architecture      [x → y]
+🧩 Maintainability   [x → y]
 ⚡ Performance       [x → y]
 🔒 Security          [x → y]
 📚 Documentation     [x → y]
