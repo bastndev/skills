@@ -1,10 +1,10 @@
 ---
 name: start-package
-description: Scaffold a new dual ESM/CJS TypeScript npm package with the proven, known-good toolchain — zero-config build, bundled types, and TypeScript pinned to 5.x. Use when starting, creating, or bootstrapping a new npm package, library, or "packete" from scratch. Generates package.json, tsconfig.json, tsup config, a smoke test, .gitignore and .vscode settings, then installs, builds and verifies.
+description: Scaffold a new dual ESM/CJS TypeScript npm package with the proven, known-good toolchain — Bun as the package manager/runtime, zero-config build, bundled types, and TypeScript pinned to 5.x. Use when starting, creating, or bootstrapping a new npm package, library, or "packete" from scratch. Generates package.json, tsconfig.json, tsup config, a smoke test, .gitignore and .vscode settings, then installs, builds and verifies.
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # npm-package-starter
@@ -35,6 +35,7 @@ The user wants to start a new package: "create/scaffold/bootstrap a new npm pack
 | tsup | `^8` | 8.5.1 |
 | @types/node | `^22` | — |
 | node (engines) | `>=20` | 25.x |
+| bun | latest | 1.3.4 |
 
 ---
 
@@ -45,15 +46,16 @@ The user wants to start a new package: "create/scaffold/bootstrap a new npm pack
    - `DESCRIPTION` — one line
    - `AUTHOR` — default `Gohit X (bastndev)`
    - `REPO` — default `https://github.com/bastndev/{NAME}`
+   - `HOMEPAGE` — default `https://gohit.xyz/package/{NAME}`
    - `YEAR` — current year
 2. **(Optional) check the name is free:** `npm view {NAME} version` → a `404` means it's available.
 3. **Create the files** in the "Templates" section, substituting `{{PLACEHOLDERS}}`. Scaffold into the current directory unless the user gives a target folder.
-4. **Install:** `npm install` (the template already pins the dev tools).
+4. **Install:** `bun install` (the template already pins the dev tools). Commit the generated `bun.lock` — it is the lockfile; do **not** generate a `package-lock.json`.
 5. **Build + test + verify:**
    ```bash
-   npx tsc --noEmit     # type-check (must be exit 0)
-   npm run build        # tsup → dist/ (ESM + CJS + .d.ts/.d.cts)
-   npm test             # smoke test loads BOTH builds
+   bunx tsc --noEmit    # type-check (must be exit 0)
+   bun run build        # tsup → dist/ (ESM + CJS + .d.ts/.d.cts)
+   bun run test         # smoke test loads BOTH builds
    npm pack --dry-run   # inspect tarball contents + size
    ```
    Do not report success until `tsc`, `build`, and `test` all pass.
@@ -93,13 +95,13 @@ The user wants to start a new package: "create/scaffold/bootstrap a new npm pack
   "scripts": {
     "build": "tsup",
     "clean": "rm -rf dist",
-    "prepublishOnly": "npm run build",
-    "test": "node test/smoke.mjs"
+    "prepublishOnly": "bun run build",
+    "test": "bun test/smoke.mjs"
   },
   "keywords": [],
   "author": "{{AUTHOR}}",
   "license": "MIT",
-  "homepage": "{{REPO}}#readme",
+  "homepage": "{{HOMEPAGE}}",
   "repository": {
     "type": "git",
     "url": "git+{{REPO}}.git"
@@ -216,10 +218,11 @@ npm-debug.log*
 
 ```json
 {
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
 ```
+
+> `typescript.tsdk` alone is enough to point the IDE at the workspace compiler. Do **not** add `typescript.enablePromptUseWorkspaceTsdk` — it triggers a "use workspace TypeScript?" popup on every IDE launch, which is unnecessary noise when `typescript.tsdk` is already set.
 
 ### `LICENSE` (MIT)
 
@@ -266,10 +269,11 @@ This works in both ESM and CJS thanks to `shims: true`.
 ## Gotchas checklist (verify before declaring done)
 
 - [ ] `typescript` pinned to `^5` (NOT 6.x) — the #1 rule
-- [ ] `.vscode/settings.json` points the IDE at the workspace TS
+- [ ] `.vscode/settings.json` points the IDE at the workspace TS (`typescript.tsdk` only)
 - [ ] `exports` map has per-condition `types` for `import` and `require`
 - [ ] `files` allowlist includes `dist` + any asset folders
 - [ ] `sourcemap: false` for a leaner publish
-- [ ] `npx tsc --noEmit`, `npm run build`, and `npm test` all pass
+- [ ] `bun.lock` committed; no `package-lock.json`
+- [ ] `bunx tsc --noEmit`, `bun run build`, and `bun run test` all pass
 - [ ] If a dependency was inlined: its license is attributed in `LICENSE`
 - [ ] Not published unless explicitly requested
