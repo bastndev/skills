@@ -207,7 +207,7 @@ Every 0–100 score maps to a band. Print the band emoji right after the score
 wherever a 0–100 score appears (Health Overview title and Final Summary lines);
 a boundary score belongs to the higher band (80 = ⭐):
 
-0–40 🚨 · 40–60 🔴 · 60–70 🟡 · 70–80 🟢 · 80–90 ⭐ · 90–100 🏆
+0–40 🚨 · 40–60 🟥 · 60–70 🟨 · 70–80 🟩 · 80–90 ⭐ · 90–100 🏆
 
 There is no Testing category — never score tests and never print a `🧪 Testing`
 line. Test gaps (missing tests, unwired runners) belong in Debt/Risks or
