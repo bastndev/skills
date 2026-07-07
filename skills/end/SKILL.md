@@ -4,7 +4,7 @@ description: "Audits, reviews, and refactors project architecture, code quality,
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "2.3.0"
+  version: "2.3.1"
 ---
 
 # Refactor Project / [End]
@@ -369,8 +369,8 @@ block whose first line is the title.
 name, written **without square brackets**: the manifest name (`package.json`
 `name`, `Cargo.toml` `[package].name`, etc.) or, if none, the root folder
 name. Do not add the project type. Keep the rest of the title shape exact.
-If the scope contains user-facing UI code, insert `🎨 UI/UX             [x/10]`
-between Performance and Security. Never insert a `🧪 Testing` line.
+If the scope contains user-facing UI code, add `🎨 UI/UX             [x/10]`
+as the last bar, after Documentation. Never insert a `🧪 Testing` line.
 
 ### 🔍 Project Understanding
 
@@ -416,7 +416,9 @@ above it. Do not use bullets, code-reference headings, or `Problem` / `Impact` /
 
 Rules:
 
-* Use two-digit numbering: `01.`, `02.`, `03.`. Never single-digit (`1.`, `2.`).
+* Use two-digit numbering everywhere, including the empty-category line:
+  `00.`, `01.`, `02.` — never `0.`, `1.`, `2.`. The numbers are literal text,
+  not a Markdown list; keep the two-space indent so no renderer renumbers them.
 * If a category has no items, write exactly `00. .--- --- --- --- --- --- -_- --- --- --- --- --- ---.`
 * **🔴 Bugs** contains confirmed incorrect behavior only. Add `critical` or
   `non-critical` only when a real bug is listed.
@@ -425,6 +427,8 @@ Rules:
   files). Any Debt/Risk planned as a phase must be listed here — phases never
   reference findings the report does not show.
 * **🟢 Suggestions (Optional)** shows max 3 optional improvements.
+* Never list the same issue in two categories: if it is a Debt/Risk, it cannot
+  also appear as a Suggestion — pick the stronger category and drop the other.
 * Each item must be one short sentence. Prefer simple maintainer-facing language
   over file paths unless a path is necessary to avoid ambiguity.
 
@@ -526,6 +530,8 @@ Rules:
 * Use one-line `Files:` when there are 1–4 files. Use a short file list only
   when more than 4 files are affected.
 * Mark new files with `(new)` and deleted files with `(delete)`.
+* Decide every file before presenting the plan — never write alternatives like
+  `(or new path/file)` in `Files:`.
 * Omit ordering explanations by default. Add `Why:` only when the order would
   otherwise be surprising.
 * Phase count follows `Plan ordering & phases`: 2–5 for most scopes, up to 10
@@ -607,8 +613,8 @@ Would you like to implement the (optional 🟢) suggestions?
 ```
 
 Rules for the health-delta block: the band emoji is the **after**-score's band.
-Include `🎨 UI/UX [x → y]` only when the Health Overview included UI/UX; never
-include a `🧪 Testing` line. Show the same number on both sides when a category
+Include `🎨 UI/UX [x → y]` (as the last bar) only when the Health Overview
+included UI/UX; never include a `🧪 Testing` line. Show the same number on both sides when a category
 did not change (e.g. `7 → 7`). Show `▲ +0` honestly if nothing improved. Print
 the summary exactly as templated, with no prose before the
 `## Refactor Complete 🎉` heading; between the phase list and the closing
