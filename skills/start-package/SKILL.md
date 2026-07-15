@@ -4,16 +4,20 @@ description: Scaffold or refresh a minimal Node.js TypeScript library with Bun, 
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # TypeScript package scaffold
 
 Create a minimal Node.js library from the files in `assets/template/`. Keep the generated project small and preserve the dual ESM/CJS package contract.
 
-## Required inputs
+## Setup survey
 
-Infer values when they are already clear. Otherwise ask only for the missing values.
+Before writing files, show one compact setup survey. Use text-entry fields for package metadata; do not present values as choice/select options. Prefill each field with its default when the interface supports editable defaults. Otherwise show the default in the prompt and let an empty response accept it.
+
+Always include `NAME` in the survey, even when it can be inferred. Default it to the basename of the current working directory, converted to lowercase. For example, a folder named `TEST-2` must prefill `test-2`. Keep the field editable so the user can choose another package name.
+
+Ask only for values that cannot be derived from the survey answers:
 
 - `NAME`: npm package name, such as `my-lib` or `@scope/my-lib`.
 - `PROJECT_NAME`: repository/folder name. Default to the unscoped part of `NAME`.
@@ -26,18 +30,19 @@ Infer values when they are already clear. Otherwise ask only for the missing val
 
 ## Scaffold procedure
 
-1. Inspect the target directory before writing. Do not overwrite unrelated or user-modified files without explicit approval.
-2. Copy every file from `assets/template/`, including `.gitignore`, into the target directory.
-3. Replace all `{{NAME}}`, `{{PROJECT_NAME}}`, `{{DESCRIPTION}}`, `{{AUTHOR}}`, `{{NPM_OWNER}}`, `{{REPO}}`, `{{HOMEPAGE}}`, and `{{YEAR}}` placeholders.
-4. Confirm no placeholder remains:
+1. Use the current working directory as the project root. Create the scaffold directly in that directory; never create a child directory named after `NAME` or `PROJECT_NAME`.
+2. Inspect the current working directory before writing. Preserve unrelated files such as skill-installation metadata, and do not overwrite unrelated or user-modified files without explicit approval.
+3. Copy every file from `assets/template/`, including `.gitignore`, directly into the current working directory.
+4. Replace all `{{NAME}}`, `{{PROJECT_NAME}}`, `{{DESCRIPTION}}`, `{{AUTHOR}}`, `{{NPM_OWNER}}`, `{{REPO}}`, `{{HOMEPAGE}}`, and `{{YEAR}}` placeholders.
+5. Confirm no placeholder remains:
 
    ```bash
    rg -n '\{\{[A-Z_]+\}\}' .
    ```
 
-5. Install dependencies with `bun install` and keep the generated `bun.lock`. Do not generate `package-lock.json`.
-6. Run `bun run check`. Do not report success unless type-checking, the ESM/CJS build, `attw`, `publint`, and the smoke test all pass.
-7. Run `git diff --check` when the target is a Git repository.
+6. Install dependencies with `bun install` and keep the generated `bun.lock`. Do not generate `package-lock.json`.
+7. Run `bun run check`. Do not report success unless type-checking, the ESM/CJS build, `attw`, `publint`, and the smoke test all pass.
+8. Run `git diff --check` when the project root is a Git repository.
 
 ## Release boundary
 
