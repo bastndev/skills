@@ -33,15 +33,11 @@ Leave the file `bun create astro` generated as-is; **add the one runtime depende
 ## `src/types/index.ts`
 
 ```ts
-// Shared TypeScript types. Import from here across the app: `import type { Route } from '../types'`.
-
-/** A top-level navigation route, used by the ROUTES registry in `consts.ts`. */
 export interface Route {
   href: string;
   label: string;
 }
 
-/** Site-wide configuration (name, description, canonical URL). */
 export interface SiteConfig {
   name: string;
   description: string;
@@ -56,19 +52,12 @@ The single source of truth. `SITE.name` is the **only** place the project name i
 ```ts
 import type { Route, SiteConfig } from '@/types';
 
-// Single source of truth for the site's name. Rename the project here once and
-// the browser tab, the header brand, and the footer all follow.
 export const SITE: SiteConfig = {
   name: '{{PROJECT_NAME}}',
   description: 'A simple, scalable Astro base — ready to grow from a portfolio to a full app.',
   url: 'https://example.com',
 };
 
-// The "connected routes" registry. Header builds its nav from this, and 404.astro
-// links home from it — add a top-level page in ONE place and both update.
-//
-// Detail routes (e.g. /project/[slug]) are generated from Content Collections,
-// not hand-listed here. See ARCHITECTURE.md → "Routing convention".
 export const ROUTES: Route[] = [
   { href: '/', label: 'Home' },
   { href: '/work', label: 'Work' },
@@ -79,13 +68,6 @@ export const ROUTES: Route[] = [
 ## `src/lib/utils.ts`
 
 ```ts
-// Framework-agnostic helpers. No UI, no Astro-specific imports — pure functions
-// that any page, component, or endpoint can reuse.
-
-/**
- * Normalise trailing slashes so paths compare equal in dev (`/work`) and in the
- * static build/preview (`/work/`). Root (`/`) is left untouched.
- */
 export function stripTrailingSlash(path: string): string {
   return path !== '/' && path.endsWith('/') ? path.slice(0, -1) : path;
 }
@@ -96,11 +78,8 @@ export function stripTrailingSlash(path: string): string {
 ```ts
 /// <reference types="astro/client" />
 
-// Type your environment variables here for autocomplete + safety on
-// `import.meta.env`. Astro exposes `PUBLIC_`-prefixed vars to the client;
-// everything else stays server-only.
 interface ImportMetaEnv {
-  // readonly PUBLIC_SITE_URL: string;
+  // Example: readonly PUBLIC_SITE_URL: string;
 }
 
 interface ImportMeta {
@@ -110,49 +89,19 @@ interface ImportMeta {
 
 ## `src/content.config.ts`
 
-Astro 7 puts the Content Collections config at the src root (not `src/content/config.ts`). Ships with no active collections — an empty object is valid — plus a commented example.
+Astro 7 puts the Content Collections config at the src root (not `src/content/config.ts`). It ships with no active collections; the recipe lives in `ARCHITECTURE.md` instead of as a large commented block in the source file.
 
 ```ts
-// Content Collections config. In Astro 7 this lives at the src root as
-// `content.config.ts` (not the older `src/content/config.ts`).
-//
-// Define collections here, named in PLURAL — a collection holds many entries.
-// Entries live in `src/content/<collection>/`. Pages read them with
-// getCollection() / getStaticPaths(). See ARCHITECTURE.md → "Content Collections".
-//
-// Example — uncomment and adapt:
-//
-// import { defineCollection, z } from 'astro:content';
-// import { glob } from 'astro/loaders';
-//
-// const projects = defineCollection({
-//   loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),
-//   schema: z.object({
-//     title: z.string(),
-//     description: z.string(),
-//     repoUrl: z.string().url().optional(),
-//   }),
-// });
-//
-// export const collections = { projects };
-
 export const collections = {};
 ```
 
 ## `src/pages/api/hello.ts`
 
-The "backend door" — a working endpoint in the default static build. Keeps the project static-first; the comment tells the user exactly how to go dynamic later.
+The "backend door" — a working endpoint in the default static build. Runtime-server guidance stays in `ARCHITECTURE.md`, keeping the endpoint itself focused.
 
 ```ts
 import type { APIRoute } from 'astro';
 
-// Example backend endpoint → GET /api/hello.
-//
-// The backend door is open: this works in the default STATIC build (the response
-// is prerendered at build time). For runtime/dynamic server logic — auth, a
-// database, request-time responses — add an adapter (@astrojs/vercel,
-// @astrojs/node, …), set `output: 'server'` in astro.config.mjs, and add
-// `export const prerender = false` to the routes that need it.
 export const GET: APIRoute = () => {
   return new Response(JSON.stringify({ status: 'ok' }), {
     headers: { 'Content-Type': 'application/json' },
