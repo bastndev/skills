@@ -1,0 +1,9 @@
+# Build output & generated files
+dist/
+.astro/
+
+# Lockfile
+bun.lock
+
+# Static assets — keep public/ (incl. the default Astro favicon) untouched
+public/

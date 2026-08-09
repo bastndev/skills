@@ -5,7 +5,7 @@
 <h1 align="center">[Start] / Astro Starter</h1>
 
 <p align="center">
-  <strong>Start Astro</strong> — The scalable Astro scaffolding skill
+  <strong>Start Astro</strong> — A focused Astro scaffold that grows only when the site needs it
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@
 
 ---
 
-Scaffolds a new Astro project using the `minimal` template, overlaid with a clean, **scalable** architecture — ready to grow from a portfolio to a full app. The stuff you set up every single time you start an Astro project, done once, correctly.
+Scaffolds a new Astro 7 project from the `minimal` template and overlays a small, production-ready architecture. It includes the shared shell, accessible theme behavior, core pages, local icons, and documentation a real starter uses—without pre-creating APIs, content systems, helpers, types, or empty folders for hypothetical future work.
 
 <p align="center">
   <a href="https://skills.sh/bastndev/skills">
@@ -30,74 +30,55 @@ npx skills add bastndev/skills --skill start-astro
 
 ## How It Works
 
-1. **Detects** — Uses the current folder name as the project name. Never asks you to name it, never creates a separate sibling folder.
-2. **Scaffolds** — Runs `bun create astro` with the `minimal` (empty) template to ensure zero boilerplate needs to be deleted.
-3. **Builds** — Writes a scalable architecture (Layout, Header, Footer, pages, reusable ThemeToggle, configs, aliases) into the project.
-4. **Installs & Verifies** — Installs `@lucide/astro` and runs `bun run build` to verify the production build works flawlessly before handing it over.
+1. **Detects** — Uses the current folder name as the project name and works in place.
+2. **Scaffolds** — Runs Astro's empty `minimal` template without initializing Git or installing twice.
+3. **Overlays** — Copies the known-good template bundled with the skill, including the local `gxb.otf` font.
+4. **Customizes** — Writes the project name only to `SITE.name` and the README title.
+5. **Verifies** — Installs `@lucide/astro` and requires `bun run build` to pass before handoff.
 
 ## Guarantees
 
-- **Single Source of Truth**: Project name and routes live exactly once in `consts.ts`.
-- **Zero Boilerplate**: Uses the empty `minimal` template, never the `basic` one.
-- **In-place Setup**: Operates in the current directory; never creates a throwaway or differently-named project folder.
-- **Untouched Favicons**: Preserves the default Astro favicons (`public/favicon.svg`, `public/favicon.ico`).
+- **Focused by default**: Includes only files the working starter uses.
+- **Clear ownership**: Global CSS contains document-wide foundations; component styles stay scoped beside their markup.
+- **Single source of truth**: Site identity and primary routes live in `src/consts.ts`.
+- **Accessible interaction**: Keyboard focus, synchronized theme ARIA state, reduced-motion handling, and semantic 404 markup are built in.
+- **Reliable navigation**: The theme survives View Transitions without duplicate listeners, and active routes tolerate trailing slashes.
+- **In-place setup**: Never creates a throwaway or differently named project folder.
+- **Preserved scaffold files**: Leaves generated package metadata, Astro config, agent guidance, editor settings, and favicons alone.
 
 ## What You Get
 
-```
+```text
+public/
+└── fonts/gxb.otf
 src/
-    ├── assets/               # Imported in code → optimized & hashed by Astro/Vite
-    │   ├── images/
-    │   └── icons/            #   custom brand SVGs (social/) imported as raw strings
-    │
-    ├── components/           # Reusable pieces shared across pages
-    │   ├── ui/               #   small primitives — BackButton404 + ThemeToggle
-    │   ├── Header.astro      #   logo + centered nav (from ROUTES) + theme toggle
-    │   └── GXB.astro         #   ASCII hero + social-links row (one source for the art)
-    │
-    ├── sections/             # Page-level blocks (Hero, Footer, FeatureGrid…)
-    │   └── Footer.astro      #   minimal footer (brand + year)
-    │
-    ├── layouts/
-    │   └── Layout.astro      #   HTML shell: <head>, ClientRouter, no-flash theme
-    │                         #   script, <Header />, <slot />, <Footer />
-    │
-    ├── content/              # Content Collection entries — one PLURAL folder
-    │                         #   per collection (blog/, projects/…)
-    │
-    ├── pages/                # File-based routing
-    │   ├── index.astro       #   Home
-    │   ├── work/
-    │   │   └── index.astro   #   Work → /work (folder per route, room to grow)
-    │   ├── contact/
-    │   │   └── index.astro   #   Contact → /contact
-    │   ├── 404.astro         #   typing-animation 404, hides nav/footer, links home
-    │   └── api/
-    │       └── hello.ts      #   example endpoint → GET /api/hello
-    │
-    ├── lib/                  # Framework-agnostic helpers (no UI)
-    │   └── utils.ts
-    ├── types/               # Shared TypeScript types
-    │   └── index.ts
-    │
-    ├── styles/
-    │   └── global.css        #   core theme tokens + shared base
-    │
-    ├── content.config.ts     # Content Collections schema (Astro 7 location)
-    ├── consts.ts             # SITE config + ROUTES registry — single source
-    └── env.d.ts              # Typed import.meta.env
+├── assets/icons/social/       # 7 local outline brand icons
+├── components/
+│   ├── ui/buttons/            # BackButton404 + ThemeToggle
+│   ├── GXB.astro              # ASCII hero + tagline + social links
+│   └── Header.astro           # brand + active nav + theme control
+├── layouts/Layout.astro       # metadata + ClientRouter + theme bootstrap
+├── pages/
+│   ├── index.astro
+│   ├── work/index.astro
+│   ├── contact/index.astro
+│   └── 404.astro
+├── sections/Footer.astro
+├── styles/global.css
+├── consts.ts                  # SITE + ROUTES
+└── env.d.ts
 
-ARCHITECTURE.md · README.md · tsconfig.json (@/ alias)
+ARCHITECTURE.md · README.md · .prettierignore · tsconfig.json
 ```
 
-A fully working site with a zero-dependency light/dark toggle, native View Transitions, a hero social-links row, an animated full-screen 404, a gradient footer, `@/` path aliases, Content Collections ready, and an open backend door (`lib/` + `pages/api/`).
+The base intentionally omits Content Collections, API routes, adapters, services, stores, shared library/type folders, and empty placeholders. `ARCHITECTURE.md` explains when each capability has earned a place in the project.
 
 ---
 
 → Full spec & rules: [SKILL.md](./SKILL.md)
 
 <div align="center">
-  <sub>Built for developers who want to start their Astro projects with a robust foundation.</sub>
+  <sub>Built for developers who want a strong Astro foundation without speculative architecture.</sub>
   <br><br>
   <sub>Made in 🇵🇪 by <a href="https://gohit.xyz">Gohit X</a> · Licensed under <a href="https://github.com/bastndev/skills/blob/main/LICENSE">MIT</a></sub>
 </div>

@@ -1,182 +1,124 @@
 ---
 name: start-astro
-description: Scaffold a new Astro project (minimal template) with a ready-to-use, scalable architecture — a shared Layout + Header (logo + centered nav) + Footer, a zero-dependency light/dark theme toggle, native Astro View Transitions, a `@/`→`src/` path alias, a SITE + ROUTES single-source-of-truth config, icons (`@lucide/astro` + a unified 7-icon custom brand set) shown in a hero social-links row, Content Collections wired up, an animated full-screen 404 page (typing effect), and an open backend door (`lib/` + `pages/api/`). Use when starting, creating, or bootstrapping a new Astro site/project/"proyecto astro" from scratch, or when the user wants a base/starter ready to grow from a portfolio to a full app. Generates the project via `bun create astro@latest` (minimal/empty template), writes the full structure, installs deps (incl. @lucide/astro), and verifies the production build.
+description: Scaffold a focused, production-ready Astro 7 project from the minimal template. Use when starting, creating, or bootstrapping a new Astro site or "proyecto astro" in the current directory. Installs a pure-Astro layout with Header, Footer, Home/Work/Contact pages, an accessible animated 404, no-flash light/dark themes, View Transitions, a `@/` path alias, SITE and ROUTES configuration, Lucide UI icons, seven local brand icons, and the bundled gxb font, then verifies the production build. Keeps optional content collections, API routes, adapters, services, stores, shared libraries, and speculative folders out until the project actually needs them.
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
   version: "2.1.0"
 ---
 
-# start-astro
+# Astro project scaffold
 
-Scaffolds a publishable, **scalable Astro base**: the clean `minimal` template, then a hand-written architecture on top — Layout + Header + Footer + 4 pages (incl. 404) + a reusable light/dark toggle + View Transitions + `@/` alias + SITE/ROUTES config + icons + Content Collections + a backend door. The stuff you set up every single time you start an Astro project, done once, correctly. It starts as light as a portfolio, but every folder a growing app needs is already there — so you never restructure, you only fill in.
+Create a small Astro base from the files in `assets/template/`. Favor clear ownership and add capabilities only when the site needs them.
 
-## When to use
+## Inputs and boundaries
 
-The user wants to start a new Astro project: "create/scaffold/bootstrap a new astro project", "set up an astro site", "necesito un proyecto de astro listo", or they have an empty folder and want a base with theme switching, navigation, icons, and a scalable structure already working.
-
----
-
-## Why `minimal`, not `basic`
-
-`bun create astro@latest` offers four templates. This skill always picks **"Use minimal (empty) template"**, not "A basic, helpful starter project (recommended)".
-
-**Why:** the "basic" template ships its own boilerplate page, default styles, and an Astro logo/welcome component that would all need to be located and deleted before this architecture can go in cleanly. That's an extra, error-prone step that also drifts depending on whatever Astro bundled in that release. `minimal` gives an empty `src/pages/index.astro` and nothing else — everything this skill adds is therefore exactly what's in `references/`, no leftover files, no guessing what to delete.
-
----
-
-## Architecture at a glance
-
-```
-src/
-├── assets/icons/social/          7 custom brand SVGs imported with ?raw
-├── components/{ui/buttons/,Header,GXB}  reusable UI (BackButton404 + ThemeToggle)
-├── sections/Footer.astro          page-level blocks (gradient top border)
-├── layouts/Layout.astro           HTML shell (ClientRouter + no-flash theme + Header + Footer + hideNavAndFooter)
-├── content/                       Content Collection entries (empty, ready)
-├── pages/{index,work/index,contact/index,404,api/hello}
-├── lib/utils.ts · types/index.ts
-├── styles/global.css              core theme tokens + layout + footer + icon visibility
-├── consts.ts                      SITE + ROUTES (single source of truth)
-└── content.config.ts · env.d.ts
-ARCHITECTURE.md · README.md · .prettierignore · tsconfig.json (@/ alias)
-```
-
-The whole base is built on **one principle: a single source of truth.** The project name lives once in `SITE.name` (`src/consts.ts`); the tab title, header brand, and footer all derive from it. The top-level routes live once in `ROUTES`; the header nav and the 404 page both read it. So the project name and routes are written in exactly one file each — everything else is name-free.
-
----
+- Derive `PROJECT_NAME` from the basename of the current working directory. Preserve its original spelling and casing. Never ask for a name.
+- Use the current directory as the project root. Never create a sibling, child, temporary, or throwaway project.
+- Ship the standard Home, Work, and Contact routes unless the user explicitly requests different pages.
+- Treat `assets/template/` as the source of truth. Do not recreate its files from memory or redesign the base while scaffolding.
+- Preserve unrelated files and skill-installation metadata already present in the directory. Stop before overwriting user-authored project files that are not from a fresh Astro scaffold.
 
 ## Procedure
 
-1. **Gather inputs:**
+1. Inspect the current directory and derive `PROJECT_NAME`.
+2. Scaffold Astro's empty template directly into the current directory:
 
-   - `PROJECT_NAME` — **the user already created and named their folder before invoking this skill.** Detect it automatically from the current working directory (`pwd` / the basename of the folder Claude is operating in) and use it as-is — **never ask the user to name the project, and never request a name in chat.** The folder's existing name (e.g. `TEST1`) is the project name, exactly as the user typed it (preserve its original casing — don't lowercase/slugify it).
-   - `DIR` — always `.` (the current directory). This skill scaffolds **into** the folder the user is already standing in; it does not create a new sibling folder and does not rename anything.
-   - `PAGES` — default `Home, Work, Contact` (the standard set this skill ships). Only deviate if the user explicitly asks for different sections.
-
-2. **Scaffold via the official CLI, into the current folder** — the user already made and is standing inside their project folder (e.g. `TEST1`), so this always targets `.`, never a new named folder:
    ```bash
    bun create astro@latest . -- --template minimal --no-install --no-git --skip-houston
    ```
-   - `.` → scaffold into the current directory; this skill never creates a new folder or renames the existing one.
-   - **Never create a separate, temporary, or differently-named project folder** (e.g. `test-project1`, `astro-scaffold`, a `/tmp` copy, a sibling dir) to scaffold or "test" in and then move/delete. There is exactly **one** project and it is the current folder. Run every command — scaffold, install, build — directly here.
-   - `--template minimal` → the empty template (see rationale above).
-   - `--no-install` → this skill controls the install step explicitly (next steps), keeps output readable.
-   - `--no-git` → don't assume the user wants a fresh git repo; skip unless asked.
-   - `--skip-houston` → skip the mascot/animation prompt, keep it non-interactive.
-   - If any flag is rejected by the installed `create-astro` version, fall back to running it without flags and answer the interactive prompts yourself: `dir` → `.`, `template` → minimal/empty, decline git init, decline install.
-   - If `create-astro` warns that the directory isn't empty (it may contain `.git`, an editor config, etc. — fine), proceed; only stop and ask if it refuses outright because of conflicting files.
 
-3. **Read ALL reference files before writing anything** — they contain the exact, byte-for-byte content to write (these are copy-paste ready, not something to regenerate from scratch):
-   - `references/architecture.md` — the doc to copy to the project root as `ARCHITECTURE.md` (substituting `{{PROJECT_NAME}}`).
-   - `references/project-structure.md` — final file tree, `GXB.astro` (the ASCII hero — **art byte-for-byte** — plus the social-links row), the 3 pages, the animated `404.astro` + `ui/buttons/BackButton404.astro`, `README.md`, `.prettierignore`, `public/fonts/README.md`, and the 3 `.gitkeep` placeholders.
-   - `references/layout-header.md` — `Layout.astro` (incl. the `hideNavAndFooter` prop), `Header.astro`, reusable `ui/buttons/ThemeToggle.astro`, and `Footer.astro`, plus the no-flash/toggle scripts and View-Transitions gotchas.
-   - `references/global-css.md` — the full cleaned `src/styles/global.css` (three core theme tokens + base layout + gradient footer + theme-toggle icon visibility) and the boundary between global and component-scoped styles.
-   - `references/config-data-backend.md` — `tsconfig.json` (the `@/` alias), `consts.ts`, `types/index.ts`, `lib/utils.ts`, `env.d.ts`, `content.config.ts`, `pages/api/hello.ts`.
-   - `references/icons.md` — installing `@lucide/astro` (including the toggle's sun/moon icons) and the custom **7-icon** social SVG set (`assets/icons/social/`), every custom file byte-for-byte.
+   If the installed CLI rejects a flag, run it interactively and select the current directory, the minimal/empty template, no dependency installation, and no Git initialization. Existing installer metadata or editor files are not conflicts; stop only when the CLI refuses because a real project file would be overwritten.
 
-4. **Write the files** into the current folder exactly as given in the references.
+3. Resolve the directory containing this `SKILL.md` as `SKILL_DIR`. Copy every file from `SKILL_DIR/assets/template/`, including `.prettierignore`, into the project root. Overwrite the minimal scaffold's `README.md`, `tsconfig.json`, and `src/pages/index.astro` with the bundled versions.
+4. Replace `{{PROJECT_NAME}}` in exactly these two files:
 
-   **Overwrite** these files that `bun create astro` generated:
-   - `tsconfig.json` (the `@/`→`src/*` alias version — no React JSX, no `baseUrl`)
-   - `src/pages/index.astro`
-   - `README.md`
+   - `README.md` — visible project title.
+   - `src/consts.ts` — `SITE.name`, safely escaped as a TypeScript string while preserving the displayed name.
 
-   **Create** everything else:
-   - `src/layouts/Layout.astro` (incl. the `hideNavAndFooter` prop), `src/components/Header.astro`, `src/sections/Footer.astro`
-   - `src/components/GXB.astro` (**ASCII art byte-for-byte — do not edit it; the hero also renders a social-links row whose `socials` handles you may edit**)
-   - `src/components/ui/buttons/BackButton404.astro` (the themed back button the 404 uses), `src/components/ui/buttons/ThemeToggle.astro` (the reusable Lucide toggle)
-   - `src/styles/global.css`
-   - `src/pages/work/index.astro`, `src/pages/contact/index.astro`, `src/pages/404.astro` (the typing-animation page — passes `hideNavAndFooter`), `src/pages/api/hello.ts` (Work and Contact each live in their own folder as `index.astro` — `pages/work/index.astro` → `/work` — so a route can grow sub-pages later without a move; Home and 404 stay flat at the `pages/` root)
-   - `src/consts.ts`, `src/types/index.ts`, `src/lib/utils.ts`, `src/env.d.ts`, `src/content.config.ts`
-   - `src/assets/icons/social/*.svg` (7 files: x, github, linkedin, instagram, youtube, tiktok, facebook)
-   - `ARCHITECTURE.md` (project root, **uppercase**)
-   - `public/fonts/README.md`
-   - empty `.gitkeep` files in `src/assets/images/`, `src/components/ui/`, `src/content/` (so the intentional folders survive version control without placeholder prose)
+   Confirm the placeholder is gone:
 
-   Keep generated source comments sparse. Do not add narrative comments that repeat the code or duplicate `ARCHITECTURE.md`. Retain only short notes that prevent a non-obvious mistake or identify an intentional constraint; keep required directives such as `/// <reference types="astro/client" />` unchanged.
+   ```bash
+   rg -n '\{\{PROJECT_NAME\}\}' README.md src/consts.ts
+   ```
 
-   **Substitute `{{PROJECT_NAME}}` in exactly three files** — everywhere else is name-free (the name flows from `SITE.name`):
-   - `src/consts.ts` → `SITE.name`
-   - `README.md` → the `# {{PROJECT_NAME}}` title
-   - `ARCHITECTURE.md` → the `# Architecture — {{PROJECT_NAME}}` title and the `{{PROJECT_NAME}}/` tree root
+5. Leave these scaffold-generated files as generated: `.gitignore`, `.vscode/`, `AGENTS.md`, `CLAUDE.md`, `astro.config.mjs`, `package.json`, `public/favicon.svg`, and `public/favicon.ico`. Do not hand-edit package metadata. The template adds only `public/fonts/gxb.otf` under `public/`.
+6. Install and verify in place:
 
-   The `socials` array in `GXB.astro` is **not** a `{{PROJECT_NAME}}` slot — it ships with default handles; leave them as shipped unless the user gives their own.
-
-   **Leave `public/` favicons alone.** Do **not** create, replace, or delete `public/favicon.svg` or `public/favicon.ico` — `bun create astro` ships them (the Astro defaults). The header logo only *references* `favicon.svg` read-only (via a CSS mask); never overwrite the favicon and never delete the `.ico`. You only *add* `public/fonts/README.md`.
-
-   **Leave `astro.config.mjs` as generated** (`export default defineConfig({})`) — the base ships static-first with no adapter.
-
-5. **Install + verify** (already in the project folder, no `cd` needed):
    ```bash
    bun install
    bun add @lucide/astro
-   bun run build      # must exit 0 — catches broken imports/typos before the user opens the editor
-   ```
-   `@lucide/astro` is the **only** runtime dependency this skill adds (the theme toggle and custom icons need zero packages). The peer-dependency warning Lucide prints about the Astro version is harmless. Do not report success until `bun run build` passes. If it fails, read the error, fix the file, rebuild — don't hand back a broken project. **Verify in place** — build *this* project; never spin up a separate throwaway project to test against.
-
-6. **Do not run `bun run dev`** in the background unless the user asks to preview it — this skill's job is to hand back a ready project, not to occupy a long-running terminal.
-
-7. **Report what was scaffolded** once the build passes — print this summary (substitute the real project name), ending with the success line and the run hint:
-
-   ```
-   Project {{PROJECT_NAME}} is ready. Here's what was scaffolded:
-
-   src/
-   ├── assets/icons/
-   │   └── social/            ← 7 brand SVGs (x, github, linkedin, instagram, …)
-   ├── components/
-   │   ├── ui/buttons/        ← BackButton404.astro + reusable ThemeToggle.astro
-   │   ├── Header.astro       ← logo + centered nav (from ROUTES) + theme toggle
-   │   └── GXB.astro          ← ASCII hero + tagline + social-links row
-   ├── sections/Footer.astro  ← {SITE.name} © year (gradient top border)
-   ├── layouts/Layout.astro   ← shell: ClientRouter + no-flash theme + Header + Footer + hideNavAndFooter
-   ├── content/               ← Content Collection entries (empty, ready)
-   ├── pages/
-   │   ├── index.astro · work/index.astro · contact/index.astro
-   │   ├── 404.astro          ← typing animation, hides nav/footer, links home
-   │   └── api/hello.ts       ← example endpoint (the backend door)
-   ├── lib/utils.ts · types/index.ts
-   ├── styles/global.css      ← core theme tokens + gradient footer + toggle icon visibility
-   ├── consts.ts              ← SITE + ROUTES (single source of truth)
-   └── content.config.ts · env.d.ts
-   ARCHITECTURE.md · README.md · .prettierignore · tsconfig.json (@/ alias)
-
-   What's included:
-   - Astro 7 with minimal template (no boilerplate), static-first
-   - Light/dark theme toggle (CSS vars + vanilla JS, zero deps) + no-flash + View Transitions
-   - @/ → src/ path alias (clean imports, no ../../ chains)
-   - SITE + ROUTES single source of truth — rename / add routes in one place
-   - Hero social-links row (7 brand icons) + animated full-screen 404 (typing effect)
-   - Icons: @lucide/astro (line icons) + a unified 7-icon brand set (outline, currentColor)
-   - Gradient ("degraded") footer border
-   - Content Collections ready; backend door (lib/ + pages/api/)
-   - bun run build passed cleanly
-
-   Project created successfully 🎉
-   bun run dev
+   bun run build
    ```
 
----
+   `@lucide/astro` is the only dependency added beyond Astro. Do not report success until the build exits with status 0. Read any error, fix the generated project, and rerun the build.
+7. When the project root is a Git repository, run `git diff --check`. Do not start `bun run dev` unless the user asks for a preview.
 
-## Gotchas checklist (verify before declaring done)
+## Template inventory
 
-- [ ] Project name detected from the current folder's name — never asked the user, never invented a separate name
-- [ ] `{{PROJECT_NAME}}` substituted in **only** `consts.ts`, `README.md`, `ARCHITECTURE.md` — pages/Layout/Header/Footer are name-free (the name flows from `SITE.name`); the footer is `{SITE.name} © year`, never a hardcoded mark
-- [ ] Used `minimal` template, not `basic` — no boilerplate to clean up
-- [ ] `tsconfig.json` overwritten with the `@/`→`src/*` alias (extends `astro/tsconfigs/strict`; **no** `baseUrl`, **no** React `jsx`/`jsxImportSource`)
-- [ ] Footer CSS and theme-toggle **icon visibility** CSS live in `global.css`; the toggle's button layout/colors/focus/script live in `ThemeToggle.astro`
-- [ ] `ThemeToggle.astro` imports `{ Sun, Moon }` from `@lucide/astro`, renders `.theme-toggle-sun` / `.theme-toggle-moon`, binds every `.theme-toggle`, and supports multiple instances without duplicate listeners
-- [ ] Theme toggle script runs on `astro:page-load` (not only initial load) and the no-flash `<head>` script re-applies on `astro:after-swap` — both required so theme + toggle survive View Transitions
-- [ ] `<ClientRouter />` imported from `astro:transitions` and placed in `Layout.astro`'s `<head>`
-- [ ] `GXB.astro`: the **ASCII art is byte-for-byte** (not edited, renamed, or moved); the hero also renders a **social-links row** — 7 icons imported with `?raw` + injected via `set:html`, handles in the `socials` array
-- [ ] `404.astro` is the typing-animation page: imports `BackButton404` (`components/ui/buttons/`), passes `hideNavAndFooter={true}` (Header + Footer hidden), keeps a **name-free** `title="404"`, and links home from `ROUTES[0]`
-- [ ] `Layout.astro` exposes `hideNavAndFooter?: boolean`; `<Header />` and `<Footer />` are guarded with `{!hideNavAndFooter && …}`
-- [ ] Footer's top border is the **gradient** (`border-image: linear-gradient(...)`, transparent→border→transparent), not a solid rule — and it lives in `global.css`
-- [ ] `@lucide/astro` installed (`bun add`); it's the only runtime dep added
-- [ ] Social set is exactly **7** outline SVGs — `x, github, linkedin, instagram, youtube, tiktok, facebook` (`twitter`→`x`; no discord/threads/soundcloud/theme assets) — each `currentColor`, kebab-case, with the tuned `viewBox` from `references/icons.md`
-- [ ] `public/favicon.svg` and `public/favicon.ico` are the **untouched Astro defaults**; only `public/fonts/README.md` is added to `public/`
-- [ ] Generated source contains no long tutorial comments; essential comments are short and `ARCHITECTURE.md` owns the detailed explanations
-- [ ] Empty `.gitkeep` files written to `src/assets/images/`, `src/components/ui/`, `src/content/`
-- [ ] `ARCHITECTURE.md` (uppercase), `README.md`, `.prettierignore` at the project root
-- [ ] `bun install` + `bun run build` both pass before reporting done
+```text
+assets/template/
+├── public/fonts/gxb.otf
+├── src/
+│   ├── assets/icons/social/       # x, github, linkedin, instagram, youtube, tiktok, facebook
+│   ├── components/
+│   │   ├── ui/buttons/            # BackButton404 + ThemeToggle
+│   │   ├── GXB.astro              # ASCII hero, tagline, and social links
+│   │   └── Header.astro           # brand, active navigation, and theme control
+│   ├── layouts/Layout.astro       # metadata, ClientRouter, theme bootstrap, page shell
+│   ├── pages/                     # Home, Work, Contact, and 404
+│   ├── sections/Footer.astro
+│   ├── styles/global.css
+│   ├── consts.ts
+│   └── env.d.ts
+├── .prettierignore
+├── ARCHITECTURE.md
+├── README.md
+└── tsconfig.json
+```
+
+Copy the binary font from the asset; never attempt to reconstruct or transcribe it.
+
+## Architecture guarantees
+
+- Keep global CSS limited to the font face, semantic theme tokens, box sizing, scrollbar colors, and document typography/background. Keep component selectors beside their Astro markup.
+- Keep the project name in `SITE.name`; Layout, Header, and Footer derive it from there.
+- Keep top-level navigation in `ROUTES`. Header renders it and computes active links; the 404 page finds `/` and fails clearly if the home route is missing.
+- Apply the saved theme before first paint, fall back to the operating-system preference, tolerate unavailable storage, and restore it during View Transitions without duplicate listeners.
+- Keep the toggle accessible with synchronized `aria-label` and `aria-pressed`, multiple-instance safety, and visible keyboard focus.
+- Respect `prefers-reduced-motion` in the 404 typing effect. Use semantic heading markup and hide the decorative cursor from assistive technology.
+- Preserve the seven local outline brand SVGs and their tuned view boxes. Keep social profile URLs centralized in `GXB.astro`.
+- Preserve `public/favicon.svg` and `public/favicon.ico`; Header uses the SVG as a theme-aware CSS mask.
+- Keep Astro static-first. Do not add an adapter or server output.
+
+## Deliberately absent
+
+Do not create empty or example-only systems for future use:
+
+- `src/content.config.ts` or `src/content/`
+- `src/pages/api/`
+- `src/lib/`, `src/types/`, `src/services/`, or `src/stores/`
+- empty image folders or `.gitkeep` placeholders
+- sample API endpoints, placeholder font documentation, React, Tailwind, or another UI framework
+
+`ARCHITECTURE.md` explains when to introduce content collections, API/server rendering, shared logic, or shared types.
+
+## Completion report
+
+After `bun run build` passes, report the detected project name, the focused structure created, `@lucide/astro` and the bundled font, theme/View Transition behavior, the intentionally omitted speculative systems, and the successful build. End with:
+
+```text
+Project created successfully 🎉
+bun run dev
+```
+
+## Final checks
+
+- [ ] Scaffolded the minimal template in the current directory only.
+- [ ] Copied the complete bundled template, including `.prettierignore` and `public/fonts/gxb.otf`.
+- [ ] Replaced `{{PROJECT_NAME}}` only in `README.md` and `src/consts.ts`.
+- [ ] Preserved generated package metadata, config, instructions, editor files, and favicons.
+- [ ] Kept component styles scoped and global CSS focused.
+- [ ] Did not reintroduce speculative folders, APIs, collections, helpers, or placeholder files.
+- [ ] Installed only `@lucide/astro` beyond Astro.
+- [ ] `bun run build` passed in the real project.

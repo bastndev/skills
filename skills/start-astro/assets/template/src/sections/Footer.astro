@@ -1,0 +1,31 @@
+---
+import { SITE } from '@/consts';
+
+const year = new Date().getFullYear();
+---
+
+<footer>
+  <p>{SITE.name} © {year}</p>
+</footer>
+
+<style>
+  footer {
+    border-top: 1px solid;
+    border-image: linear-gradient(
+        to right,
+        transparent,
+        var(--color-border) 40%,
+        var(--color-border) 60%,
+        transparent
+      )
+      1;
+  }
+
+  p {
+    margin: 0;
+    padding: 1.25rem 1.5rem;
+    color: #555;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+</style>

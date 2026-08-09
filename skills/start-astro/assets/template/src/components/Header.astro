@@ -1,0 +1,140 @@
+---
+import ThemeToggle from '@/components/ui/buttons/ThemeToggle.astro';
+import { ROUTES, SITE } from '@/consts';
+
+const normalizePath = (path: string) =>
+  path !== '/' && path.endsWith('/') ? path.slice(0, -1) : path;
+const currentPath = normalizePath(Astro.url.pathname);
+---
+
+<header>
+  <nav aria-label="Primary navigation">
+    <a href="/" class="brand" aria-label={SITE.name}>
+      <span class="brand-logo" aria-hidden="true"></span>
+      <span class="brand-name">{SITE.name}</span>
+    </a>
+
+    <ul class="nav-links">
+      {
+        ROUTES.map((route) => {
+          const isActive = currentPath === normalizePath(route.href);
+
+          return (
+            <li>
+              <a
+                href={route.href}
+                class:list={['nav-link', { active: isActive }]}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                {route.label}
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+
+    <ThemeToggle />
+  </nav>
+</header>
+
+<style>
+  header {
+    background-color: var(--color-bg);
+  }
+
+  nav {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    justify-self: start;
+    color: #4a4a4a;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .brand:hover {
+    color: var(--color-text);
+  }
+
+  :global([data-theme='dark']) .brand {
+    color: #b0b0b0;
+  }
+
+  .brand-logo {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    background-color: currentColor;
+    -webkit-mask: url(/favicon.svg) center / contain no-repeat;
+    mask: url(/favicon.svg) center / contain no-repeat;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    justify-self: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .nav-link {
+    padding: 0.25rem 0;
+    color: #4a4a4a;
+    font-size: 0.95rem;
+    text-decoration: none;
+  }
+
+  .nav-link.active,
+  .nav-link:hover {
+    color: var(--color-text);
+  }
+
+  :global([data-theme='dark']) .nav-link {
+    color: #b0b0b0;
+  }
+
+  .brand:focus-visible,
+  .nav-link:focus-visible {
+    border-radius: 4px;
+    outline: 2px solid var(--color-text);
+    outline-offset: 4px;
+  }
+
+  @media (max-width: 40rem) {
+    nav {
+      grid-template-columns: auto 1fr auto;
+      gap: 0.75rem;
+      padding: 0.875rem 1rem;
+    }
+
+    .brand-name {
+      display: none;
+    }
+
+    .nav-links {
+      gap: 1rem;
+    }
+  }
+
+  @media (max-width: 23rem) {
+    .nav-links {
+      gap: 0.75rem;
+    }
+
+    .nav-link {
+      font-size: 0.875rem;
+    }
+  }
+</style>
