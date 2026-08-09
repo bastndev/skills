@@ -1,0 +1,39 @@
+@font-face {
+  font-family: 'gxb';
+  src: url('/fonts/gxb.otf') format('truetype');
+}
+
+:root {
+  color-scheme: light;
+
+  --color-bg: #fafaf8;
+  --color-text: #161616;
+  --color-border: #e7e5df;
+  --color-scrollbar: #8a8984;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg: #111111;
+  --color-text: #f5f5f5;
+  --color-border: #2a2a2a;
+  --color-scrollbar: #686868;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scrollbar-color: var(--color-scrollbar) transparent;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family:'gxb',system-ui,-apple-system,'Segoe UI',sans-serif;
+}

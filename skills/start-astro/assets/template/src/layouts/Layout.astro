@@ -1,0 +1,76 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Header from '@/components/Header.astro';
+import Footer from '@/sections/Footer.astro';
+import { SITE } from '@/consts';
+import '@/styles/global.css';
+
+interface Props {
+  title?: string;
+  hideNavAndFooter?: boolean;
+}
+
+const { title, hideNavAndFooter = false } = Astro.props;
+const fullTitle = title ? `${title} · ${SITE.name}` : SITE.name;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={SITE.description} />
+    <title>{fullTitle}</title>
+    <ClientRouter />
+    <script is:inline>
+      (function () {
+        const storageKey = 'theme';
+
+        function getPreferredTheme() {
+          try {
+            const saved = localStorage.getItem(storageKey);
+            if (saved === 'light' || saved === 'dark') return saved;
+          } catch {
+            // Storage can be unavailable in privacy-restricted contexts.
+          }
+
+          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        function applyTheme() {
+          const theme = getPreferredTheme();
+          document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        applyTheme();
+
+        if (!window.__gohitThemeListener) {
+          window.__gohitThemeListener = true;
+          document.addEventListener('astro:after-swap', applyTheme);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    {!hideNavAndFooter && <Header />}
+    <main transition:animate="fade">
+      <slot />
+    </main>
+    {!hideNavAndFooter && <Footer />}
+  </body>
+</html>
+
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+</style>

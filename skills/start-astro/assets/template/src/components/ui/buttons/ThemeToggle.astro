@@ -1,0 +1,94 @@
+---
+import { Moon, Sun } from '@lucide/astro';
+---
+
+<button data-theme-toggle type="button" aria-label="Switch to dark theme" aria-pressed="false">
+  <Sun class="theme-icon theme-icon-sun" aria-hidden="true" />
+  <Moon class="theme-icon theme-icon-moon" aria-hidden="true" />
+</button>
+
+<style>
+  button {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: none;
+    color: #4a4a4a;
+    cursor: pointer;
+    place-items: center;
+    justify-self: end;
+  }
+
+  button:hover {
+    color: var(--color-text);
+  }
+
+  :global([data-theme='dark']) button {
+    color: #b0b0b0;
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--color-text);
+    outline-offset: 3px;
+  }
+
+  .theme-icon {
+    grid-area: 1 / 1;
+    width: 20px;
+    height: 20px;
+  }
+
+  .theme-icon-sun {
+    display: none;
+  }
+
+  .theme-icon-moon,
+  :global([data-theme='dark']) .theme-icon-sun {
+    display: block;
+  }
+
+  :global([data-theme='dark']) .theme-icon-moon {
+    display: none;
+  }
+
+</style>
+
+<script>
+  const selector = '[data-theme-toggle]';
+
+  function syncThemeToggles() {
+    const isDark = document.documentElement.dataset.theme === 'dark';
+
+    document.querySelectorAll<HTMLButtonElement>(selector).forEach((button) => {
+      button.setAttribute('aria-pressed', String(isDark));
+      button.setAttribute('aria-label', `Switch to ${isDark ? 'light' : 'dark'} theme`);
+    });
+  }
+
+  function initThemeToggles() {
+    document.querySelectorAll<HTMLButtonElement>(selector).forEach((button) => {
+      if (button.dataset.themeToggleBound === 'true') return;
+
+      button.dataset.themeToggleBound = 'true';
+      button.addEventListener('click', () => {
+        const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = nextTheme;
+
+        try {
+          localStorage.setItem('theme', nextTheme);
+        } catch {
+          // The selected theme still applies when storage is unavailable.
+        }
+
+        syncThemeToggles();
+      });
+    });
+
+    syncThemeToggles();
+  }
+
+  initThemeToggles();
+  document.addEventListener('astro:page-load', initThemeToggles);
+</script>
