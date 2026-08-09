@@ -21,10 +21,10 @@ left open.
 ├── src/
 │   ├── assets/               # Imported in code → optimized & hashed by Astro/Vite
 │   │   ├── images/
-│   │   └── icons/            #   custom inline SVGs (e.g. social/) imported as components
+│   │   └── icons/            #   custom brand SVGs (social/) imported as raw strings
 │   │
 │   ├── components/           # Reusable pieces shared across pages
-│   │   ├── ui/               #   small primitives — ui/buttons/BackButton404.astro
+│   │   ├── ui/               #   small primitives — BackButton404 + ThemeToggle
 │   │   ├── Header.astro      #   logo + centered nav (from ROUTES) + theme toggle
 │   │   └── GXB.astro         #   ASCII hero + social-links row (one source for the art)
 │   │
@@ -54,7 +54,7 @@ left open.
 │   │   └── index.ts
 │   │
 │   ├── styles/
-│   │   └── global.css        #   design tokens (CSS vars: light + dark) + base
+│   │   └── global.css        #   core theme tokens + shared base
 │   │
 │   ├── content.config.ts     # Content Collections schema (Astro 7 location)
 │   ├── consts.ts             # SITE config + ROUTES registry — single source
@@ -111,41 +111,42 @@ Astro/Vite read the same alias from `tsconfig.json`, so it works in `.astro`,
 
 Two sources:
 
-- **Lucide** (`@lucide/astro`) for standard line icons — used directly:
+- **Lucide** (`@lucide/astro`) for standard line icons, including the theme toggle:
   ```astro
-  import { Search } from '@lucide/astro';
+  import { Search, Sun, Moon } from '@lucide/astro';
   <Search />
+  <Sun />
+  <Moon />
   ```
-- **Custom / brand icons** as raw `.svg` files in `src/assets/icons/`, imported
-  either as components or as raw strings (`?raw`) for `set:html` (Astro 7 renders
-  `*.svg` imports inline):
+- **Custom brand icons** as raw `.svg` files in `src/assets/icons/social/`, imported
+  with `?raw` for `set:html`:
   ```astro
-  import X from '@/assets/icons/social/x.svg';
-  <X />
+  import xIcon from '@/assets/icons/social/x.svg?raw';
+  <a set:html={xIcon} />
   ```
   Brand logos (X, GitHub, LinkedIn, Instagram, YouTube, TikTok, Facebook) live
   here because Lucide doesn't ship brand marks. The set is one consistent outline
   style, and each file's `viewBox` is tuned so they look the same size in the hero
-  social row. Files are lowercase `kebab-case`, grouped in subfolders (`social/`,
-  `theme/`, and add `ui/`, `payment/`, … as needed).
+  social row. Files are lowercase `kebab-case`; add more domain folders only when
+  a project actually needs custom icons that Lucide does not provide.
 
 Both render inline and inherit `currentColor`, so size and color come from CSS —
 they follow the light/dark theme for free:
 
 ```css
-.icon { width: 24px; height: 24px; color: var(--color-nav-text); }
+.icon { width: 24px; height: 24px; color: var(--color-text); }
 ```
 
 ## Theme (light / dark)
 
-- Every color is a CSS variable in `global.css`. Light values on `:root`; dark
-  overrides under `[data-theme="dark"]`. Always use the variables, never raw hex,
-  so your components follow the theme.
+- `global.css` keeps only the shared background, text, and border tokens. Put
+  component-specific colors beside the component and add scoped dark-theme
+  overrides there; do not grow a global token inventory for one-off values.
 - An inline script in `Layout.astro`'s `<head>` sets `data-theme` from
   `localStorage` (falling back to OS preference) **before first paint** — no
   flash. It re-applies on `astro:after-swap` so View Transitions don't reset it.
-- The toggle in `Header.astro` flips `data-theme` and re-binds on
-  `astro:page-load`.
+- `ThemeToggle.astro` owns the reusable button, flips `data-theme`, and re-binds
+  every instance on `astro:page-load`.
 
 ## Site name & the ROUTES registry
 

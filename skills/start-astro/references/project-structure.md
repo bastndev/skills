@@ -17,13 +17,13 @@ Final file tree after this skill runs (on top of the `minimal` template's `bun c
 │   ├── assets/
 │   │   ├── images/.gitkeep         ← from this file
 │   │   └── icons/
-│   │       ├── social/*.svg        ← 7 brand icons (x, github, linkedin, …), from references/icons.md
-│   │       └── theme/{sun,moon}.svg ← toggle icons, from references/icons.md
+│   │       └── social/*.svg        ← 7 brand icons (x, github, linkedin, …), from references/icons.md
 │   ├── components/
 │   │   ├── ui/
 │   │   │   ├── .gitkeep            ← from this file
 │   │   │   └── buttons/
-│   │   │       └── BackButton404.astro ← from this file (used by 404.astro)
+│   │   │       ├── BackButton404.astro ← from this file (used by 404.astro)
+│   │   │       └── ThemeToggle.astro   ← from references/layout-header.md
 │   │   ├── Header.astro            ← from references/layout-header.md
 │   │   └── GXB.astro               ← from this file (ASCII art byte-for-byte + social row)
 │   ├── sections/
@@ -136,16 +136,22 @@ const logo = ` ██████╗ ██╗  ██╗██████╗
   .hero-logo {
     margin: 0;
     max-width: 100%;
-    color: var(--color-accent);
+    color: #2d2d2d;
     font-family: ui-monospace, 'Cascadia Code', 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
     font-size: clamp(0.45rem, 2.2vw, 0.95rem);
     line-height: 1.1;
     white-space: pre;
   }
+  :global([data-theme='dark']) .hero-logo {
+    color: #f5f5f5;
+  }
   .hero-text {
     margin: 0;
-    color: var(--color-text-muted);
+    color: #6b6b6b;
     font-size: 1.05rem;
+  }
+  :global([data-theme='dark']) .hero-text {
+    color: #9b9b9b;
   }
   .hero-socials {
     display: flex;
@@ -155,7 +161,7 @@ const logo = ` ██████╗ ██╗  ██╗██████╗
     justify-content: center;
   }
   .hero-socials a {
-    color: var(--color-text-muted);
+    color: #6b6b6b;
     transition:
       color 0.2s ease,
       transform 0.2s ease;
@@ -164,6 +170,9 @@ const logo = ` ██████╗ ██╗  ██╗██████╗
     justify-content: center;
     width: 24px;
     height: 24px;
+  }
+  :global([data-theme='dark']) .hero-socials a {
+    color: #9b9b9b;
   }
   .hero-socials a:hover {
     color: var(--color-text);
@@ -289,7 +298,7 @@ const home = ROUTES[0];
   }
 
   // Run on first load and after every View-Transition navigation, mirroring the
-  // theme-toggle pattern in Header.astro.
+  // theme-toggle pattern in ThemeToggle.astro.
   initTyping();
   document.addEventListener('astro:page-load', initTyping);
 </script>
@@ -297,7 +306,7 @@ const home = ROUTES[0];
 
 ## `src/components/ui/buttons/BackButton404.astro`
 
-The themed "← Home" button used by `404.astro` — the first real `ui/` primitive, living under `ui/buttons/`. Accent-filled, rounded, lifts on hover. Reusable for any "go back" link (`href` + `text` props).
+The themed "← Home" button used by `404.astro`. It is a reusable `ui/buttons/` primitive with a rounded surface, a theme-aware foreground/background pair, and a subtle lift/fade hover state.
 
 ```astro
 ---
@@ -319,17 +328,21 @@ const { href, text } = Astro.props;
     margin-top: 1.5rem;
     padding: 0.5rem 1.25rem;
     font-size: 0.95rem;
-    color: var(--color-on-accent);
-    background-color: var(--color-accent);
+    color: var(--color-bg);
+    background-color: #2d2d2d;
     text-decoration: none;
     border-radius: 15px;
     transition:
-      background-color 0.2s ease,
+      opacity 0.2s ease,
       transform 0.2s ease;
     font-family: inherit;
   }
+  :global([data-theme='dark']) .back-btn {
+    background-color: #f5f5f5;
+    color: #111111;
+  }
   .back-btn:hover {
-    background-color: var(--color-accent-hover);
+    opacity: 0.9;
     transform: translateY(-2px);
   }
 </style>
@@ -361,7 +374,7 @@ See **[ARCHITECTURE.md](./ARCHITECTURE.md)** for the full layout, conventions, a
 
 ```text
 src/
-├── assets/icons/      # custom + brand SVGs (social/, theme/)
+├── assets/icons/      # custom brand SVGs (social/)
 ├── components/        # reusable UI (Header, GXB, ui/)
 ├── sections/          # page-level blocks (Footer, …)
 ├── layouts/           # Layout.astro — the HTML shell every page wraps in
@@ -369,7 +382,7 @@ src/
 ├── pages/             # file-based routes (+ api/, 404.astro)
 ├── lib/               # framework-agnostic helpers
 ├── types/             # shared TypeScript types
-├── styles/            # global.css — design tokens (light + dark)
+├── styles/            # global.css — core theme tokens + shared base
 ├── consts.ts          # SITE config + ROUTES registry
 └── content.config.ts  # Content Collection schemas
 ```

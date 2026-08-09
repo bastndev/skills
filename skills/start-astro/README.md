@@ -32,7 +32,7 @@ npx skills add bastndev/skills --skill start-astro
 
 1. **Detects** — Uses the current folder name as the project name. Never asks you to name it, never creates a separate sibling folder.
 2. **Scaffolds** — Runs `bun create astro` with the `minimal` (empty) template to ensure zero boilerplate needs to be deleted.
-3. **Builds** — Writes a scalable architecture (Layout, Header, Footer, pages, theme toggle, configs, aliases) into the project.
+3. **Builds** — Writes a scalable architecture (Layout, Header, Footer, pages, reusable ThemeToggle, configs, aliases) into the project.
 4. **Installs & Verifies** — Installs `@lucide/astro` and runs `bun run build` to verify the production build works flawlessly before handing it over.
 
 ## Guarantees
@@ -48,10 +48,10 @@ npx skills add bastndev/skills --skill start-astro
 src/
     ├── assets/               # Imported in code → optimized & hashed by Astro/Vite
     │   ├── images/
-    │   └── icons/            #   custom inline SVGs (e.g. social/) imported as components
+    │   └── icons/            #   custom brand SVGs (social/) imported as raw strings
     │
     ├── components/           # Reusable pieces shared across pages
-    │   ├── ui/               #   small primitives — ui/buttons/BackButton404.astro
+    │   ├── ui/               #   small primitives — BackButton404 + ThemeToggle
     │   ├── Header.astro      #   logo + centered nav (from ROUTES) + theme toggle
     │   └── GXB.astro         #   ASCII hero + social-links row (one source for the art)
     │
@@ -81,7 +81,7 @@ src/
     │   └── index.ts
     │
     ├── styles/
-    │   └── global.css        #   design tokens (CSS vars: light + dark) + base
+    │   └── global.css        #   core theme tokens + shared base
     │
     ├── content.config.ts     # Content Collections schema (Astro 7 location)
     ├── consts.ts             # SITE config + ROUTES registry — single source

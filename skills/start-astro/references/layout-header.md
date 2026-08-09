@@ -1,8 +1,8 @@
 # Layout + Header + Footer (the shell)
 
-Copy-paste ready, byte-for-byte. These three wrap every page. They import from the `@/` alias and pull the project name from `SITE` (`@/consts`) — **nothing here hardcodes the project name.** `Layout.astro` runs the no-flash theme script and Astro's `<ClientRouter />`; `Header.astro` is a three-zone bar (brand / centered nav / theme toggle); `Footer.astro` is one centered line.
+Copy-paste ready, byte-for-byte. These files wrap every page. They import from the `@/` alias and pull the project name from `SITE` (`@/consts`) — **nothing here hardcodes the project name.** `Layout.astro` runs the no-flash theme script and Astro's `<ClientRouter />`; `Header.astro` is a three-zone bar (brand / centered nav / reusable theme toggle); `ThemeToggle.astro` owns the button, icons, and interaction; `Footer.astro` is one centered line.
 
-> **Critical scoping note:** the footer's CSS and the theme-toggle icon CSS do **not** live in these components' scoped `<style>` blocks — they're in `global.css` (see `references/global-css.md`). Both depend on `[data-theme]` on `<html>`, an ancestor that a component's scoped styles can't target. Scope them and the toggle icon freezes on the moon and the footer flashes left-aligned on load.
+> **Critical scoping note:** the footer CSS and the theme-toggle **icon visibility** CSS do **not** live in scoped component `<style>` blocks — they are in `global.css` (see `references/global-css.md`). Both depend on first-paint or `<html data-theme>` behavior. The toggle button's layout, colors, focus state, and script stay encapsulated in `ThemeToggle.astro`.
 
 ## `src/layouts/Layout.astro`
 
@@ -67,14 +67,13 @@ const fullTitle = title ? `${title} · ${SITE.name}` : SITE.name;
 
 ## `src/components/Header.astro`
 
-Nav is built from `ROUTES` (`@/consts`); the active link is computed with `stripTrailingSlash` (`@/lib/utils`); the toggle uses the imported sun/moon SVG components.
+Nav is built from `ROUTES` (`@/consts`), the active link is computed with `stripTrailingSlash` (`@/lib/utils`), and the reusable toggle is imported from `ui/buttons/ThemeToggle.astro`.
 
 ```astro
 ---
 import { ROUTES } from '@/consts';
 import { stripTrailingSlash } from '@/lib/utils';
-import Sun from '@/assets/icons/theme/sun.svg';
-import Moon from '@/assets/icons/theme/moon.svg';
+import ThemeToggle from '@/components/ui/buttons/ThemeToggle.astro';
 
 interface Props {
   projectName: string;
@@ -108,16 +107,13 @@ const currentPath = stripTrailingSlash(Astro.url.pathname);
       ))}
     </ul>
 
-    <button id="theme-toggle" type="button" aria-label="Toggle light and dark theme">
-      <Sun id="icon-sun" aria-hidden="true" />
-      <Moon id="icon-moon" aria-hidden="true" />
-    </button>
+    <ThemeToggle />
   </nav>
 </header>
 
 <style>
   .site-header {
-    background: var(--color-nav-bg);
+    background: var(--color-bg);
   }
   .nav {
     max-width: 1200px;
@@ -137,11 +133,17 @@ const currentPath = stripTrailingSlash(Astro.url.pathname);
     align-items: center;
     gap: 0.6rem;
     font-weight: 700;
-    color: var(--color-nav-text);
+    color: #4a4a4a;
     text-decoration: none;
   }
+  :global([data-theme='dark']) .brand {
+    color: #b0b0b0;
+  }
   .brand:hover {
-    color: var(--color-nav-text-active);
+    color: #111111;
+  }
+  :global([data-theme='dark']) .brand:hover {
+    color: #ffffff;
   }
   /* Reuses /public/favicon.svg (read-only) as a mask, then paints it with the
      brand's currentColor — so the logo follows the in-app theme toggle. This
@@ -165,59 +167,95 @@ const currentPath = stripTrailingSlash(Astro.url.pathname);
   /* No underlines/lines: links sit muted-gray and brighten to white (or near-black
      in light mode) when active or hovered. The active state is colour-only. */
   .nav-link {
-    color: var(--color-nav-text);
+    color: #4a4a4a;
     text-decoration: none;
     font-size: 0.95rem;
     padding: 0.25rem 0;
   }
+  :global([data-theme='dark']) .nav-link {
+    color: #b0b0b0;
+  }
   .nav-link.active,
   .nav-link:hover {
-    color: var(--color-nav-text-active);
+    color: #111111;
   }
+  :global([data-theme='dark']) .nav-link.active,
+  :global([data-theme='dark']) .nav-link:hover {
+    color: #ffffff;
+  }
+</style>
+```
 
-  #theme-toggle {
+- The brand mark reuses `public/favicon.svg` via a CSS `mask` painted with `currentColor`, so it tracks the theme. **Read-only — leave `public/favicon.svg`/`.ico` exactly as `bun create astro` ships them.** (The `mask` uses only the shape, so any fill/colors inside the SVG are ignored — it renders as a single-color silhouette.)
+- `projectName` flows from `Layout` (default `SITE.name`) → `Header`. No hardcoded site name, no reliance on `Astro.site`.
+
+## `src/components/ui/buttons/ThemeToggle.astro`
+
+The theme control is a reusable UI primitive rather than header-owned markup. It uses Lucide's `Sun` and `Moon`, supports multiple instances on one page, and guards each button with `data-bound` so View Transitions never register duplicate listeners.
+
+```astro
+---
+import { Sun, Moon } from '@lucide/astro';
+
+// Day/night theme toggle. Drop in anywhere — multiple instances on the same
+// page (e.g. desktop Header + mobile Main) coexist
+// safely: the script binds via class selector and guards each button with
+// `data-bound` so it never wires twice. The sun/moon swap depends on
+// `[data-theme]` on <html>, an ancestor scoped styles can't reach — its
+// visibility rules live in `global.css` keyed off `.theme-toggle-*` classes.
+---
+
+<button class="theme-toggle" type="button" aria-label="Toggle light and dark theme">
+  <Sun class="theme-toggle-icon theme-toggle-sun" aria-hidden="true" />
+  <Moon class="theme-toggle-icon theme-toggle-moon" aria-hidden="true" />
+</button>
+
+<style>
+  .theme-toggle {
     justify-self: end;
     background: none;
     border: 1px solid var(--color-border);
-    border-radius: 10px; /* square with generously rounded corners (not a circle) */
+    border-radius: 10px;
     width: 36px;
     height: 36px;
     display: grid;
     place-items: center;
     cursor: pointer;
-    color: var(--color-nav-text);
+    color: #4a4a4a;
   }
-  #theme-toggle:focus-visible {
-    outline: 2px solid var(--color-focus-ring);
+  :global([data-theme='dark']) .theme-toggle {
+    color: #b0b0b0;
+  }
+  .theme-toggle:focus-visible {
+    outline: 2px solid #111111;
     outline-offset: 2px;
   }
-  /* The sun/moon swap (display chosen by [data-theme] on <html>) lives in
-     global.css — a scoped style can't target the <html> ancestor, which is why
-     the icon previously stayed stuck on the moon in dark mode. */
+  :global([data-theme='dark']) .theme-toggle:focus-visible {
+    outline-color: #ffffff;
+  }
 </style>
 
 <script is:inline>
-  function initThemeToggle() {
-    const btn = document.getElementById('theme-toggle');
-    if (!btn || btn.dataset.bound) return;
-    btn.dataset.bound = 'true';
-
-    btn.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-theme');
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('theme', next);
+  function initThemeToggles() {
+    document.querySelectorAll('.theme-toggle').forEach((btn) => {
+      if (btn.dataset.bound) return;
+      btn.dataset.bound = 'true';
+      btn.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+      });
     });
   }
-
-  initThemeToggle();
-  document.addEventListener('astro:page-load', initThemeToggle);
+  initThemeToggles();
+  document.addEventListener('astro:page-load', initThemeToggles);
 </script>
 ```
 
-- **Why `astro:page-load`:** `<ClientRouter />` swaps the DOM (including `#theme-toggle`) on each navigation, but bundled module scripts only run once. Without re-binding the click handler on `astro:page-load`, the button goes dead after the first navigation. The `data-bound` guard avoids double-binding on the initial load (where both `initThemeToggle()` and `astro:page-load` fire).
-- The brand mark reuses `public/favicon.svg` via a CSS `mask` painted with `currentColor`, so it tracks the theme. **Read-only — leave `public/favicon.svg`/`.ico` exactly as `bun create astro` ships them.** (The `mask` uses only the shape, so any fill/colors inside the SVG are ignored — it renders as a single-color silhouette.)
-- `projectName` flows from `Layout` (default `SITE.name`) → `Header`. No hardcoded site name, no reliance on `Astro.site`.
+- **Why a class selector:** reusable components cannot assume their button ID is unique. Binding every `.theme-toggle` allows the same primitive in a desktop header and a mobile surface.
+- **Why `astro:page-load`:** `<ClientRouter />` swaps component DOM on navigation while bundled scripts run once. Rebinding on page load keeps the new button alive; `data-bound` prevents duplicate listeners.
+- The sun/moon visibility rules remain global because they depend on `[data-theme]` on `<html>`. Everything else remains scoped to the component.
 
 ## `src/sections/Footer.astro`
 

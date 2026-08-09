@@ -9,7 +9,7 @@ metadata:
 
 # start-astro
 
-Scaffolds a publishable, **scalable Astro base**: the clean `minimal` template, then a hand-written architecture on top — Layout + Header + Footer + 4 pages (incl. 404) + light/dark toggle + View Transitions + `@/` alias + SITE/ROUTES config + icons + Content Collections + a backend door. The stuff you set up every single time you start an Astro project, done once, correctly. It starts as light as a portfolio, but every folder a growing app needs is already there — so you never restructure, you only fill in.
+Scaffolds a publishable, **scalable Astro base**: the clean `minimal` template, then a hand-written architecture on top — Layout + Header + Footer + 4 pages (incl. 404) + a reusable light/dark toggle + View Transitions + `@/` alias + SITE/ROUTES config + icons + Content Collections + a backend door. The stuff you set up every single time you start an Astro project, done once, correctly. It starts as light as a portfolio, but every folder a growing app needs is already there — so you never restructure, you only fill in.
 
 ## When to use
 
@@ -29,14 +29,14 @@ The user wants to start a new Astro project: "create/scaffold/bootstrap a new as
 
 ```
 src/
-├── assets/icons/{social,theme}/   7 brand SVGs + sun/moon (components / ?raw)
-├── components/{ui/buttons/,Header,GXB}  reusable UI (GXB = ASCII hero + social row; BackButton404)
+├── assets/icons/social/          7 custom brand SVGs imported with ?raw
+├── components/{ui/buttons/,Header,GXB}  reusable UI (BackButton404 + ThemeToggle)
 ├── sections/Footer.astro          page-level blocks (gradient top border)
 ├── layouts/Layout.astro           HTML shell (ClientRouter + no-flash theme + Header + Footer + hideNavAndFooter)
 ├── content/                       Content Collection entries (empty, ready)
 ├── pages/{index,work/index,contact/index,404,api/hello}
 ├── lib/utils.ts · types/index.ts
-├── styles/global.css              design tokens (light + dark) + gradient footer + toggle CSS
+├── styles/global.css              core theme tokens + layout + footer + icon visibility
 ├── consts.ts                      SITE + ROUTES (single source of truth)
 └── content.config.ts · env.d.ts
 ARCHITECTURE.md · README.md · .prettierignore · tsconfig.json (@/ alias)
@@ -70,10 +70,10 @@ The whole base is built on **one principle: a single source of truth.** The proj
 3. **Read ALL reference files before writing anything** — they contain the exact, byte-for-byte content to write (these are copy-paste ready, not something to regenerate from scratch):
    - `references/architecture.md` — the doc to copy to the project root as `ARCHITECTURE.md` (substituting `{{PROJECT_NAME}}`).
    - `references/project-structure.md` — final file tree, `GXB.astro` (the ASCII hero — **art byte-for-byte** — plus the social-links row), the 3 pages, the animated `404.astro` + `ui/buttons/BackButton404.astro`, `README.md`, `.prettierignore`, `public/fonts/README.md`, and the 3 `.gitkeep` placeholders.
-   - `references/layout-header.md` — `Layout.astro` (incl. the `hideNavAndFooter` prop), `Header.astro`, `Footer.astro` (the shell trio) + the no-flash and toggle scripts, with the View-Transitions gotchas.
-   - `references/global-css.md` — the full `src/styles/global.css` (design tokens + base layout + the gradient footer + theme-toggle icon CSS) and **why the footer/toggle CSS must live here, not scoped**.
+   - `references/layout-header.md` — `Layout.astro` (incl. the `hideNavAndFooter` prop), `Header.astro`, reusable `ui/buttons/ThemeToggle.astro`, and `Footer.astro`, plus the no-flash/toggle scripts and View-Transitions gotchas.
+   - `references/global-css.md` — the full cleaned `src/styles/global.css` (three core theme tokens + base layout + gradient footer + theme-toggle icon visibility) and the boundary between global and component-scoped styles.
    - `references/config-data-backend.md` — `tsconfig.json` (the `@/` alias), `consts.ts`, `types/index.ts`, `lib/utils.ts`, `env.d.ts`, `content.config.ts`, `pages/api/hello.ts`.
-   - `references/icons.md` — installing `@lucide/astro` and the custom SVG set: the **7** social icons (`assets/icons/social/`) + the theme icons (`assets/icons/theme/`), every file byte-for-byte.
+   - `references/icons.md` — installing `@lucide/astro` (including the toggle's sun/moon icons) and the custom **7-icon** social SVG set (`assets/icons/social/`), every custom file byte-for-byte.
 
 4. **Write the files** into the current folder exactly as given in the references.
 
@@ -85,11 +85,11 @@ The whole base is built on **one principle: a single source of truth.** The proj
    **Create** everything else:
    - `src/layouts/Layout.astro` (incl. the `hideNavAndFooter` prop), `src/components/Header.astro`, `src/sections/Footer.astro`
    - `src/components/GXB.astro` (**ASCII art byte-for-byte — do not edit it; the hero also renders a social-links row whose `socials` handles you may edit**)
-   - `src/components/ui/buttons/BackButton404.astro` (the themed back button the 404 uses)
+   - `src/components/ui/buttons/BackButton404.astro` (the themed back button the 404 uses), `src/components/ui/buttons/ThemeToggle.astro` (the reusable Lucide toggle)
    - `src/styles/global.css`
    - `src/pages/work/index.astro`, `src/pages/contact/index.astro`, `src/pages/404.astro` (the typing-animation page — passes `hideNavAndFooter`), `src/pages/api/hello.ts` (Work and Contact each live in their own folder as `index.astro` — `pages/work/index.astro` → `/work` — so a route can grow sub-pages later without a move; Home and 404 stay flat at the `pages/` root)
    - `src/consts.ts`, `src/types/index.ts`, `src/lib/utils.ts`, `src/env.d.ts`, `src/content.config.ts`
-   - `src/assets/icons/social/*.svg` (7 files: x, github, linkedin, instagram, youtube, tiktok, facebook) and `src/assets/icons/theme/{sun,moon}.svg`
+   - `src/assets/icons/social/*.svg` (7 files: x, github, linkedin, instagram, youtube, tiktok, facebook)
    - `ARCHITECTURE.md` (project root, **uppercase**)
    - `public/fonts/README.md`
    - `.gitkeep` in `src/assets/images/`, `src/components/ui/`, `src/content/` (so the empty-but-intentional folders survive version control)
@@ -122,10 +122,9 @@ The whole base is built on **one principle: a single source of truth.** The proj
 
    src/
    ├── assets/icons/
-   │   ├── social/            ← 7 brand SVGs (x, github, linkedin, instagram, …)
-   │   └── theme/             ← sun.svg + moon.svg (the toggle icons)
+   │   └── social/            ← 7 brand SVGs (x, github, linkedin, instagram, …)
    ├── components/
-   │   ├── ui/buttons/        ← BackButton404.astro (used by the 404)
+   │   ├── ui/buttons/        ← BackButton404.astro + reusable ThemeToggle.astro
    │   ├── Header.astro       ← logo + centered nav (from ROUTES) + theme toggle
    │   └── GXB.astro          ← ASCII hero + tagline + social-links row
    ├── sections/Footer.astro  ← {SITE.name} © year (gradient top border)
@@ -136,7 +135,7 @@ The whole base is built on **one principle: a single source of truth.** The proj
    │   ├── 404.astro          ← typing animation, hides nav/footer, links home
    │   └── api/hello.ts       ← example endpoint (the backend door)
    ├── lib/utils.ts · types/index.ts
-   ├── styles/global.css      ← design tokens (light + dark) + gradient footer + toggle CSS
+   ├── styles/global.css      ← core theme tokens + gradient footer + toggle icon visibility
    ├── consts.ts              ← SITE + ROUTES (single source of truth)
    └── content.config.ts · env.d.ts
    ARCHITECTURE.md · README.md · .prettierignore · tsconfig.json (@/ alias)
@@ -164,8 +163,8 @@ The whole base is built on **one principle: a single source of truth.** The proj
 - [ ] `{{PROJECT_NAME}}` substituted in **only** `consts.ts`, `README.md`, `ARCHITECTURE.md` — pages/Layout/Header/Footer are name-free (the name flows from `SITE.name`); the footer is `{SITE.name} © year`, never a hardcoded mark
 - [ ] Used `minimal` template, not `basic` — no boilerplate to clean up
 - [ ] `tsconfig.json` overwritten with the `@/`→`src/*` alias (extends `astro/tsconfigs/strict`; **no** `baseUrl`, **no** React `jsx`/`jsxImportSource`)
-- [ ] **Footer CSS and theme-toggle icon CSS live in `global.css`, NOT in a scoped `<style>`.** They depend on `[data-theme]` on `<html>`, an ancestor a component's scoped styles can't target — scope them and the toggle icon freezes (stuck on the moon) and the footer flashes left-aligned on load
-- [ ] Theme-toggle icons are imported SVG components (`@/assets/icons/theme/{sun,moon}.svg`) rendered as `<Sun id="icon-sun" aria-hidden="true" />` / `<Moon id="icon-moon" aria-hidden="true" />`
+- [ ] Footer CSS and theme-toggle **icon visibility** CSS live in `global.css`; the toggle's button layout/colors/focus/script live in `ThemeToggle.astro`
+- [ ] `ThemeToggle.astro` imports `{ Sun, Moon }` from `@lucide/astro`, renders `.theme-toggle-sun` / `.theme-toggle-moon`, binds every `.theme-toggle`, and supports multiple instances without duplicate listeners
 - [ ] Theme toggle script runs on `astro:page-load` (not only initial load) and the no-flash `<head>` script re-applies on `astro:after-swap` — both required so theme + toggle survive View Transitions
 - [ ] `<ClientRouter />` imported from `astro:transitions` and placed in `Layout.astro`'s `<head>`
 - [ ] `GXB.astro`: the **ASCII art is byte-for-byte** (not edited, renamed, or moved); the hero also renders a **social-links row** — 7 icons imported with `?raw` + injected via `set:html`, handles in the `socials` array
@@ -173,7 +172,7 @@ The whole base is built on **one principle: a single source of truth.** The proj
 - [ ] `Layout.astro` exposes `hideNavAndFooter?: boolean`; `<Header />` and `<Footer />` are guarded with `{!hideNavAndFooter && …}`
 - [ ] Footer's top border is the **gradient** (`border-image: linear-gradient(...)`, transparent→border→transparent), not a solid rule — and it lives in `global.css`
 - [ ] `@lucide/astro` installed (`bun add`); it's the only runtime dep added
-- [ ] Social set is exactly **7** outline SVGs — `x, github, linkedin, instagram, youtube, tiktok, facebook` (`twitter`→`x`; no discord/threads/soundcloud) — each `currentColor`, kebab-case, with the tuned `viewBox` from `references/icons.md`
+- [ ] Social set is exactly **7** outline SVGs — `x, github, linkedin, instagram, youtube, tiktok, facebook` (`twitter`→`x`; no discord/threads/soundcloud/theme assets) — each `currentColor`, kebab-case, with the tuned `viewBox` from `references/icons.md`
 - [ ] `public/favicon.svg` and `public/favicon.ico` are the **untouched Astro defaults**; only `public/fonts/README.md` is added to `public/`
 - [ ] `.gitkeep` written to `src/assets/images/`, `src/components/ui/`, `src/content/`
 - [ ] `ARCHITECTURE.md` (uppercase), `README.md`, `.prettierignore` at the project root
