@@ -64,13 +64,13 @@ The hero shown on **every** page: the ASCII-art logo + a per-page tagline (the `
 
 ```astro
 ---
-import xIcon from "@/assets/icons/social/x.svg?raw";
-import githubIcon from "@/assets/icons/social/github.svg?raw";
-import linkedinIcon from "@/assets/icons/social/linkedin.svg?raw";
-import instagramIcon from "@/assets/icons/social/instagram.svg?raw";
-import youtubeIcon from "@/assets/icons/social/youtube.svg?raw";
-import tiktokIcon from "@/assets/icons/social/tiktok.svg?raw";
-import facebookIcon from "@/assets/icons/social/facebook.svg?raw";
+import xIcon from '@/assets/icons/social/x.svg?raw';
+import githubIcon from '@/assets/icons/social/github.svg?raw';
+import linkedinIcon from '@/assets/icons/social/linkedin.svg?raw';
+import instagramIcon from '@/assets/icons/social/instagram.svg?raw';
+import youtubeIcon from '@/assets/icons/social/youtube.svg?raw';
+import tiktokIcon from '@/assets/icons/social/tiktok.svg?raw';
+import facebookIcon from '@/assets/icons/social/facebook.svg?raw';
 
 interface Props {
   text: string;
@@ -78,23 +78,18 @@ interface Props {
 
 const { text } = Astro.props;
 
-// Social links shown under the hero tagline on every page. This array is the ONE
-// place a project's socials live — edit each href to your own handle (or trim the
-// list). Icons are imported ?raw and injected with set:html so they inherit
-// currentColor and follow the theme.
+// Replace these URLs with your own profiles.
 const socials = [
-  { href: "https://x.com/intent/follow?screen_name=gohitx", icon: xIcon, label: "X (Twitter)" },
-  { href: "https://github.com/gohitx", icon: githubIcon, label: "GitHub" },
-  { href: "https://linkedin.com/in/gohitx", icon: linkedinIcon, label: "LinkedIn" },
-  { href: "https://instagram.com/gohitx", icon: instagramIcon, label: "Instagram" },
-  { href: "https://www.youtube.com/@gohitx?sub_confirmation=1", icon: youtubeIcon, label: "YouTube" },
-  { href: "https://tiktok.com/@gohitx", icon: tiktokIcon, label: "TikTok" },
-  { href: "https://facebook.com/gohitx", icon: facebookIcon, label: "Facebook" },
+  { href: 'https://x.com/intent/follow?screen_name=gohitx', icon: xIcon, label: 'X (Twitter)' },
+  { href: 'https://github.com/gohitx', icon: githubIcon, label: 'GitHub' },
+  { href: 'https://linkedin.com/in/gohitx', icon: linkedinIcon, label: 'LinkedIn' },
+  { href: 'https://instagram.com/gohitx', icon: instagramIcon, label: 'Instagram' },
+  { href: 'https://www.youtube.com/@gohitx?sub_confirmation=1', icon: youtubeIcon, label: 'YouTube' },
+  { href: 'https://tiktok.com/@gohitx', icon: tiktokIcon, label: 'TikTok' },
+  { href: 'https://facebook.com/gohitx', icon: facebookIcon, label: 'Facebook' },
 ];
 
-// ASCII-art logo — the single source for the art used on every page. Edit or
-// delete it here to change/remove it site-wide. The first line starts with a
-// leading space; keep it, it aligns the glyphs.
+// Keep the leading space on the first line for alignment.
 const logo = ` ██████╗ ██╗  ██╗██████╗
 ██╔════╝ ╚██╗██╔╝██╔══██╗
 ██║  ███╗ ╚███╔╝ ██████╔╝
@@ -123,8 +118,7 @@ const logo = ` ██████╗ ██╗  ██╗██████╗
 
 <style>
   .hero {
-    flex: 1; /* fill <main> (see global.css) so the hero centers without a
-                hard-coded height — that guess was overflowing into a scrollbar */
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -133,6 +127,7 @@ const logo = ` ██████╗ ██╗  ██╗██████╗
     gap: 1.5rem;
     padding: 2rem 1.5rem;
   }
+
   .hero-logo {
     margin: 0;
     max-width: 100%;
@@ -142,17 +137,21 @@ const logo = ` ██████╗ ██╗  ██╗██████╗
     line-height: 1.1;
     white-space: pre;
   }
+
   :global([data-theme='dark']) .hero-logo {
     color: #f5f5f5;
   }
+
   .hero-text {
     margin: 0;
     color: #6b6b6b;
     font-size: 1.05rem;
   }
+
   :global([data-theme='dark']) .hero-text {
     color: #9b9b9b;
   }
+
   .hero-socials {
     display: flex;
     gap: 2rem;
@@ -160,6 +159,7 @@ const logo = ` ██████╗ ██╗  ██╗██████╗
     align-items: center;
     justify-content: center;
   }
+
   .hero-socials a {
     color: #6b6b6b;
     transition:
@@ -171,13 +171,16 @@ const logo = ` ██████╗ ██╗  ██╗██████╗
     width: 24px;
     height: 24px;
   }
+
   :global([data-theme='dark']) .hero-socials a {
     color: #9b9b9b;
   }
+
   .hero-socials a:hover {
     color: var(--color-text);
     transform: translateY(-2px);
   }
+
   .hero-socials a :global(svg) {
     width: 100%;
     height: 100%;
@@ -234,7 +237,6 @@ import Layout from '@/layouts/Layout.astro';
 import BackButton404 from '@/components/ui/buttons/BackButton404.astro';
 import { ROUTES } from '@/consts';
 
-// Link home from the routes registry — never hard-code "/" here.
 const home = ROUTES[0];
 ---
 
@@ -246,8 +248,6 @@ const home = ROUTES[0];
 </Layout>
 
 <style>
-  /* Full-screen centered: <main> is flex:1 (global.css) and the header/footer are
-     hidden on this page, so .not-found fills the viewport. */
   .not-found {
     flex: 1;
     display: flex;
@@ -258,14 +258,14 @@ const home = ROUTES[0];
     gap: 1.5rem;
     padding: 2rem 1.5rem;
   }
+
   .typed {
     margin: 0;
     font-family: ui-monospace, 'Cascadia Code', 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
     font-size: 1.25rem;
     color: var(--color-text);
   }
-  /* Blinking terminal cursor — a deliberate orange accent kept the same in both
-     themes (like the footer line), not a theme variable. */
+
   .cursor {
     display: inline-block;
     width: 10px;
@@ -275,6 +275,7 @@ const home = ROUTES[0];
     vertical-align: text-bottom;
     animation: blink 0.7s infinite;
   }
+
   @keyframes blink {
     0%, 49% { opacity: 1; }
     50%, 100% { opacity: 0; }
@@ -287,7 +288,7 @@ const home = ROUTES[0];
 
   function initTyping() {
     const el = document.querySelector('.typing-text');
-    if (!el || el.textContent) return; // already typed (guards View-Transition re-runs)
+    if (!el || el.textContent) return;
     let i = 0;
     (function type() {
       if (i < TEXT.length) {
@@ -297,8 +298,6 @@ const home = ROUTES[0];
     })();
   }
 
-  // Run on first load and after every View-Transition navigation, mirroring the
-  // theme-toggle pattern in ThemeToggle.astro.
   initTyping();
   document.addEventListener('astro:page-load', initTyping);
 </script>
@@ -337,10 +336,12 @@ const { href, text } = Astro.props;
       transform 0.2s ease;
     font-family: inherit;
   }
+
   :global([data-theme='dark']) .back-btn {
     background-color: #f5f5f5;
     color: #111111;
   }
+
   .back-btn:hover {
     opacity: 0.9;
     transform: translateY(-2px);
@@ -455,21 +456,11 @@ URL for `@font-face`. Files in `public/` are served untouched; files in
 
 ## `.gitkeep` placeholders (keep intentional-but-empty folders in version control)
 
-Write a `.gitkeep` to each of these three folders. Content is a single comment line:
+Create these as empty files:
 
 - `src/assets/images/.gitkeep`
-  ```
-  # Imported, optimized images live here. Purpose documented in ARCHITECTURE.md.
-  ```
 - `src/components/ui/.gitkeep`
-  ```
-  # Small reusable UI primitives (Button, Badge, Card…). See ARCHITECTURE.md.
-  ```
 - `src/content/.gitkeep`
-  ```
-  # Content Collection entries live here, one PLURAL folder per collection
-  # (e.g. content/projects/, content/blog/). Schemas are in src/content.config.ts.
-  ```
 
 ## Adding more pages later
 

@@ -15,11 +15,8 @@ import { SITE } from '@/consts';
 import '@/styles/global.css';
 
 interface Props {
-  /** Page name, e.g. "Home". Composed into `<name> · <SITE.name>`. Omit for the bare site name. */
   title?: string;
-  /** Brand text in the header. Defaults to the site name from consts.ts. */
   projectName?: string;
-  /** Hide the Header + Footer for full-screen pages (e.g. 404). Defaults to false. */
   hideNavAndFooter?: boolean;
 }
 
@@ -43,9 +40,7 @@ const fullTitle = title ? `${title} · ${SITE.name}` : SITE.name;
           document.documentElement.setAttribute('data-theme', theme);
         }
         applyTheme();
-        // Re-apply after every View Transition swap (fires before paint).
-        // Without this, navigating between pages resets <html data-theme> to
-        // the server HTML (which has no theme) and the site flips back to light.
+        // Restore the theme before View Transition paint.
         document.addEventListener('astro:after-swap', applyTheme);
       })();
     </script>
@@ -80,10 +75,6 @@ interface Props {
 }
 
 const { projectName } = Astro.props;
-
-// Nav is built from the shared ROUTES registry (src/consts.ts). Active-link state
-// compares the current path to each route; trailing slashes are normalised so it
-// matches in both `bun run dev` (`/work`) and the static build/preview (`/work/`).
 const currentPath = stripTrailingSlash(Astro.url.pathname);
 ---
 
@@ -115,18 +106,18 @@ const currentPath = stripTrailingSlash(Astro.url.pathname);
   .site-header {
     background: var(--color-bg);
   }
+
   .nav {
     max-width: 1200px;
     margin: 0 auto;
     padding: 1rem 1.5rem;
-    /* three zones: brand (left) · nav (true-centered) · toggle (right).
-       1fr/auto/1fr keeps the nav centered on the page no matter how wide the
-       brand or toggle are. */
+    /* Keep navigation centered regardless of the side widths. */
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 1.5rem;
   }
+
   .brand {
     justify-self: start;
     display: inline-flex;
@@ -136,18 +127,20 @@ const currentPath = stripTrailingSlash(Astro.url.pathname);
     color: #4a4a4a;
     text-decoration: none;
   }
+
   :global([data-theme='dark']) .brand {
     color: #b0b0b0;
   }
+
   .brand:hover {
     color: #111111;
   }
+
   :global([data-theme='dark']) .brand:hover {
     color: #ffffff;
   }
-  /* Reuses /public/favicon.svg (read-only) as a mask, then paints it with the
-     brand's currentColor — so the logo follows the in-app theme toggle. This
-     only *references* the file; the scaffold never modifies or replaces it. */
+
+  /* Reuse the default favicon as a theme-aware mask. */
   .brand-logo {
     width: 26px;
     height: 26px;
@@ -156,6 +149,7 @@ const currentPath = stripTrailingSlash(Astro.url.pathname);
     -webkit-mask: url(/favicon.svg) center / contain no-repeat;
     mask: url(/favicon.svg) center / contain no-repeat;
   }
+
   .nav-links {
     justify-self: center;
     display: flex;
@@ -164,17 +158,18 @@ const currentPath = stripTrailingSlash(Astro.url.pathname);
     margin: 0;
     padding: 0;
   }
-  /* No underlines/lines: links sit muted-gray and brighten to white (or near-black
-     in light mode) when active or hovered. The active state is colour-only. */
+
   .nav-link {
     color: #4a4a4a;
     text-decoration: none;
     font-size: 0.95rem;
     padding: 0.25rem 0;
   }
+
   :global([data-theme='dark']) .nav-link {
     color: #b0b0b0;
   }
+
   .nav-link.active,
   .nav-link:hover {
     color: #111111;
@@ -196,13 +191,6 @@ The theme control is a reusable UI primitive rather than header-owned markup. It
 ```astro
 ---
 import { Sun, Moon } from '@lucide/astro';
-
-// Day/night theme toggle. Drop in anywhere — multiple instances on the same
-// page (e.g. desktop Header + mobile Main) coexist
-// safely: the script binds via class selector and guards each button with
-// `data-bound` so it never wires twice. The sun/moon swap depends on
-// `[data-theme]` on <html>, an ancestor scoped styles can't reach — its
-// visibility rules live in `global.css` keyed off `.theme-toggle-*` classes.
 ---
 
 <button class="theme-toggle" type="button" aria-label="Toggle light and dark theme">
@@ -223,13 +211,16 @@ import { Sun, Moon } from '@lucide/astro';
     cursor: pointer;
     color: #4a4a4a;
   }
+
   :global([data-theme='dark']) .theme-toggle {
     color: #b0b0b0;
   }
+
   .theme-toggle:focus-visible {
     outline: 2px solid #111111;
     outline-offset: 2px;
   }
+
   :global([data-theme='dark']) .theme-toggle:focus-visible {
     outline-color: #ffffff;
   }
@@ -248,6 +239,7 @@ import { Sun, Moon } from '@lucide/astro';
       });
     });
   }
+
   initThemeToggles();
   document.addEventListener('astro:page-load', initThemeToggles);
 </script>
@@ -263,11 +255,6 @@ One centered line, `{SITE.name} © {year}`. Its styles live in `global.css` (see
 
 ```astro
 ---
-// Minimal site footer: the project name + the current year. Shown on every page
-// via Layout.astro. The name comes from SITE so it follows the single source of
-// truth (rename once in consts.ts). Its styles live in global.css (a
-// render-blocking, global stylesheet) instead of a scoped <style> here — so the
-// centered line is applied before first paint and never flashes left-aligned.
 import { SITE } from '@/consts';
 
 const year = new Date().getFullYear();

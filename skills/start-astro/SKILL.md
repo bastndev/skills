@@ -92,7 +92,9 @@ The whole base is built on **one principle: a single source of truth.** The proj
    - `src/assets/icons/social/*.svg` (7 files: x, github, linkedin, instagram, youtube, tiktok, facebook)
    - `ARCHITECTURE.md` (project root, **uppercase**)
    - `public/fonts/README.md`
-   - `.gitkeep` in `src/assets/images/`, `src/components/ui/`, `src/content/` (so the empty-but-intentional folders survive version control)
+   - empty `.gitkeep` files in `src/assets/images/`, `src/components/ui/`, `src/content/` (so the intentional folders survive version control without placeholder prose)
+
+   Keep generated source comments sparse. Do not add narrative comments that repeat the code or duplicate `ARCHITECTURE.md`. Retain only short notes that prevent a non-obvious mistake or identify an intentional constraint; keep required directives such as `/// <reference types="astro/client" />` unchanged.
 
    **Substitute `{{PROJECT_NAME}}` in exactly three files** — everywhere else is name-free (the name flows from `SITE.name`):
    - `src/consts.ts` → `SITE.name`
@@ -174,6 +176,7 @@ The whole base is built on **one principle: a single source of truth.** The proj
 - [ ] `@lucide/astro` installed (`bun add`); it's the only runtime dep added
 - [ ] Social set is exactly **7** outline SVGs — `x, github, linkedin, instagram, youtube, tiktok, facebook` (`twitter`→`x`; no discord/threads/soundcloud/theme assets) — each `currentColor`, kebab-case, with the tuned `viewBox` from `references/icons.md`
 - [ ] `public/favicon.svg` and `public/favicon.ico` are the **untouched Astro defaults**; only `public/fonts/README.md` is added to `public/`
-- [ ] `.gitkeep` written to `src/assets/images/`, `src/components/ui/`, `src/content/`
+- [ ] Generated source contains no long tutorial comments; essential comments are short and `ARCHITECTURE.md` owns the detailed explanations
+- [ ] Empty `.gitkeep` files written to `src/assets/images/`, `src/components/ui/`, `src/content/`
 - [ ] `ARCHITECTURE.md` (uppercase), `README.md`, `.prettierignore` at the project root
 - [ ] `bun install` + `bun run build` both pass before reporting done
