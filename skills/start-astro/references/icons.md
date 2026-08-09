@@ -1,9 +1,9 @@
-# Icons — Lucide + custom brand/theme SVGs
+# Icons — Lucide + custom brand SVGs
 
 Two sources, no React anywhere:
 
-- **Lucide** (`@lucide/astro`) for standard line icons. Install with `bun add @lucide/astro` (the only runtime dep this skill adds). Use directly: `import { Search } from '@lucide/astro'` → `<Search />`.
-- **Custom icons** as raw `.svg` files under `src/assets/icons/`, imported either as **components** (Astro 7 renders `*.svg` imports inline) or as **raw strings** (`?raw`) injected with `set:html`. Brand logos live here because **Lucide ships no brand marks**.
+- **Lucide** (`@lucide/astro`) for standard line icons, including the reusable theme toggle. Install with `bun add @lucide/astro` (the only runtime dependency this skill adds). Use directly: `import { Search } from '@lucide/astro'` → `<Search />`.
+- **Custom brand icons** as raw `.svg` files under `src/assets/icons/social/`, imported with `?raw` and injected with `set:html`. They live here because Lucide ships no brand marks.
 
 Write the files below exactly. Filenames are lowercase `kebab-case`. Every icon is one consistent **outline (stroke) style** on a 24×24 grid using `currentColor`, so CSS controls color (they follow the theme) and the set reads as one family.
 
@@ -21,43 +21,20 @@ Write the files below exactly. Filenames are lowercase `kebab-case`. Every icon 
 | tiktok    | `1 1 22 22`    | slight zoom in                              |
 | facebook  | `0 0 24 24`    | standard                                    |
 
-Usage — two ways:
+Usage:
 
 ```astro
 ---
-// As a component (single icon, e.g. the theme toggle):
-import Sun from '@/assets/icons/theme/sun.svg';
-// As a raw string for set:html (the hero social row — see GXB.astro):
 import xIcon from '@/assets/icons/social/x.svg?raw';
-import { Search } from '@lucide/astro';
+import { Search, Sun, Moon } from '@lucide/astro';
 ---
-<Sun class="icon" />
 <a href="https://x.com/yourusername" set:html={xIcon} />
 <Search class="icon" />
+<Sun class="icon" />
+<Moon class="icon" />
 ```
 
-> The theme toggle (`Header.astro`) imports `theme/sun.svg` + `theme/moon.svg` and renders them as `<Sun id="icon-sun" aria-hidden="true" />` / `<Moon id="icon-moon" aria-hidden="true" />`; their show/hide swap is in `global.css` (see `references/global-css.md`). The hero (`GXB.astro`) imports the 7 social icons with `?raw` and injects them with `set:html` (see `references/project-structure.md`).
-
----
-
-## `src/assets/icons/theme/sun.svg`
-
-```xml
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-  <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
-  <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7" />
-</svg>
-```
-
-## `src/assets/icons/theme/moon.svg`
-
-```xml
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-  <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
-</svg>
-```
+> `ThemeToggle.astro` imports `Sun` and `Moon` from `@lucide/astro`; only their visibility rules live in `global.css`. The hero (`GXB.astro`) imports the 7 social icons with `?raw` and injects them with `set:html` (see `references/project-structure.md`).
 
 ---
 
