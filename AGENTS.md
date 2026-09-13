@@ -53,4 +53,4 @@ After the frontmatter, the body defines the skill's operating rules, report form
 npx skills add bastndev/skills --skill <name>
 ```
 
-Valid skill names: `start-package`, `start-astro`, `skrapi`, `middle`, `end`, `l10n-sync`.
+Valid skill names: `start-package`, `start-astro`, `start-nextjs`, `skrapi`, `middle`, `end`, `l10n-sync`.
