@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
-import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "@/components/theme-provider";
-import { SITE } from "@/consts";
+import { Geist } from "next/font/google";
+import { SITE } from "@/src/consts";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -10,25 +8,37 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: SITE.name,
+  title: {
+    default: SITE.name,
+    template: `%s | ${SITE.name}`,
+  },
   description: SITE.description,
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-background font-sans text-foreground antialiased`}
-      >
-        <ThemeProvider attribute="class" enableSystem defaultTheme="system">
-          {children}
-        </ThemeProvider>
+    <html
+      lang={SITE.lang}
+      data-theme="dark"
+      suppressHydrationWarning
+      className={`${geistSans.variable} group/theme antialiased`}
+    >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var theme=localStorage.getItem("theme");if(theme==="light"||theme==="dark")document.documentElement.dataset.theme=theme}catch{}})()`,
+          }}
+        />
+      </head>
+      <body className="flex min-h-dvh flex-col">
+        <a
+          href="#main-content"
+          className="sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:w-auto focus:h-auto focus:overflow-visible focus:[clip:auto] focus:whitespace-normal focus:rounded-md focus:bg-background focus:p-3 focus:text-foreground focus:outline-2 focus:outline-offset-2"
+        >
+          Skip to content
+        </a>
+        {children}
       </body>
     </html>
   );

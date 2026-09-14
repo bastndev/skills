@@ -5,7 +5,7 @@
 <h1 align="center">[Start] / Next.js Starter</h1>
 
 <p align="center">
-  <strong>Start Next.js</strong> — A focused Next.js scaffold with Bun, shadcn/ui, and light/dark themes
+  <strong>Start Next.js</strong> — A focused App Router starter with Bun, five routes, and persistent light/dark themes
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@
 
 ---
 
-Creates a new Next.js App Router project in the current directory, with TypeScript, Tailwind CSS, ESLint, and all application code under `src/`. Adds Lucide icons, a shadcn button, and a working theme toggle while keeping the starting structure small.
+Creates a Next.js App Router project in the current directory with TypeScript, Tailwind CSS, ESLint, Geist, and Lucide icons. It applies the prepared template’s five routes, responsive workspace shell, social links, metadata, keyboard skip link, and accessible theme control.
 
 <p align="center">
   <a href="https://skills.sh/bastndev/skills">
@@ -30,42 +30,48 @@ npx skills add bastndev/skills --skill start-nextjs
 
 ## How It Works
 
-1. **Detects** — Uses the current folder as the project root and its name as the visible project title.
-2. **Scaffolds** — Runs `create-next-app` with Bun and `--src-dir`, so no manual move from `app/` is needed.
-3. **Configures** — Initializes shadcn/ui and sets its output alias before adding the button under `src/components/ui/shadcn/`.
-4. **Adds themes** — Copies the bundled provider, toggle, root layout, and minimal home page. Keeps Geist Sans/Mono and the requested light/dark palette.
-5. **Verifies** — Runs lint and a production build; checks theme interaction in a browser when available and reports any unchecked behavior.
+1. **Detects** — Uses the current folder as the project root and its basename as the visible project name.
+2. **Scaffolds** — Runs `create-next-app` with Bun, App Router, TypeScript, Tailwind CSS, ESLint, and `src/`.
+3. **Applies** — Copies the bundled source, route groups, configuration, documentation, favicon, and public mark.
+4. **Installs** — Adds Lucide as the only dependency beyond the generated Next.js stack.
+5. **Verifies** — Runs lint, generated-route type checking, and a production build, then checks interaction in a browser when available.
 
 ## What You Get
 
 ```text
 src/
 ├── app/
+│   ├── (workspace)/
+│   │   ├── page.tsx             # /
+│   │   ├── work/page.tsx        # /work
+│   │   ├── contact/page.tsx     # /contact
+│   │   └── layout.tsx           # shared Header + Footer
+│   ├── (auth)/
+│   │   ├── login/page.tsx       # /login placeholder
+│   │   └── register/page.tsx    # /register placeholder
 │   ├── globals.css
-│   ├── layout.tsx
-│   └── page.tsx
+│   └── layout.tsx
 ├── components/
-│   ├── ui/shadcn/button.tsx
-│   ├── theme-provider.tsx
-│   └── theme-toggle.tsx
-├── lib/utils.ts
+│   ├── icons/social-media.tsx
+│   ├── ui/{Header,Footer,GXB}.tsx
+│   └── ThemeToggle.tsx
 └── consts.ts
 
-components.json · bun.lock · README.md
+ARCHITECTURE.md · README.md · tsconfig.json · bun.lock
 ```
 
-Next.js also supplies the framework configuration, public assets, and favicon. These stay in their generated locations. The CLI manages dependencies for the selected shadcn preset and button.
+The route groups organize shared layouts without changing URLs or adding access control. Login and Register are intentionally plain UI placeholders; the starter does not claim to include authentication or a database.
 
 ## Theme and Structure
 
-- **System preference first**: Uses `next-themes` with `defaultTheme="system"`; explicit choices persist across reloads.
-- **Correct first click**: Toggles using the resolved light/dark appearance, including when the stored preference is `system`.
-- **Stable hydration**: Both decorative icons use CSS visibility; the button has a stable accessible name. Only the provider and toggle need client boundaries.
-- **Accessible control**: Native button behavior, keyboard focus, Sun/Moon transforms, and reduced-motion support.
-- **One palette**: `#fafafa`/black in light mode and `#101010`/white in dark mode, defined through shadcn's semantic tokens.
-- **Small base**: One page, Spanish copy, shared site identity, and no speculative API, auth, store, or service folders.
+- **Dark by default** — A valid explicit light/dark choice is restored before paint and persisted in `localStorage`.
+- **Storage fallback** — Theme switching still works for the current document if browser storage is unavailable.
+- **Stable hydration** — Both icons stay rendered and CSS follows `data-theme`; the expected root attribute difference is suppressed only on `<html>`.
+- **Accessible controls** — The toggle has contextual text, native keyboard behavior, visible focus, and reduced-motion support. Every route has a heading and the same skip-link target.
+- **Clear ownership** — The root layout owns document concerns, the workspace layout owns Header and Footer, `consts.ts` owns metadata and navigation, and `GXB.tsx` owns social links.
+- **Focused globals** — Theme tokens and document rules live in `globals.css`; component-specific Tailwind styling remains with each component.
 
-The reusable custom files live in `assets/template/`. Next.js and shadcn generate the framework files and UI primitive so the skill does not ship stale dependency metadata or a frozen copy of the button.
+The reusable source of truth lives in `assets/template/`. Framework package versions and routine configuration still come from `create-next-app`, which keeps the generated project current.
 
 ---
 
