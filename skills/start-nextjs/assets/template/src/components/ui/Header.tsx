@@ -19,7 +19,7 @@ export default function Header() {
           aria-label={`${SITE.name} home`}
         >
           <Image
-            className="h-[24px] w-[24px] shrink-0 object-contain group-data-[theme=light]/theme:brightness-0 max-[600px]:h-[17px] max-[600px]:w-[17px]"
+            className="size-[26px] shrink-0 object-contain"
             src={Logo}
             alt=""
             width={24}
