@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SITE, authNavigation, navigation } from "@/src/consts";
 import ThemeToggle from "@/src/components/ThemeToggle";
+import Logo from "@/public/vercel.svg";
 
 export default function Header() {
   const pathname = usePathname();
@@ -18,11 +19,11 @@ export default function Header() {
           aria-label={`${SITE.name} home`}
         >
           <Image
-            className="h-auto shrink-0 group-data-[theme=light]/theme:brightness-0 max-[600px]:w-[17px]"
-            src="/vercel.svg"
+            className="h-[26px] w-[26px] shrink-0 object-contain group-data-[theme=light]/theme:brightness-0 max-[600px]:h-[17px] max-[600px]:w-[17px]"
+            src={Logo}
             alt=""
-            width={22}
-            height={19}
+            width={26}
+            height={26}
             loading="eager"
           />
           <span>{SITE.name}</span>
