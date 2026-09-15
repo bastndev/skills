@@ -43,6 +43,7 @@ src/app/page.tsx
 public/file.svg
 public/globe.svg
 public/next.svg
+public/vercel.svg
 public/window.svg
 ```
 
@@ -117,7 +118,7 @@ Stop any preview started solely for verification. If browser checks cannot be pe
 assets/template/
 ├── public/
 │   ├── robots.txt
-│   └── vercel.svg
+│   └── video.png
 ├── src/
 │   ├── app/
 │   │   ├── (auth)/
@@ -157,7 +158,7 @@ Copy `favicon.ico` as a binary asset; never reconstruct or transcribe it.
 - Keep both Sun and Moon icons rendered so CSS controls their state without mounted-state guards. Preserve their contextual accessible labels and reduced-motion behavior.
 - Keep `globals.css` focused on Tailwind, semantic document tokens, scrollbar color, background, foreground, and typography. Keep component-specific Tailwind classes with their components.
 - Preserve the skip target and a descriptive heading on every page. The visually hidden workspace headings are intentional until visible page headings replace them.
-- Preserve the seven local social icons, the supplied Vercel mark, and the favicon. Replace their sample branding only when the user asks or while adapting the generated project for an actual brand.
+- Preserve the seven local social icons, the supplied video mark, and the favicon. Replace their sample branding only when the user asks or while adapting the generated project for an actual brand.
 
 ## Completion report
 
