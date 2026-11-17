@@ -14,9 +14,9 @@ Ask it as a select question (see "How to ask" in `SKILL.md`):
 | Label                | Description                                           |
 | -------------------- | ----------------------------------------------------- |
 | `text`               | a light sweeps across the text itself ("Installing…") |
+| `wave (recommended)` | gray blocks fading one after another, top to bottom   |
 | `sync`               | gray blocks, one shared light crossing all of them    |
 | `pulse`              | gray blocks fading in and out together                |
-| `wave (recommended)` | gray blocks fading one after another, top to bottom   |
 
 Keep `(recommended)` in the `wave` label exactly as written; it is the most
 used style. It is a hint only: never pick it on the user's behalf.
@@ -28,9 +28,9 @@ then wait for the answer:
 🦴 [widgetx › skeleton] Which style?
 
 1. ✨ text   — a light sweeps across the text itself ("Installing…")
-2. 🔄 sync   — gray blocks, one shared light crossing all of them
-3. 💓 pulse  — gray blocks fading in and out together
-4. 🌊 wave   — gray blocks fading one after another, top to bottom (recommended)
+2. 🌊 wave   — gray blocks fading one after another, top to bottom (recommended)
+3. 🔄 sync   — gray blocks, one shared light crossing all of them
+4. 💓 pulse  — gray blocks fading in and out together
 
 Reply with a number or name.
 ```
@@ -101,7 +101,7 @@ style uses.
 repeats: the light crosses during the first half of the cycle and rests
 during the second.
 
-## 1 · text
+## text
 
 The text dims to 45% of its own color and a band of full color travels across
 it, left to right, every 2 seconds.
@@ -135,7 +135,7 @@ it, left to right, every 2 seconds.
   container that has its own background.
 * Needs: keyframes `wx-sweep`.
 
-## 2 · sync
+## sync
 
 Gray blocks with a soft light crossing them every 1.8 seconds. The light is
 anchored to the window, not to each block, so it reads as **one** light
@@ -209,14 +209,14 @@ height.
   Add this only when that case really exists in the project.
 * Needs: keyframes `wx-sweep`.
 
-## 3 · pulse
+## pulse
 
 The same gray blocks, with no light: they all fade to 40% and back together
 every 1.6 seconds. Only `opacity` changes, so it is the lightest style to
 draw.
 
 ```css
-/* .wx-skeleton base rule from "2 · sync" goes here, unchanged */
+/* .wx-skeleton base rule from the "sync" section goes here, unchanged */
 
 .wx-skeleton-pulse {
   animation: wx-pulse 1.6s ease-in-out infinite;
@@ -234,13 +234,13 @@ draw.
 * The unused `--wx-skeleton-shine` token may be dropped from the base rule.
 * Needs: keyframes `wx-pulse`.
 
-## 4 · wave
+## wave
 
 `pulse`, but each row starts 120 ms after the one above it, so the fade
 travels down the list.
 
 ```css
-/* .wx-skeleton base rule from "2 · sync" goes here, unchanged */
+/* .wx-skeleton base rule from the "sync" section goes here, unchanged */
 
 .wx-skeleton-wave {
   animation: wx-pulse 1.6s ease-in-out infinite;

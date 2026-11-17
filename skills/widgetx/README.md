@@ -16,9 +16,13 @@
   </a>
 </p>
 
+
+#### 1: Skeleton
 <p align="center">
   <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/github/gif/skeleton-styles.gif" alt="The four skeleton styles animated: text, sync, pulse, and wave" width="720" />
 </p>
+
+#### 2: Future
 
 ## Install
 
@@ -33,7 +37,7 @@ npx skills add bastndev/skills --skill widgetx
 
 /widgetx                              # widget menu, then style menu
 /widgetx 1                            # skeleton → style menu
-/widgetx skeleton 2                   # skeleton in the sync style
+/widgetx skeleton 2                   # skeleton in the wave style
 /widgetx skeleton text (@src/ui/InstallStatus.tsx)
 ```
 
@@ -43,27 +47,21 @@ Natural language works too: _"add a skeleton to the skills list"_, _"make the 'I
 
 | #   | Widget          | What it is                                             | Styles                     |
 | --- | --------------- | ------------------------------------------------------ | -------------------------- |
-| 1   | 🦴 **skeleton** | Loading placeholders: shimmering text or gray blocks   | text · sync · pulse · wave |
+| 1   | 🦴 **skeleton** | Loading placeholders: shimmering text or gray blocks   | text · wave · sync · pulse |
 
 More widgets are on the way.
-
-### 🦴 skeleton
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/github/gif/skeleton-styles.gif" alt="The four skeleton styles animated: text, sync, pulse, and wave" width="720" />
-</p>
 
 ```
 Which skeleton style?
 
 1. text
    a light sweeps across the text itself ("Installing…")
-2. sync
-   gray blocks, one shared light crossing all of them
-3. pulse
-   gray blocks fading in and out together
-4. wave (recommended)
+2. wave (recommended)
    gray blocks fading one after another, top to bottom
+3. sync
+   gray blocks, one shared light crossing all of them
+4. pulse
+   gray blocks fading in and out together
 5. type your own answer
 
 ↑↓ select  enter confirm  esc dismiss
