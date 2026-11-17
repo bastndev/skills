@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- App icon master. Change TILE COLOUR below, or replace this file with your own 512x512 SVG,
+       then run scripts/app-icon.sh. -->
+  <defs>
+    <clipPath id="tile"><rect x="32" y="32" width="448" height="448" rx="100"/></clipPath>
+    <linearGradient id="light" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.12"/>
+    </linearGradient>
+  </defs>
+  <g clip-path="url(#tile)">
+    <!-- TILE COLOUR -->
+    <rect x="32" y="32" width="448" height="448" fill="#2563EB"/>
+    <!-- grid -->
+    <path stroke="#ffffff" stroke-opacity="0.2" stroke-width="3" fill="none"
+          d="M88 32V480 M32 88H480 M144 32V480 M32 144H480 M200 32V480 M32 200H480 M256 32V480 M32 256H480 M312 32V480 M32 312H480 M368 32V480 M32 368H480 M424 32V480 M32 424H480"/>
+    <rect x="32" y="32" width="448" height="448" fill="url(#light)"/>
+  </g>
+  <!-- glyph: prompt chevron and cursor -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="44">
+    <path stroke="#000000" stroke-opacity="0.16" d="M146 188 L246 264 L146 340 M276 340 H366"/>
+    <path stroke="#ffffff" d="M146 180 L246 256 L146 332 M276 332 H366"/>
+  </g>
+</svg>

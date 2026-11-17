@@ -1,10 +1,10 @@
 ---
 name: start-egui
-description: Scaffold a Rust desktop app with egui/eframe 0.37 as a layered Cargo workspace (apps/ + crates/). Creates brand constants, a resizable three-panel UI shell with a status bar and an update-dialog placeholder, shared lints, toolchain and formatting config, and AGENTS.md rules. Use when starting, creating, or bootstrapping a new Rust desktop app, egui or eframe project, or native GUI (an IDE, a photo or video editor, a tool) in the current directory.
+description: Scaffold a Rust desktop app with egui/eframe 0.37 as a layered Cargo workspace (apps/ + crates/). Creates brand constants, an app icon with Linux dock integration, a resizable three-panel UI shell with a status bar and an update-dialog placeholder, shared lints, toolchain and formatting config, and AGENTS.md rules. Use when starting, creating, or bootstrapping a new Rust desktop app, egui or eframe project, or native GUI (an IDE, a photo or video editor, a tool) in the current directory.
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Rust + egui desktop app scaffold
@@ -48,9 +48,11 @@ editable defaults. Otherwise show the default in the prompt and let an empty res
    report. Ask before overwriting anything else.
 3. Copy every file from `assets/template/`, including dotfiles and dot-folders (`.cargo/`, `.config/`, `.github/`,
    `.gitignore`, `.gitattributes`), into the project root.
-4. Rename the folder `apps/{{MACHINE_NAME}}` to `apps/<MACHINE_NAME>`.
+4. Rename every path containing `{{MACHINE_NAME}}` to use `<MACHINE_NAME>`: the folder
+   `apps/{{MACHINE_NAME}}` and the icons `assets/app-icon/hicolor/*/apps/{{MACHINE_NAME}}.*`.
 5. Replace `{{DISPLAY_NAME}}`, `{{MACHINE_NAME}}`, `{{CRATE_PREFIX}}`, `{{GITHUB_REPO}}`,
-   `{{DESCRIPTION}}`, `{{AUTHOR}}` and `{{YEAR}}` in every file.
+   `{{DESCRIPTION}}`, `{{AUTHOR}}` and `{{YEAR}}` in every text file. Skip binary files (`*.png`).
+   Leave `@DISPLAY_NAME@` and `@APP_ID@` in `packaging/linux/app.desktop.in`: the scripts fill them.
 6. Confirm no placeholder remains, in file contents or in names:
 
    ```bash
@@ -76,13 +78,18 @@ editable defaults. Otherwise show the default in the prompt and let an empty res
    code is a failure. Without a display, skip this and say so.
 10. Run `git diff --check` when the root is a Git repository. Do not commit unless asked.
 11. Report: the files created, anything replaced, the check results, and the next step for the
-    person: `cargo run`.
+    person: `cargo run`. Point to `NOTES.md` for the commands they will type by hand. On Linux,
+    also tell them to run `scripts/install-desktop.sh` once so the dock shows the app's name and
+    icon (it writes only to `~/.local/share`; `--remove` undoes it), and again after changing
+    `DISPLAY_NAME` or the icon. Run it yourself only if they ask.
 
 ## Boundaries
 
 - Never push, tag, publish a release, or install system packages unless the user separately asks.
 - Do not add dependencies beyond `eframe`. Each new crate is the user's decision.
-- Do not create CI workflows, packaging (`.deb`), or real update logic: not part of this base.
+- Do not create CI workflows, package builders (`.deb`, `.msi`, `.dmg`) or real update logic: not
+  part of this base. `packaging/macos` and `packaging/windows` hold only a README until each is
+  built and tested on its own system.
 - Do not create empty crates. `xtask/` is added when a build helper needs it.
 - Keep `eframe = "0.37"`. Do not move to a newer egui unless the user asks: its API changes between
   minor versions and this template is verified against 0.37.0 only.
@@ -94,11 +101,16 @@ editable defaults. Otherwise show the default in the prompt and let an empty res
 - Layers: `brand` (L0, no dependencies) → `ui` (L3, the only crate using egui) → the app (L4).
   `ARCHITECTURE.md` shows the project tree and where logic crates (L1/L2) go when needed.
 - The product name is written only in `crates/brand`.
+- App icon: `assets/app-icon/app-icon.svg` is the master; `scripts/app-icon.sh` renders the window
+  icon (`app-icon.png`, embedded by `main.rs`) and the Linux `hicolor/` sizes. On Linux,
+  `scripts/install-desktop.sh` fills `packaging/linux/app.desktop.in` from `crates/brand` and
+  installs it with the icons for the current user, so the dock shows the real name and icon.
+  `MACHINE_NAME` is the app id that ties them together.
 - Dev builds compile dependencies optimised (`opt-level = 2`) so the UI is smooth under `cargo run`.
 - Shared lints (`[workspace.lints]`: `unsafe_code` forbidden, `dbg!`/`todo!` warned) and
   `clippy.toml`, `rustfmt.toml` (120 columns), `rust-toolchain.toml` (`stable` + rustfmt + clippy).
 - `AGENTS.md` (+ `CLAUDE.md` pointing to it) gives AI assistants the rules and egui 0.37 notes.
-- `.config/`, `.github/workflows/`, `assets/` and `scripts/` exist, kept by a `.gitkeep` (Git doesn't track empty folders); `.cargo/config.toml` holds commented examples.
+- `.config/` and `.github/workflows/` exist, kept by a `.gitkeep` (Git doesn't track empty folders); `.cargo/config.toml` holds commented examples.
 - The update dialog takes its data as a parameter, so real update logic plugs in without redrawing it.
 
 ## Growing the app
@@ -111,6 +123,9 @@ Tell the user how, when they ask:
 - **Add a crate:** `cargo new --vcs none --lib --name <prefix>-<name> crates/<name>`. Check that its
   `Cargo.toml` inherits `rust-version.workspace = true` and has `[lints] workspace = true`; add
   either if missing. Declare it in `[workspace.dependencies]`.
+- **Change the icon:** edit or replace `assets/app-icon/app-icon.svg` (512×512), then
+  `scripts/install-desktop.sh` on Linux, or `scripts/app-icon.sh` elsewhere. The renderer is the
+  first found of `rsvg-convert`, `resvg`, `inkscape`, `magick`, `gdk-pixbuf-thumbnailer`.
 - **Never block the window:** slow work on a background thread + a channel;
   `ctx.request_repaint()` when the result arrives.
 

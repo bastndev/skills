@@ -44,7 +44,11 @@ your-app/
 │           ├── lib.rs      # the App and the panel layout
 │           ├── panels/     # left_panel, center_panel, right_panel, status_bar
 │           └── update_dialog.rs
-├── .cargo/  .config/  .github/workflows/  assets/  scripts/   # ready for later
+├── assets/app-icon/        # app-icon.svg (the one you edit) + rendered sizes
+├── packaging/              # linux/app.desktop.in (dock name + icon); macos/, windows/ for later
+├── scripts/                # app-icon.sh (render the icon), install-desktop.sh (Linux dock)
+├── .cargo/  .config/  .github/workflows/   # ready for later
+├── NOTES.md                # commands you type by hand: run, checks, change name/icon
 ├── AGENTS.md  CLAUDE.md    # rules for AI assistants, including egui 0.37 notes
 ├── ARCHITECTURE.md         # project tree + layer rules
 ├── rust-toolchain.toml  rustfmt.toml  clippy.toml
@@ -59,7 +63,9 @@ your-app/
 - a **status bar** with the app name and version,
 - a **Check for updates** button that opens an update dialog (placeholder data, ready for real logic).
 
-The side panels resize by dragging.
+The side panels resize by dragging. The window has its own icon (a blue `>_` tile) that you
+replace by editing one SVG. On Linux, `scripts/install-desktop.sh` makes the dock show the app's
+name and icon instead of a generic gear.
 
 ## How it works
 

@@ -28,7 +28,18 @@
 │           │   └── status_bar.rs    # Bottom: name, version, "Check for updates"
 │           └── update_dialog.rs     # Update dialog; takes its data as a parameter
 ├── assets/                          # Icons, fonts, images the app ships with
+│   └── app-icon/                    # The app icon — see its README.md
+│       ├── app-icon.svg             # The master: the only icon file you edit
+│       ├── app-icon.png             # Generated: window icon (embedded by main.rs)
+│       └── hicolor/                 # Generated: Linux icon sizes, named after the app id
+├── packaging/                       # Turns the program into what users install, one folder per OS
+│   ├── linux/
+│   │   └── app.desktop.in           # Dock/menu entry template; name and id filled from brand
+│   ├── macos/README.md              # Not built yet: what goes here (.app, .dmg)
+│   └── windows/README.md            # Not built yet: what goes here (installer, .exe icon)
 ├── scripts/                         # Developer shell helpers
+│   ├── app-icon.sh                  # Renders app-icon.svg into app-icon.png and hicolor/
+│   └── install-desktop.sh           # Registers the dev build: name + icon in the dock (--remove)
 ├── target/                          # Build output (gitignored)
 ├── .gitattributes                   # Line endings: LF everywhere
 ├── .gitignore
@@ -39,6 +50,7 @@
 ├── Cargo.toml                       # Workspace: version, shared deps, lints, build profiles
 ├── clippy.toml                      # Code-checker settings
 ├── LICENSE                          # MIT
+├── NOTES.md                         # Commands you type by hand: run, checks, name/icon
 ├── README.md
 ├── rust-toolchain.toml              # Rust compiler: stable + rustfmt + clippy
 └── rustfmt.toml                     # Code style: 120 columns
@@ -68,3 +80,5 @@ A new feature means a new crate. A new program you install means a new app.
 6. **Shared dependencies are declared once** in the root `Cargo.toml`; crates write `name.workspace = true`.
 7. **A new feature** = an L1 crate (with tests) + a panel in `ui` + one line in the app.
 8. **Never block the window.** Slow work runs on a background thread and reports back.
+9. **The app id ties the desktop together.** `MACHINE_NAME` is the Wayland app id, the `.desktop`
+   file name and the icon file name. If they differ, the dock shows the raw id and a generic icon.
