@@ -45,7 +45,7 @@ After the frontmatter, the body defines the skill's operating rules, report form
 - The `end` skill (at `skills/end/SKILL.md`) is the most mature and longest (~600 lines). It has strict rules about phased execution, authorization gates, and behavior preservation.
 - The `middle` skill uses numbered improvers (0–7) each targeting a specific dimension (performance, UI/UX, tidy, security, structure, cleanup, quality).
 - `l10n-sync` has its own `scripts/` directory with helper code.
-- `widgetx` installs small UI widgets through two menus (widget, then style). `SKILL.md` holds the widget menu, registry, and operating rules; each widget lives in `references/<widget>.md` with its own style menu, motion spec, and reference code. To add a widget: add one reference file, one registry row, and one Menu 1 line.
+- `widgetx` installs small UI widgets through two menus (widget, then style), asked as select questions via the CLI's question tool with a text fallback. `SKILL.md` holds the widget menu, registry, and operating rules; each widget lives in `references/<widget>.md` with its own style menu, motion spec, and reference code. To add a widget: add one reference file, one registry row, and one Menu 1 option (in both the select table and the text fallback).
 - Skill names must match the directory name under `skills/`.
 
 ## Installation (for reference)

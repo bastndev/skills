@@ -47,13 +47,24 @@ More widgets are on the way.
 
 ### 🦴 skeleton
 
-```
-🦴 [widgetx › skeleton] Which style?
+<p align="center">
+  <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/github/gif/skeleton-styles.gif" alt="The four skeleton styles animated: text, sync, pulse, and wave" width="720" />
+</p>
 
-1. ✨ text   — a light sweeps across the text itself ("Installing…")
-2. 🔄 sync   — gray blocks, one shared light crossing all of them
-3. 💓 pulse  — gray blocks fading in and out together
-4. 🌊 wave   — gray blocks fading one after another, top to bottom
+```
+Which skeleton style?
+
+1. text
+   a light sweeps across the text itself ("Installing…")
+2. sync
+   gray blocks, one shared light crossing all of them
+3. pulse
+   gray blocks fading in and out together
+4. wave
+   gray blocks fading one after another, top to bottom
+5. type your own answer
+
+↑↓ select  enter confirm  esc dismiss
 ```
 
 | Style     | Pick it when                                                                    |
@@ -65,7 +76,7 @@ More widgets are on the way.
 
 ## How It Works
 
-1. **Pick** — choose the widget, then the style, by number or name.
+1. **Pick** — choose the widget, then the style, from a selectable list: arrow keys and Enter, no typing. CLIs without a question tool get the same menus as text (reply with a number or name).
 2. **Look** — it reads your project first: stack, styling system, theme, where shared UI lives, and whether you already have that widget.
 3. **Install** — adds only the chosen style, in your conventions. Point it at a file (`@path`) and it also wires the widget into that loading state.
 4. **Report** — a compact block: files touched, a usage snippet, what to tune, which checks ran.
