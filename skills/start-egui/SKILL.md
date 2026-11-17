@@ -4,7 +4,7 @@ description: Scaffold a Rust desktop app with egui/eframe 0.37 as a layered Carg
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # Rust + egui desktop app scaffold
@@ -48,7 +48,15 @@ editable defaults. Otherwise show the default in the prompt and let an empty res
    `LICENSE` or `.gitignore` left by GitHub's "Initial commit" may be replaced; say so in the
    report. Ask before overwriting anything else.
 3. Copy every file from `assets/template/`, including dotfiles and dot-folders (`.cargo/`, `.config/`, `.github/`,
-   `.gitignore`, `.gitattributes`), into the project root.
+   `.gitignore`, `.gitattributes`), into the project root. Then make the scripts executable,
+   whatever the copy did to permissions:
+
+   ```bash
+   chmod +x scripts/*.sh
+   ```
+
+   Without this, running `scripts/install-desktop.sh` fails with "exists but is not an
+   executable file" (fish) or "Permission denied" (bash).
 4. Rename every path containing `{{MACHINE_NAME}}` to use `<MACHINE_NAME>`: the folder
    `apps/{{MACHINE_NAME}}` and the icons `assets/app-icon/hicolor/*/apps/{{MACHINE_NAME}}.*`.
 5. Replace `{{DISPLAY_NAME}}`, `{{MACHINE_NAME}}`, `{{CRATE_PREFIX}}`, `{{GITHUB_REPO}}`,
