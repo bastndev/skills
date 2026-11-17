@@ -4,7 +4,7 @@ description: "Adds one small, polished UI widget to an existing project (web, we
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # WidgetX / UI widgets
@@ -23,7 +23,7 @@ project. It adds only what was picked, nothing "for later".
 
 /widgetx                              # widget menu, then style menu
 /widgetx 1                            # skeleton → style menu
-/widgetx skeleton 2                   # skeleton in the sync style
+/widgetx skeleton 2                   # skeleton in the wave style
 /widgetx skeleton text (@src/ui/InstallStatus.tsx)
 ```
 
@@ -104,7 +104,7 @@ its select question when a question tool exists, its text block otherwise.
 
 | #   | Widget      | Reference                | Styles                       |
 | --- | ----------- | ------------------------ | ---------------------------- |
-| 1   | 🦴 skeleton | `references/skeleton.md` | text · sync · pulse · wave   |
+| 1   | 🦴 skeleton | `references/skeleton.md` | text · wave · sync · pulse   |
 
 The reference file is the source of truth for that widget: its style menu,
 motion spec, reference code, and stack notes. Read the whole file before
