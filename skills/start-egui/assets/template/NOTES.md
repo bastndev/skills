@@ -4,7 +4,7 @@ Commands you type by hand. Run them from the project folder.
 
 ## Run
 
-**Linux**: run only `first time`, or after changing the Name/Icon.
+**Linux**, the first time and after changing the name or the icon:
 
 ```sh
 scripts/install-desktop.sh

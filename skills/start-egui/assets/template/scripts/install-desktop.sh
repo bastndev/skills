@@ -34,17 +34,26 @@ if [ "${1:-}" = "--remove" ]; then
     exit 0
 fi
 
-# Icons: render from app-icon.svg, then replace the installed copies.
-"$root/scripts/app-icon.sh" >/dev/null
+# Icons: render from app-icon.svg, then replace the installed copies. Without an SVG renderer,
+# app-icon.sh says so and the icons already in the project are installed instead.
+if ! bash "$root/scripts/app-icon.sh" >/dev/null; then
+    echo "Installing the icons already in assets/app-icon/hicolor/ instead." >&2
+fi
 mkdir -p "$icons"
 remove_icons
 cp -r "$root/assets/app-icon/hicolor/." "$icons/"
 
 # Desktop entry: fill in the name and id, and point Exec at the dev build instead of /usr/bin.
 esc() { printf '%s' "$1" | sed 's/[&|\\]/\\&/g'; }
+# The Exec path is quoted, so a project folder with spaces works. Inside the quotes the Desktop
+# Entry spec wants \ " ` $ after a backslash, written twice because the file format unescapes
+# once first, and % written as %%.
+exec_path() {
+    printf '"%s"' "$(printf '%s' "$1" | sed -e 's/\\/\\\\\\\\/g' -e 's/["`$]/\\\\&/g' -e 's/%/%%/g')"
+}
 mkdir -p "$apps"
 sed -e '/^#/d' \
-    -e "s|^Exec=@APP_ID@|Exec=$(esc "$root/target/debug/$id")|" \
+    -e "s|^Exec=@APP_ID@|Exec=$(esc "$(exec_path "$root/target/debug/$id")")|" \
     -e "s|@APP_ID@|$(esc "$id")|g" \
     -e "s|@DISPLAY_NAME@|$(esc "$name")|g" \
     "$root/packaging/linux/app.desktop.in" >"$apps/$id.desktop"

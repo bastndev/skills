@@ -4,7 +4,7 @@ Rules for AI assistants working in this repository. `ARCHITECTURE.md` has the pr
 
 ## What this is
 
-{{DISPLAY_NAME}}: {{DESCRIPTION}} A desktop app written in Rust with **egui/eframe 0.37**.
+{{DISPLAY_NAME}}: {{DESCRIPTION}} Stack: Rust + **egui/eframe 0.37**.
 
 ## Commands
 
