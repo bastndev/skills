@@ -1,0 +1,7 @@
+# Which Rust compiler builds this project. rustup reads this file automatically.
+# `stable` follows the latest stable release. Pin an exact version (e.g. "1.100.0") once CI
+# needs every build to use the same compiler.
+[toolchain]
+channel = "stable"
+profile = "minimal"
+components = ["rustfmt", "clippy"]

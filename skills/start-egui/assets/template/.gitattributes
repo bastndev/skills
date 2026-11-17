@@ -1,0 +1,7 @@
+# Line endings: always LF in the repository, on every operating system.
+* text=auto eol=lf
+
+# Binary files: never touch them.
+*.png binary
+*.ico binary
+*.webp binary
