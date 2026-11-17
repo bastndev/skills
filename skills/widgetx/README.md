@@ -47,6 +47,10 @@ More widgets are on the way.
 
 ### 🦴 skeleton
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/github/gif/skeleton-styles.gif" alt="The four skeleton styles animated: text, sync, pulse, and wave" width="720" />
+</p>
+
 ```
 Which skeleton style?
 
