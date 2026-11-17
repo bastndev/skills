@@ -1,10 +1,10 @@
 ---
 name: widgetx
-description: "Adds one small, polished UI widget to an existing project (web, web app, desktop, mobile), fitted to its stack and theme, with zero new dependencies. Asks two short questions — which widget, then which style — and installs it. Ships today: skeleton loading placeholders in four styles — text (a light sweeps across the text), sync (gray blocks sharing one light), pulse (blocks fading together), wave (blocks fading in cascade). Use for 'add a skeleton', 'loading placeholder', 'shimmer text', 'show something while this loads'. Invoke with /widgetx <widget> <style> (@path)"
+description: "Adds one small, polished UI widget to an existing project (web, web app, desktop, mobile), fitted to its stack and theme, with zero new dependencies. Asks two short select questions — which widget, then which style, picked with the arrow keys — and installs it. Ships today: skeleton loading placeholders in four styles — text (a light sweeps across the text), sync (gray blocks sharing one light), pulse (blocks fading together), wave (blocks fading in cascade). Use for 'add a skeleton', 'loading placeholder', 'shimmer text', 'show something while this loads'. Invoke with /widgetx <widget> <style> (@path)"
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # WidgetX / UI widgets
@@ -33,17 +33,55 @@ project. It adds only what was picked, nothing "for later".
   Menu 1 ("add a skeleton to the skills list" → skeleton). A request that also
   names a style skips Menu 2 ("make the 'Installing…' text shimmer" → skeleton,
   text). Never guess a style that was not named.
-* **Nothing given, or an unknown value** → print the menu for the missing
-  choice and wait. Do not inspect the project or write anything yet.
+* **Nothing given, or an unknown value** → ask for the missing choice (see
+  How to ask) and wait. Do not inspect the project or write anything yet.
 * **Arguments lost in transport** — some IDE wrappers drop arguments and
-  deliver only a path. Treat that as "nothing chosen": show Menu 1 with a
-  `Target detected:` line and wait.
+  deliver only a path. Treat that as "nothing chosen": ask Menu 1, mention
+  the detected target, and wait.
 * **Two widgets or two styles requested** → install the first; after its
   report, offer the next.
 
+### How to ask
+
+Both menus are **select questions**: the user moves with the arrow keys and
+confirms with Enter. They should never have to type a number.
+
+* **Use the interface's interactive question tool** whenever it has one
+  (`question` in OpenCode, `AskUserQuestion` in Claude Code, or the
+  equivalent). Present every menu entry as a choice/select option — single
+  choice — using the header, question, labels, and descriptions the menu
+  defines, in the order given. Do not also print the text menu, and do not
+  add commentary before the question.
+* **One question per call**, widget first, then style. The style options
+  depend on the widget, so never ask both in one form.
+* Do not add an "other" or "type your own answer" entry; the tool adds it.
+  If the user types an answer there, resolve it like any typed reply: number,
+  name, or alias, with an optional `@path`.
+* If the user dismisses the question, stop. Write nothing and say the skill
+  can be run again.
+* **Text fallback** — only when the interface has no such tool, or the tool
+  rejects the question (some require at least two options), print the menu's
+  text block exactly as written and wait for a typed reply.
+
 ### Menu 1 — widget
 
-Always shown when no widget was named, even while the list has one entry:
+Always asked when no widget was named, even while the list has one entry.
+
+Select question:
+
+* Header: `widget`
+* Question: `Which widget do you want to add?`
+* Options:
+
+| Label      | Description                                          |
+| ---------- | ---------------------------------------------------- |
+| `skeleton` | loading placeholders: shimmering text or gray blocks |
+
+If a path already arrived, end the question with it — `Which widget do you
+want to add? (target: src/ui/List.tsx)` — and reuse that target for the rest
+of the run.
+
+Text fallback:
 
 ```text
 🧩 [widgetx] Which widget?
@@ -53,14 +91,14 @@ Always shown when no widget was named, even while the list has one entry:
 Reply with a number or name (optionally add a @path).
 ```
 
-If a path already arrived, append `Target detected: src/ui/List.tsx — [very
-short description]` and reuse it when the user replies with just a number.
+In the fallback, a detected path goes on its own line: `Target detected:
+src/ui/List.tsx — [very short description]`.
 
 ### Menu 2 — style
 
 Each widget owns its style menu. Once the widget is known, read its reference
-file from the registry below and print that file's **Style menu** block
-exactly as written, then wait.
+file from the registry below and ask that file's **Style menu** the same way:
+its select question when a question tool exists, its text block otherwise.
 
 ### Widget registry
 
@@ -72,9 +110,9 @@ The reference file is the source of truth for that widget: its style menu,
 motion spec, reference code, and stack notes. Read the whole file before
 writing any code. Do not rebuild a widget from memory.
 
-**Workflow:** 1. Resolve the widget (Menu 1). 2. Read its reference and
-resolve the style (Menu 2). 3. Inspect the project, read-only. 4. Install.
-5. Verify. 6. Report.
+**Workflow:** 1. Ask the widget (Menu 1). 2. Read its reference and ask the
+style (Menu 2). 3. Inspect the project, read-only. 4. Install. 5. Verify.
+6. Report.
 
 ---
 
@@ -174,6 +212,7 @@ or one thing the user must do by hand. No walkthrough of the code.
 ## Final checks
 
 - [ ] Both choices came from the user (menu answer or explicit words).
+- [ ] Menus were asked as select questions wherever a question tool exists.
 - [ ] The widget's reference file was read in full before writing.
 - [ ] No equivalent widget already existed in the project.
 - [ ] Only the chosen style was installed, in the project's own conventions.

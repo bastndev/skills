@@ -5,7 +5,21 @@ will go here" without a spinner and without the page jumping when it arrives.
 
 ## Style menu
 
-Print this block exactly, then wait for the answer:
+Ask it as a select question (see "How to ask" in `SKILL.md`):
+
+* Header: `style`
+* Question: `Which skeleton style?`
+* Options, in this order:
+
+| Label   | Description                                           |
+| ------- | ----------------------------------------------------- |
+| `text`  | a light sweeps across the text itself ("Installing…") |
+| `sync`  | gray blocks, one shared light crossing all of them    |
+| `pulse` | gray blocks fading in and out together                |
+| `wave`  | gray blocks fading one after another, top to bottom   |
+
+Text fallback — only when no question tool exists. Print this block exactly,
+then wait for the answer:
 
 ```text
 🦴 [widgetx › skeleton] Which style?
