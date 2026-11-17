@@ -10,12 +10,14 @@
 
 ---
 
-Adds **one small UI widget in one style** to a project you already have — web, web app, or desktop. Two short questions (which widget, which style), then a few lines of dependency-free code written the way your project already writes its UI. It is not a component library: it installs only what you picked.
-
 <p align="center">
   <a href="https://skills.sh/bastndev/skills">
     <img src="https://skills.sh/b/bastndev/skills" alt="skills.sh">
   </a>
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/bastndev/skills/main/public/github/gif/skeleton-styles.gif" alt="The four skeleton styles animated: text, sync, pulse, and wave" width="720" />
 </p>
 
 ## Install
@@ -60,7 +62,7 @@ Which skeleton style?
    gray blocks, one shared light crossing all of them
 3. pulse
    gray blocks fading in and out together
-4. wave
+4. wave (recommended)
    gray blocks fading one after another, top to bottom
 5. type your own answer
 

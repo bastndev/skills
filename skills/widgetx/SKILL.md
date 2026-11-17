@@ -4,7 +4,7 @@ description: "Adds one small, polished UI widget to an existing project (web, we
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "1.1.0"
+  version: "1.1.1"
 ---
 
 # WidgetX / UI widgets

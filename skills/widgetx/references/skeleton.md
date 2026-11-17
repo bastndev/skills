@@ -11,12 +11,15 @@ Ask it as a select question (see "How to ask" in `SKILL.md`):
 * Question: `Which skeleton style?`
 * Options, in this order:
 
-| Label   | Description                                           |
-| ------- | ----------------------------------------------------- |
-| `text`  | a light sweeps across the text itself ("Installing…") |
-| `sync`  | gray blocks, one shared light crossing all of them    |
-| `pulse` | gray blocks fading in and out together                |
-| `wave`  | gray blocks fading one after another, top to bottom   |
+| Label                | Description                                           |
+| -------------------- | ----------------------------------------------------- |
+| `text`               | a light sweeps across the text itself ("Installing…") |
+| `sync`               | gray blocks, one shared light crossing all of them    |
+| `pulse`              | gray blocks fading in and out together                |
+| `wave (recommended)` | gray blocks fading one after another, top to bottom   |
+
+Keep `(recommended)` in the `wave` label exactly as written; it is the most
+used style. It is a hint only: never pick it on the user's behalf.
 
 Text fallback — only when no question tool exists. Print this block exactly,
 then wait for the answer:
@@ -27,7 +30,7 @@ then wait for the answer:
 1. ✨ text   — a light sweeps across the text itself ("Installing…")
 2. 🔄 sync   — gray blocks, one shared light crossing all of them
 3. 💓 pulse  — gray blocks fading in and out together
-4. 🌊 wave   — gray blocks fading one after another, top to bottom
+4. 🌊 wave   — gray blocks fading one after another, top to bottom (recommended)
 
 Reply with a number or name.
 ```
