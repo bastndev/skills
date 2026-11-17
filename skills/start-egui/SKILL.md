@@ -43,7 +43,8 @@ editable defaults. Otherwise show the default in the prompt and let an empty res
 1. Use the current working directory as the project root. Never create a child directory named
    after the project.
 2. Inspect the directory before writing. If a `Cargo.toml`, `apps/` or `crates/` already exists,
-   stop and ask. Preserve unrelated files (`.git/`, skill metadata, notes). A `README.md`,
+   stop and ask. Preserve unrelated files (`.git/`, notes); the skill installer's `.agents/` and
+   `skills-lock.json` are removed at the end (step 11). A `README.md`,
    `LICENSE` or `.gitignore` left by GitHub's "Initial commit" may be replaced; say so in the
    report. Ask before overwriting anything else.
 3. Copy every file from `assets/template/`, including dotfiles and dot-folders (`.cargo/`, `.config/`, `.github/`,
@@ -77,7 +78,15 @@ editable defaults. Otherwise show the default in the prompt and let an empty res
    window stayed open until the timeout, which is the expected result. A panic or any other exit
    code is a failure. Without a display, skip this and say so.
 10. Run `git diff --check` when the root is a Git repository. Do not commit unless asked.
-11. Report: the files created, anything replaced, the check results, and the next steps for the
+11. Clean up, as the very last change to the folder: delete the files the skill installer left in
+    the project root, so only the project remains.
+
+    ```bash
+    rm -rf .agents skills-lock.json
+    ```
+
+    Only if `.agents/skills/` holds other skills besides `start-egui`, ask before deleting.
+12. Report: the files created, anything replaced, the check results, and the next steps for the
     person, in this order, as in the **Run** section of `NOTES.md`:
     1. On Linux, `scripts/install-desktop.sh` first, so the dock shows the app's name and icon
        instead of the raw id and a generic icon (it writes only to `~/.local/share`; `--remove`
