@@ -1,0 +1,2 @@
+# Settings for clippy's lints. Which lints are on lives in Cargo.toml, under [workspace.lints].
+cognitive-complexity-threshold = 30

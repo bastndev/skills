@@ -1,0 +1,2 @@
+# Code style for `cargo fmt`. Wider lines suit egui's long builder chains.
+max_width = 120

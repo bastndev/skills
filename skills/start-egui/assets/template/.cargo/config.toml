@@ -1,0 +1,5 @@
+# Cargo settings for this project only: how Cargo runs, not what the project is
+# (that lives in Cargo.toml). Empty on purpose until something needs it, for example:
+#
+# [alias]
+# xtask = "run --package xtask --"   # `cargo xtask <task>`: build helpers written in Rust
