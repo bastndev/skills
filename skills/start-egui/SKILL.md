@@ -77,11 +77,14 @@ editable defaults. Otherwise show the default in the prompt and let an empty res
    window stayed open until the timeout, which is the expected result. A panic or any other exit
    code is a failure. Without a display, skip this and say so.
 10. Run `git diff --check` when the root is a Git repository. Do not commit unless asked.
-11. Report: the files created, anything replaced, the check results, and the next step for the
-    person: `cargo run`. Point to `NOTES.md` for the commands they will type by hand. On Linux,
-    also tell them to run `scripts/install-desktop.sh` once so the dock shows the app's name and
-    icon (it writes only to `~/.local/share`; `--remove` undoes it), and again after changing
-    `DISPLAY_NAME` or the icon. Run it yourself only if they ask.
+11. Report: the files created, anything replaced, the check results, and the next steps for the
+    person, in this order, as in the **Run** section of `NOTES.md`:
+    1. On Linux, `scripts/install-desktop.sh` first, so the dock shows the app's name and icon
+       instead of the raw id and a generic icon (it writes only to `~/.local/share`; `--remove`
+       undoes it). Again after changing `DISPLAY_NAME` or the icon. Run it yourself only if they ask.
+    2. `cargo run`.
+
+    Point to `NOTES.md` for the commands they will type by hand.
 
 ## Boundaries
 
