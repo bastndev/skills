@@ -9,6 +9,8 @@ Rules for AI assistants working in this repository. `ARCHITECTURE.md` has the pr
 ## Commands
 
 - Run: `cargo run`
+- Linux dock name and icon: after changing `DISPLAY_NAME` or `assets/app-icon/app-icon.svg`, run
+  `scripts/install-desktop.sh` (`--remove` undoes it). Windows and macOS don't use it.
 - A change is done only when all of these pass:
   `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test`
 

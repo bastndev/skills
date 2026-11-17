@@ -1,7 +1,8 @@
 //! The product's name, identifiers and version.
 //! This is the only place in the code where the name is written.
 
-/// Shown to people: window title, About, update dialog.
+/// Shown to people: window title, dock and app menu, About, update dialog.
+/// After changing it, run `scripts/install-desktop.sh` so the Linux dock shows it too.
 pub const DISPLAY_NAME: &str = "{{DISPLAY_NAME}}";
 
 /// Used by machines: binary, package and .desktop file name.

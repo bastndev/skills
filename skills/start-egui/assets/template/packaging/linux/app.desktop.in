@@ -1,0 +1,11 @@
+# Template: @DISPLAY_NAME@ and @APP_ID@ are filled from crates/brand by scripts/install-desktop.sh.
+[Desktop Entry]
+Type=Application
+Name=@DISPLAY_NAME@
+Comment={{DESCRIPTION}}
+Exec=@APP_ID@ %F
+Icon=@APP_ID@
+Terminal=false
+Categories=Utility;
+StartupNotify=true
+StartupWMClass=@APP_ID@
