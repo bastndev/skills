@@ -4,14 +4,16 @@ Commands you type by hand. Run them from the project folder.
 
 ## Run
 
-```sh
-cargo run
-```
-
-Update the dock name and icon (Linux, after changing either; then restart the app):
+**Linux**: run only `first time`, or after changing the Name/Icon.
 
 ```sh
 scripts/install-desktop.sh
+```
+
+Start the app (the first run takes a few minutes ⏱️):
+
+```sh
+cargo run
 ```
 
 ## Before committing
