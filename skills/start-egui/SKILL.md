@@ -4,7 +4,7 @@ description: Scaffold a Rust desktop app with egui/eframe 0.37 as a layered Carg
 license: Complete terms in LICENSE.txt
 metadata:
   author: bastndev
-  version: "1.2.0"
+  version: "1.3.0"
 ---
 
 # Rust + egui desktop app scaffold
@@ -15,93 +15,111 @@ and a fake update dialog) that becomes an IDE, a photo editor, a video editor or
 
 Keep the generated project small and keep its layer rules intact: they are the point of this base.
 
-## Setup survey
+Two scripts in this skill's `scripts/` folder do the mechanical work, so every run is fast and the
+same. Below, `<skill>` is the folder holding this `SKILL.md` (installed with `npx skills add`, it
+is `.agents/skills/start-egui`).
 
-Before writing files, show one compact setup survey. Use text-entry fields; do not present values
-as choice/select options. Prefill each field with its default when the interface supports
-editable defaults. Otherwise show the default in the prompt and let an empty response accept it.
+- Run every command from the project root: the current working directory. Never create a child
+  directory named after the project.
+- Run the scripts with `bash <skill>/scripts/<name>.sh`, so they work whatever the installer did
+  to file permissions. Do not copy, rename or fill in template files by hand.
+- Between steps, write one short line at most. The person sees the full result in the final table.
 
-- `DISPLAY_NAME`: shown to people (window title, dialogs). Default: the current folder's basename
-  in Title Case, with `-` and `_` turned into spaces (`photo-lab` → `Photo Lab`).
-- `MACHINE_NAME`: binary, package and app id. Default: the folder basename, lowercased, with every
-  character outside `a-z 0-9 -` turned into `-`. Must match `^[a-z][a-z0-9-]*$`.
-- `CRATE_PREFIX`: prefix for internal crates (`<prefix>-brand`, `<prefix>-ui`). Default `app`.
-  Must match `^[a-z][a-z0-9]*$` (no `-`: it is also used as `<prefix>_brand` in Rust code).
-  Internal crates are deliberately not named after the product, so a rename touches few files.
-- `GITHUB_REPO`: `owner/repo`. Default: parsed from `git remote get-url origin` when it is a
-  GitHub URL; otherwise `bastndev/{{MACHINE_NAME}}`.
-- `DESCRIPTION`: one sentence ending with a period. Default
-  `A desktop app built with Rust and egui.`
-- `AUTHOR`: for `LICENSE`. Default `Gohit X (bastndev)`.
-- `YEAR`: current year.
+## 1. Setup survey
 
-`DISPLAY_NAME` and `DESCRIPTION` end up inside Rust and TOML string literals: reject `"` and `\`.
-`MACHINE_NAME` must differ from `{{CRATE_PREFIX}}-brand` and `{{CRATE_PREFIX}}-ui`.
+1. Run `bash <skill>/scripts/scaffold.sh --defaults`. It writes nothing. It prints each value's
+   default as `KEY=VALUE`, an `INVALID=` line for a default that breaks a rule, and a `FOLDER=` line:
+   - `FOLDER=ok`, or `FOLDER=ok, replaces: …` (a `README.md`, `LICENSE` or `.gitignore` left by
+     GitHub's "Initial commit"): go on.
+   - `FOLDER=stop` (a `Cargo.toml`, `apps/` or `crates/` exists) or `FOLDER=ask` (other files
+     would be overwritten): stop, show the line and ask. Go on only if the person agrees, and then
+     add `--overwrite` in step 2.
+2. Show the seven values as a table (`Field | Value`), then ask **one** question: "Create the
+   project with these values?", with the options **Yes, create it** (recommended) and **Change
+   values**. A field with an `INVALID=` line must be changed first.
+3. Only after **Change values**: ask which fields to change and their new values, as free text.
+   The rules, which `scaffold.sh` checks again:
+   - `DISPLAY_NAME`: shown to people (window title, dock, dialogs). Default: the folder's name in
+     Title Case, with `-` and `_` as spaces (`photo-lab` → `Photo Lab`).
+   - `MACHINE_NAME`: binary, package and app id. Must match `^[a-z][a-z0-9-]*$`. Default: the
+     folder's name, lowercased, with every character outside `a-z 0-9 -` turned into `-`.
+   - `CRATE_PREFIX`: prefix for internal crates (`<prefix>-brand`, `<prefix>-ui`). Default `app`.
+     Must match `^[a-z][a-z0-9]*$` (no `-`: it is also used as `<prefix>_brand` in Rust code).
+     Internal crates are deliberately not named after the product, so a rename touches few files.
+   - `GITHUB_REPO`: `owner/repo`. Default: from `git remote get-url origin` when it is a GitHub
+     URL; otherwise `bastndev/<MACHINE_NAME>`.
+   - `DESCRIPTION`: one sentence ending with a period (added when missing).
+   - `AUTHOR`: for `LICENSE`. `YEAR`: the current year.
 
-## Scaffold procedure
+   `DISPLAY_NAME` and `DESCRIPTION` end up inside Rust and TOML strings, so they cannot contain
+   `"` or `\`. `MACHINE_NAME` must differ from `<prefix>-brand` and `<prefix>-ui`.
 
-1. Use the current working directory as the project root. Never create a child directory named
-   after the project.
-2. Inspect the directory before writing. If a `Cargo.toml`, `apps/` or `crates/` already exists,
-   stop and ask. Preserve unrelated files (`.git/`, notes); the skill installer's `.agents/` and
-   `skills-lock.json` are removed at the end (step 11). A `README.md`,
-   `LICENSE` or `.gitignore` left by GitHub's "Initial commit" may be replaced; say so in the
-   report. Ask before overwriting anything else.
-3. Copy every file from `assets/template/`, including dotfiles and dot-folders (`.cargo/`, `.config/`, `.github/`,
-   `.gitignore`, `.gitattributes`), into the project root. Then make the scripts executable,
-   whatever the copy did to permissions:
+## 2. Scaffold
 
-   ```bash
-   chmod +x scripts/*.sh
-   ```
+Run `bash <skill>/scripts/scaffold.sh`, with one option per changed value, for example
+`--display-name "Photo Lab" --description "Edits photos."`. The options are `--display-name`,
+`--machine-name`, `--crate-prefix`, `--github-repo`, `--description`, `--author` and `--year`;
+a value left out uses its default. With every default accepted, run it with no options.
 
-   Without this, running `scripts/install-desktop.sh` fails with "exists but is not an
-   executable file" (fish) or "Permission denied" (bash).
-4. Rename every path containing `{{MACHINE_NAME}}` to use `<MACHINE_NAME>`: the folder
-   `apps/{{MACHINE_NAME}}` and the icons `assets/app-icon/hicolor/*/apps/{{MACHINE_NAME}}.*`.
-5. Replace `{{DISPLAY_NAME}}`, `{{MACHINE_NAME}}`, `{{CRATE_PREFIX}}`, `{{GITHUB_REPO}}`,
-   `{{DESCRIPTION}}`, `{{AUTHOR}}` and `{{YEAR}}` in every text file. Skip binary files (`*.png`).
-   Leave `@DISPLAY_NAME@` and `@APP_ID@` in `packaging/linux/app.desktop.in`: the scripts fill them.
-6. Confirm no placeholder remains, in file contents or in names:
+It copies every template file (dotfiles included), names the app folder and the icons after
+`MACHINE_NAME`, fills in every placeholder, makes `scripts/*.sh` executable and checks that no
+placeholder is left. It never touches files that are not in the template (`.git/`, notes). It
+leaves `@DISPLAY_NAME@` and `@APP_ID@` in `packaging/linux/app.desktop.in`: the project's scripts
+fill them.
 
-   ```bash
-   grep -rn '{{[A-Z_]*}}' . --exclude-dir=target --exclude-dir=.git
-   find . -name '*{{*' -not -path './.git/*'
-   ```
+It ends with `scaffold: ok` and the values it used, as `KEY=VALUE`, plus `REPLACED=` when it
+replaced files. Use those values in the final table. Exit code `1` means a value is invalid: ask
+for a new one. Exit code `2` means the folder needs the person's decision: see step 1.
 
-7. Build: `cargo build`. The first build downloads and compiles about 400 crates and takes several
-   minutes; say so before starting. If it fails because a Linux system library is missing, report
-   the exact error and **ask before installing any system package**. (Verified on Ubuntu 24.04,
-   Wayland: no system packages were needed.)
-8. Run `cargo fmt` (real names change line lengths), then all of these. Do not report success
-   unless every one passes:
+## 3. Build
 
-   ```bash
-   cargo fmt --check
-   cargo clippy --all-targets -- -D warnings
-   cargo test
-   ```
+Say first that the first build compiles about 285 crates and takes 3 to 4 minutes, once per
+project folder (later builds take seconds). Run `cargo build` with a timeout of at least
+10 minutes, and keep the time from its `Finished … in <time>` line.
 
-9. Smoke run, only when a display is available: `timeout 5 cargo run`. Exit code `124` means the
-   window stayed open until the timeout, which is the expected result. A panic or any other exit
-   code is a failure. Without a display, skip this and say so.
-10. Run `git diff --check` when the root is a Git repository. Do not commit unless asked.
-11. Clean up, as the very last change to the folder: delete the files the skill installer left in
-    the project root, so only the project remains.
+If it fails because a Linux system library is missing, report the exact error and **ask before
+installing any system package**. (Verified on Ubuntu 24.04, Wayland: no system packages were
+needed.)
 
-    ```bash
-    rm -rf .agents skills-lock.json
-    ```
+## 4. Check and clean up
 
-    Only if `.agents/skills/` holds other skills besides `start-egui`, ask before deleting.
-12. Report: the files created, anything replaced, the check results, and the next steps for the
-    person, in this order, as in the **Run** section of `NOTES.md`:
-    1. On Linux, `scripts/install-desktop.sh` first, so the dock shows the app's name and icon
-       instead of the raw id and a generic icon (it writes only to `~/.local/share`; `--remove`
-       undoes it). Again after changing `DISPLAY_NAME` or the icon. Run it yourself only if they ask.
-    2. `cargo run`.
+Run `bash <skill>/scripts/finish.sh`. It prints one line per step and stops at the first failure:
+`cargo fmt` (real names change line lengths) then `cargo fmt --check`,
+`cargo clippy --all-targets -- -D warnings`, `cargo test`, `cargo build`, a smoke run (the window
+must still be open after 5 seconds; skipped without a display) and `git diff --check` in a Git
+repository. When every step passes, it deletes the installer's `.agents/` and `skills-lock.json`,
+as the very last change to the folder. Its last line is `RESULT ok`, or `RESULT failed: <step>`
+after the error.
 
-    Point to `NOTES.md` for the commands they will type by hand.
+- `RESULT failed`: fix the cause with the smallest change and run `finish.sh` again. Never report
+  success without `RESULT ok`.
+- `cleanup skipped`: `.agents/` holds other skills too. Ask before deleting it with
+  `rm -rf .agents skills-lock.json`.
+- Do not commit unless asked.
+
+## 5. Final message
+
+Reply with only this table and the line under it: the values printed after `scaffold: ok`, and
+the build time from step 3.
+
+| Field | Value | Status |
+|---|---|---|
+| DISPLAY_NAME | Photo Lab | ✅ |
+| MACHINE_NAME | photo-lab | ✅ |
+| CRATE_PREFIX | app | ✅ |
+| GITHUB_REPO | bastndev/photo-lab | ✅ |
+| DESCRIPTION | A desktop app built with Rust and egui. | ✅ |
+| AUTHOR | Gohit X (bastndev) | ✅ |
+| YEAR | 2026 | ✅ |
+| Build | cargo build · 3m 33s | ✅ |
+| Checks | fmt · clippy · test · window opens | ✅ |
+
+🎉 The project was created successfully.
+
+- The window check was skipped (no display): write `fmt · clippy · test (window: no display)`.
+- `scaffold.sh` printed `REPLACED=`: add the row `Replaced | <files> | ✅`.
+- A step still fails: mark its row ❌ with the short error, and in place of the 🎉 line write one
+  line saying what is needed. Never write the 🎉 line without `RESULT ok`.
 
 ## Boundaries
 
@@ -122,10 +140,11 @@ editable defaults. Otherwise show the default in the prompt and let an empty res
   `ARCHITECTURE.md` shows the project tree and where logic crates (L1/L2) go when needed.
 - The product name is written only in `crates/brand`.
 - App icon: `assets/app-icon/app-icon.svg` is the master; `scripts/app-icon.sh` renders the window
-  icon (`app-icon.png`, embedded by `main.rs`) and the Linux `hicolor/` sizes. On Linux,
-  `scripts/install-desktop.sh` fills `packaging/linux/app.desktop.in` from `crates/brand` and
-  installs it with the icons for the current user, so the dock shows the real name and icon.
-  `MACHINE_NAME` is the app id that ties them together.
+  icon (`app-icon.png`, embedded by `main.rs`) and the Linux `hicolor/` sizes, and leaves the
+  existing icons untouched when no renderer is installed. On Linux, `scripts/install-desktop.sh`
+  fills `packaging/linux/app.desktop.in` from `crates/brand` and installs it with the icons for
+  the current user, so the dock shows the real name and icon. `MACHINE_NAME` is the app id that
+  ties them together.
 - Dev builds compile dependencies optimised (`opt-level = 2`) so the UI is smooth under `cargo run`.
 - Shared lints (`[workspace.lints]`: `unsafe_code` forbidden, `dbg!`/`todo!` warned) and
   `clippy.toml`, `rustfmt.toml` (120 columns), `rust-toolchain.toml` (`stable` + rustfmt + clippy).

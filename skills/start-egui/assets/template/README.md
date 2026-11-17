@@ -2,7 +2,7 @@
 
 {{DESCRIPTION}}
 
-A desktop app written in Rust with [egui](https://github.com/emilk/egui) / eframe 0.37.
+Stack: Rust + [egui](https://github.com/emilk/egui) / eframe 0.37.
 
 ## Run
 

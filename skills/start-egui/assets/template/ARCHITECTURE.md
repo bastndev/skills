@@ -1,6 +1,6 @@
 # 🏗️ {{DISPLAY_NAME}} — Architecture
 
-{{DESCRIPTION}} A desktop app written in Rust with **egui/eframe 0.37**.
+{{DESCRIPTION}} Stack: Rust + **egui/eframe 0.37**.
 
 ## 📁 Project structure
 

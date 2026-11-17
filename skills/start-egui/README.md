@@ -69,11 +69,13 @@ name and icon instead of a generic gear.
 
 ## How it works
 
-1. A short survey asks for the display name, machine name, crate prefix, GitHub repo,
-   description and author. Every field has a default.
-2. The template is copied into the current folder and the placeholders are filled in.
-3. `cargo build`, `cargo fmt --check`, `cargo clippy -- -D warnings` and `cargo test` must all pass,
-   then a short smoke run checks that the window opens.
+1. A table shows the defaults (display name, machine name, crate prefix, GitHub repo, description,
+   author, year). One answer accepts them all, or you change the ones you want.
+2. `scripts/scaffold.sh` copies the template into the current folder and fills in the values.
+3. `cargo build` (3–4 minutes the first time), then `scripts/finish.sh` runs `cargo fmt --check`,
+   `cargo clippy -- -D warnings`, `cargo test` and a short smoke run that checks the window opens,
+   and removes the installer's `.agents/` and `skills-lock.json`.
+4. It ends with the values and checks in one table, each with ✅, and 🎉.
 
 It never pushes, tags, publishes or installs system packages.
 
